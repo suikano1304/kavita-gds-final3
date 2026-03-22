@@ -2,12 +2,12 @@
   "openapi": "3.0.4",
   "info": {
     "title": "Kavita",
-    "description": "Kavita provides a set of APIs that are authenticated by JWT. JWT token can be copied from local storage. Assume all fields of a payload are required. Built against v0.8.9.23",
+    "description": "Kavita provides a set of APIs that are authenticated by JWT. JWT token can be copied from local storage. Assume all fields of a payload are required. Built against v0.8.9.24",
     "license": {
       "name": "GPL-3.0",
       "url": "https://github.com/Kareadita/Kavita/blob/develop/LICENSE"
     },
-    "version": "0.8.9.23"
+    "version": "0.8.9.24"
   },
   "servers": [
     {
@@ -1906,6 +1906,591 @@
         }
       }
     },
+    "/api/Cbl/file-import": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Saves an uploaded CBL file to disk without importing. Returns the saved file info.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cblFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "cblFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblSavedFileDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblSavedFileDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblSavedFileDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/upload-cbl-file": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Downloads a CBL file from a URL and saves it to disk without importing.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadUrlDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadUrlDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblSavedFileDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblSavedFileDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblSavedFileDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/repo-import": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Downloads selected CBL files from the GitHub repo and saves them to disk without importing.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblRepoImportRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblRepoImportRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblRepoImportRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CblSavedFileDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CblSavedFileDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CblSavedFileDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/re-validate": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Validates an already-saved CBL file on disk. Called by the import modal after remap rule changes.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblReValidateRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblReValidateRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblReValidateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblImportSummaryDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblImportSummaryDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblImportSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/finalize-import": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Finalizes the import of a saved CBL file with user decisions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblFinalizeRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblFinalizeRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CblFinalizeRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblImportSummaryDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblImportSummaryDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblImportSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/remap-rules": {
+      "get": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Returns all remap rules accessible to the current user (own rules + global/admin rules).",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RemapRuleDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RemapRuleDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RemapRuleDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Creates a new series-level remap rule.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRemapRuleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRemapRuleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRemapRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/remap-rules/all": {
+      "get": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Admin-only: returns all rules across all users.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RemapRuleDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RemapRuleDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RemapRuleDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/remap-rules/{id}/promote": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Promotes a remap rule to global scope. Admin-only.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/remap-rules/{id}/demote": {
+      "post": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Demotes a global remap rule back to user-scoped. Admin-only.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cbl/remap-rules/{id}": {
+      "put": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Updates a remap rule with issue-level detail (volume/chapter).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRemapRuleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRemapRuleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRemapRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemapRuleDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Deletes a remap rule. Users can only delete their own rules.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Cbl/browse": {
+      "get": {
+        "tags": [
+          "Cbl"
+        ],
+        "summary": "Provides the browse CBL Repo interface. Requires Download role.",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblRepoBrowseResultDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblRepoBrowseResultDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CblRepoBrowseResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Chapter": {
       "get": {
         "tags": [
@@ -3142,17 +3727,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -14041,6 +14626,55 @@
         }
       }
     },
+    "/api/Search/chapters-by-series": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Returns all chapters for a given series with localized titles. Used for CBL chapter-level matching.",
+        "parameters": [
+          {
+            "name": "seriesId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapterDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapterDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapterDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Series/v2": {
       "post": {
         "tags": [
@@ -19573,17 +20207,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19606,17 +20240,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19640,17 +20274,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19673,17 +20307,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19707,17 +20341,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19740,17 +20374,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19773,17 +20407,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -19807,17 +20441,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UploadFileDto"
+                "$ref": "#/components/schemas/UploadCoverFileDto"
               }
             }
           }
@@ -21690,6 +22324,348 @@
         },
         "additionalProperties": false
       },
+      "CblBookResult": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "series": {
+            "type": "string",
+            "nullable": true
+          },
+          "volume": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "libraryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "seriesId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "readingListName": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "matchTier": {
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              -1
+            ],
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chapterTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "matchedSeriesName": {
+            "type": "string",
+            "nullable": true
+          },
+          "libraryType": {
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "chapterNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CblSeriesCandidate"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblFinalizeRequestDto": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "decisions": {
+            "$ref": "#/components/schemas/CblImportDecisions"
+          },
+          "provider": {
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "repoPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "downloadUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "sha": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblImportDecisions": {
+        "type": "object",
+        "properties": {
+          "itemResolutions": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CblItemDecision"
+            },
+            "nullable": true
+          },
+          "saveAsRemapRules": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblImportSummaryDto": {
+        "type": "object",
+        "properties": {
+          "cblName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CblBookResult"
+            },
+            "nullable": true
+          },
+          "success": {
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "successfulInserts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CblBookResult"
+            },
+            "nullable": true
+          },
+          "isUpdate": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblItemDecision": {
+        "type": "object",
+        "properties": {
+          "seriesId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "volumeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblReValidateRequestDto": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblRepoBrowseResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CblRepoItemDto"
+            },
+            "nullable": true
+          },
+          "rateLimitDto": {
+            "$ref": "#/components/schemas/GithubRateLimitDto"
+          },
+          "fromCache": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblRepoImportRequestDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CblRepoItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblRepoItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDirectory": {
+            "type": "boolean"
+          },
+          "sha": {
+            "type": "string",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "existingReadingListId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "alreadySynced": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblSavedFileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider": {
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "repoPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "downloadUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "sha": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CblSeriesCandidate": {
+        "type": "object",
+        "properties": {
+          "seriesId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "libraryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "seriesName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ChapterDetailPlusDto": {
         "type": "object",
         "properties": {
@@ -22759,6 +23735,38 @@
         "properties": {
           "title": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateRemapRuleDto": {
+        "type": "object",
+        "properties": {
+          "cblSeriesName": {
+            "type": "string",
+            "nullable": true
+          },
+          "seriesId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cblVolume": {
+            "type": "string",
+            "nullable": true
+          },
+          "cblNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "volumeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -23942,6 +24950,35 @@
           "count": {
             "type": "integer",
             "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GithubRateLimitDto": {
+        "type": "object",
+        "properties": {
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "resetsAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isLow": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "isExhausted": {
+            "type": "boolean",
+            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -26176,6 +27213,41 @@
           "ownerUserName": {
             "type": "string",
             "nullable": true
+          },
+          "sourcePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "downloadUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "shaHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider": {
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastSyncCheckUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastSyncedUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canSync": {
+            "type": "boolean",
+            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -26561,6 +27633,88 @@
         },
         "additionalProperties": false
       },
+      "RemapRuleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "normalizedCblSeriesName": {
+            "type": "string",
+            "nullable": true
+          },
+          "cblSeriesName": {
+            "type": "string",
+            "nullable": true
+          },
+          "cblVolume": {
+            "type": "string",
+            "nullable": true
+          },
+          "cblNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "seriesId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "volumeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "chapterRange": {
+            "type": "string",
+            "nullable": true
+          },
+          "chapterTitleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "chapterIsSpecial": {
+            "type": "boolean"
+          },
+          "libraryType": {
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "type": "integer",
+            "format": "int32"
+          },
+          "seriesNameAtMapping": {
+            "type": "string",
+            "nullable": true
+          },
+          "appUserId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isGlobal": {
+            "type": "boolean"
+          },
+          "createdByUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "RemoveBookmarkForSeriesDto": {
         "type": "object",
         "properties": {
@@ -26909,6 +28063,18 @@
             "nullable": true
           },
           "libraryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "releaseYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "volumeCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chapterCount": {
             "type": "integer",
             "format": "int32"
           }
@@ -29619,6 +30785,30 @@
         },
         "additionalProperties": false
       },
+      "UpdateRemapRuleDto": {
+        "type": "object",
+        "properties": {
+          "volumeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "cblVolume": {
+            "type": "string",
+            "nullable": true
+          },
+          "cblNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateSeriesDto": {
         "type": "object",
         "properties": {
@@ -29842,7 +31032,7 @@
         },
         "additionalProperties": false
       },
-      "UploadFileDto": {
+      "UploadCoverFileDto": {
         "required": [
           "id",
           "url"
@@ -30734,6 +31924,10 @@
     },
     {
       "name": "Book"
+    },
+    {
+      "name": "Cbl",
+      "description": "Responsible for the CBL import flow"
     },
     {
       "name": "Chapter"
