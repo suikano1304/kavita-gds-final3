@@ -2,12 +2,12 @@
   "openapi": "3.0.4",
   "info": {
     "title": "Kavita",
-    "description": "Kavita provides a set of APIs that are authenticated by JWT. JWT token can be copied from local storage. Assume all fields of a payload are required. Built against v0.8.9.28",
+    "description": "Kavita provides a set of APIs that are authenticated by JWT. JWT token can be copied from local storage. Assume all fields of a payload are required. Built against v0.8.9.29",
     "license": {
       "name": "GPL-3.0",
       "url": "https://github.com/Kareadita/Kavita/blob/develop/LICENSE"
     },
-    "version": "0.8.9.28"
+    "version": "0.8.9.29"
   },
   "servers": [
     {
@@ -7073,20 +7073,38 @@
         ],
         "summary": "Deletes multiple libraries and all series within it.",
         "description": "This does not touch any files",
-        "parameters": [
-          {
-            "name": "libraryIds",
-            "in": "query",
-            "description": "",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "int32"
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
               }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
