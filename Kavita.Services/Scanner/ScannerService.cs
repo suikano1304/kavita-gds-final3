@@ -115,7 +115,10 @@ public class ScannerService(
         {
             if (ex.Message.Equals("Sequence contains more than one element."))
             {
-                logger.LogCritical(ex, "[ScannerService] Multiple series map to this folder or folder is at library root. Library scan will be used for ScanFolder");
+                // Removing stack trace from logs as it freaks users out, and it does not contain useful information
+                #pragma warning disable S6667
+                logger.LogCritical("[ScannerService] Multiple series map to this folder or folder is at library root. Library scan will be used for ScanFolder");
+                #pragma warning restore S6667
             }
         }
 
@@ -145,7 +148,7 @@ public class ScannerService(
 
         var libraries = (await unitOfWork.LibraryRepository.GetLibraryDtosAsync()).ToList();
         var libraryFolders = libraries.SelectMany(l => l.Folders);
-        var libraryFolder = libraryFolders.Select(Parser.Normalize).FirstOrDefault(f => f.Contains(parentDirectory));
+        var libraryFolder = libraryFolders.Select(Parser.NormalizePath).FirstOrDefault(f => f.Contains(parentDirectory));
 
         if (string.IsNullOrEmpty(libraryFolder))
         {
