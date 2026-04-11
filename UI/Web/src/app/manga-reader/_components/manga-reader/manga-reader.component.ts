@@ -1641,7 +1641,10 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setPageNum(pageNum: number) {
-    this.pageNum = Math.max(Math.min(pageNum, this.maxPages - 1), 0);
+    const clampedPageNum = Math.max(Math.min(pageNum, this.maxPages - 1), 0);
+    const isSamePage = clampedPageNum === pageNum;
+
+    this.pageNum = clampedPageNum;
     this.pageNumSubject.next({pageNum: this.pageNum, maxPages: this.maxPages});
     this.cdRef.markForCheck();
 
@@ -1672,7 +1675,11 @@ export class MangaReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // We need to avoid calling this on first load (except if the chapter only has one page)
     if (!this.incognitoMode && !this.bookmarkMode() && (!this.inSetup || this.maxPages === 1)) {
-      this.readerService.saveProgress(this.libraryId, this.seriesId, this.volumeId, this.chapterId, tempPageNum).subscribe(() => {/* No operation */});
+      if (isSamePage) {
+        //console.log('Same page, dropping request: ', this.pageNum)
+        return;
+      }
+      this.readerService.saveProgress(this.libraryId, this.seriesId, this.volumeId, this.chapterId, tempPageNum).subscribe();
     }
   }
 
