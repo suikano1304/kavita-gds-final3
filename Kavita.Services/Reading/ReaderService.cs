@@ -220,6 +220,7 @@ public class ReaderService(IUnitOfWork unitOfWork, ILogger<ReaderService> logger
         progressDto.PageNum = pageInfo.Item1;
         var totalPages = pageInfo.Item2;
 
+
         try
         {
             var userProgress = await unitOfWork.AppUserProgressRepository.GetUserProgressAsync(progressDto.ChapterId, userId);
@@ -227,6 +228,9 @@ public class ReaderService(IUnitOfWork unitOfWork, ILogger<ReaderService> logger
             // Don't create an empty progress record if there isn't any progress. This prevents Last Read date from being updated when
             // opening a chapter
             if (userProgress == null && progressDto.PageNum == 0) return true;
+
+
+            if (userProgress?.PagesRead == progressDto.PageNum && userProgress?.BookScrollId == progressDto.BookScrollId) return true;
 
             if (userProgress == null)
             {
@@ -629,7 +633,7 @@ public class ReaderService(IUnitOfWork unitOfWork, ILogger<ReaderService> logger
         var series = await unitOfWork.SeriesRepository.GetSeriesDtoByIdAsync(seriesId, userId);
         var chapter = await unitOfWork.ChapterRepository.GetChapterDtoAsync(chapterId, userId);
         if (series == null || chapter == null)
-            throw new KavitaException(await localizationService.Translate(userId, "generic-error"));
+            throw new KavitaException(await localizationService.TranslateAsync(userId, "generic-error"));
 
         if (series.Format == MangaFormat.Epub)
         {
@@ -656,7 +660,7 @@ public class ReaderService(IUnitOfWork unitOfWork, ILogger<ReaderService> logger
         var series = await unitOfWork.SeriesRepository.GetSeriesDtoByIdAsync(seriesId, userId);
         var chapter = await unitOfWork.ChapterRepository.GetChapterDtoAsync(chapterId, userId);
         if (series == null || chapter == null)
-            throw new KavitaException(await localizationService.Translate(userId, "generic-error"));
+            throw new KavitaException(await localizationService.TranslateAsync(userId, "generic-error"));
 
         if (page == chapter.PagesRead) return new HourEstimateRangeDto();
 

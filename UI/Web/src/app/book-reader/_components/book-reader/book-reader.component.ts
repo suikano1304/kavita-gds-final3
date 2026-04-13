@@ -113,6 +113,19 @@ const minImageSize = {
  */
 const SCROLL_DELAY = 10;
 
+const KEYBIND_TARGETS = [
+  {keyBindTarget: KeyBindTarget.PageLeft, description: 'prev-page'},
+  {keyBindTarget: KeyBindTarget.PageRight, description: 'next-page'},
+  {keyBindTarget: KeyBindTarget.GoTo, description: 'go-to'},
+  {keyBindTarget: KeyBindTarget.ToggleFullScreen},
+  {keyBindTarget: KeyBindTarget.ToggleMenu},
+  {keyBindTarget: KeyBindTarget.OpenHelp},
+  {keyBindTarget: KeyBindTarget.PreviousChapter, description: 'previous-chapter'},
+  {keyBindTarget: KeyBindTarget.NextChapter, description: 'next-chapter'},
+  {keyBindTarget: KeyBindTarget.FirstPage, description: 'first-page'},
+  {keyBindTarget: KeyBindTarget.LastPage, description: 'last-page'},
+];
+
 @Component({
   selector: 'app-book-reader',
   templateUrl: './book-reader.component.html',
@@ -690,10 +703,24 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
           case KeyBindTarget.ToggleMenu:
             this.actionBarVisible.update(x => !x);
             break;
+          case KeyBindTarget.FirstPage:
+            await this.goToPage(0);
+            break;
+          case KeyBindTarget.LastPage:
+            await this.goToPage(this.maxPages() - 1);
+            break;
+          case KeyBindTarget.PreviousChapter:
+            this.loadPrevChapter();
+            break;
+          case KeyBindTarget.NextChapter:
+            this.loadNextChapter();
+            break;
+          case KeyBindTarget.OpenHelp:
+            this.openShortcutModal();
+            break;
         }
       },
-      [KeyBindTarget.PageLeft, KeyBindTarget.PageRight, KeyBindTarget.Escape, KeyBindTarget.GoTo,
-        KeyBindTarget.ToggleFullScreen, KeyBindTarget.ToggleMenu],
+      KEYBIND_TARGETS.map(k => k.keyBindTarget as KeyBindTarget),
     );
 
     this.keyBindService.registerListener(
@@ -1070,6 +1097,7 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 }
 
   closeReader() {
+    this.readerService.closeShortCutModal();
     this.readerService.closeReader(this.libraryId, this.seriesId, this.chapterId, this.readingListMode, this.readingListId);
   }
 
@@ -2407,6 +2435,10 @@ export class BookReaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   updateLineOverlayOpen(isOpen: boolean) {
     this.isLineOverlayOpen.set(isOpen);
+  }
+
+  openShortcutModal() {
+    this.readerService.openShortcutModal(KEYBIND_TARGETS);
   }
 
 

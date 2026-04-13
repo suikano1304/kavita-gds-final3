@@ -476,6 +476,14 @@
         "permission-error": "You do not have permission to change your password. Reach out to the admin of the server."
     },
 
+    "change-username": {
+        "username-label": "{{common.username}}",
+        "new-username-label": "New Username",
+        "reset": "{{common.reset}}",
+        "save": "{{common.save}}",
+        "required-field": "{{validation.required-field}}"
+    },
+
     "change-email": {
         "email-title": "Email",
         "email-label": "New Email",
@@ -733,7 +741,6 @@
         "penciller": "Penciller",
         "publisher": "Publisher",
         "writer": "Writer",
-        "other": "Other",
         "imprint": "Imprint",
         "translator": "Translator",
         "team": "{{filter-field-pipe.team}}",
@@ -1143,7 +1150,8 @@
         "completion-label": "{{percent}} complete",
 
         "force-selected-one-column": "Layout mode switched to One Column due to insufficient space to render Two Columns",
-        "forced-vertical-switch": "Layout mode switched as Two Column layout doesn't work with Vertical Writing Style"
+        "forced-vertical-switch": "Layout mode switched as Two Column layout doesn't work with Vertical Writing Style",
+        "shortcuts-menu-alt": "{{manga-reader.shortcuts-menu-alt}}"
     },
 
     "personal-table-of-contents": {
@@ -2080,7 +2088,15 @@
         "key-bind-title-page-down": "Page down",
         "key-bind-tooltip-page-down": "Move one page downwards",
         "key-bind-title-offset-double-page": "Offset double page",
-        "key-bind-tooltip-offset-double-page": "Offset pages for double page spread alignment"
+        "key-bind-tooltip-offset-double-page": "Offset pages for double page spread alignment",
+        "key-bind-title-next-chapter": "Next Chapter",
+        "key-bind-tooltip-next-chapter": "Load the next chapter",
+        "key-bind-title-previous-chapter": "Previous Chapter",
+        "key-bind-tooltip-previous-chapter": "Load the previous chapter",
+        "key-bind-title-first-page": "First Page",
+        "key-bind-tooltip-first-page": "Move to the first page",
+        "key-bind-title-last-page": "Last Page",
+        "key-bind-tooltip-last-page": "Move to the last page"
     },
 
     "cbl-manager": {
@@ -2393,7 +2409,8 @@
         "double-click": "double click",
         "close-reader": "Close reader",
         "toggle-menu": "Toggle Menu",
-        "offset-double-page": "{{keybind-setting-description-pipe.key-bind-title-offset-double-page}}"
+        "offset-double-page": "{{keybind-setting-description-pipe.key-bind-title-offset-double-page}}",
+        "navigate-to-settings": "{{keybind-setting-description-pipe.key-bind-title-navigate-to-settings}}"
     },
 
     "grouped-typeahead": {
@@ -2572,7 +2589,8 @@
         "light-theme-alt": "Light Theme",
         "dark-theme-alt": "Dark Theme",
         "close-reader-alt": "Close Reader",
-        "toggle-incognito": "Turn off Incognito Mode"
+        "toggle-incognito": "Turn off Incognito Mode",
+        "shortcuts-menu-alt": "{{manga-reader.shortcuts-menu-alt}}"
     },
 
     "pdf-layout-mode-pipe": {
