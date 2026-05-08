@@ -9164,6 +9164,7 @@
           "Rating"
         ],
         "summary": "Overall rating from all Kavita users for a given Series",
+        "description": "If the authenticated user is the only user to have rated the series, returns 0",
         "parameters": [
           {
             "name": "seriesId",
@@ -9205,6 +9206,7 @@
           "Rating"
         ],
         "summary": "Overall rating from all Kavita users for a given Chapter",
+        "description": "If the authenticated user is the only user to have rated the chapter, returns 0",
         "parameters": [
           {
             "name": "chapterId",
