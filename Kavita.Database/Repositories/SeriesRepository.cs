@@ -611,6 +611,7 @@ public class SeriesRepository(DataContext context, IMapper mapper) : ISeriesRepo
                 MediaFormat = series.Library.Type.ConvertToPlusMediaFormat(series.Format),
                 SeriesName = series.Name,
                 AltSeriesName = series.LocalizedName,
+                // TODO: Refactor this to check from ExternalMetadataIds first then ExternalSeriesMetadata. Weblink parsing is pointless as it updates in externalMetadata
                 AniListId = series.ExternalSeriesMetadata.AniListId != 0
                     ? series.ExternalSeriesMetadata.AniListId
                     : WeblinkParser.GetAniListId(series.Metadata.WebLinks),
@@ -621,6 +622,7 @@ public class SeriesRepository(DataContext context, IMapper mapper) : ISeriesRepo
                 GoogleBooksId = !string.IsNullOrEmpty(series.ExternalSeriesMetadata.GoogleBooksId)
                     ? series.ExternalSeriesMetadata.GoogleBooksId
                     : WeblinkParser.GetGoogleBooksId(series.Metadata.WebLinks),
+                MangabakaId = (int?) series.MangaBakaId,
                 MangaDexId = WeblinkParser.GetMangaDexId(series.Metadata.WebLinks),
                 VolumeCount = series.Volumes.Count,
                 ChapterCount = series.Volumes.SelectMany(v => v.Chapters).Count(c => !c.IsSpecial),

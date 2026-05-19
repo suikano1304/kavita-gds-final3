@@ -170,6 +170,9 @@ namespace Kavita.Database.Migrations
                     b.Property<float>("AvgHoursToRead")
                         .HasColumnType("REAL");
 
+                    b.Property<int>("CbrId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("CharacterLocked")
                         .HasColumnType("INTEGER");
 
@@ -2010,6 +2013,9 @@ namespace Kavita.Database.Migrations
                     b.Property<float>("AvgHoursToRead")
                         .HasColumnType("REAL");
 
+                    b.Property<int>("CbrId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ComicVineId")
                         .HasColumnType("TEXT");
 
@@ -3386,6 +3392,9 @@ namespace Kavita.Database.Migrations
 
                     b.Property<float>("AvgHoursToRead")
                         .HasColumnType("REAL");
+
+                    b.Property<int>("CbrId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ComicVineId")
                         .HasColumnType("TEXT");
