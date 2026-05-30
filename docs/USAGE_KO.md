@@ -1,10 +1,10 @@
-# Kavita GDS universal 사용 설명서
+# Kavita GDS 사용 설명서
 
 ## 개요
 
 이 배포본은 Kavita `0.9.0.2` 기반 비공식 GDS scanfix 빌드입니다.
 
-하나의 OCI archive에 `linux/amd64`와 `linux/arm64` 이미지를 같이 넣었습니다. x86 서버와 Oracle Cloud A1 같은 arm64 서버에서 같은 release asset을 공유하기 위한 형태입니다.
+하나의 OCI archive에 `linux/amd64`와 `linux/arm64` 이미지를 같이 넣었습니다. x86 서버와 Oracle Cloud A1 같은 arm64 서버에서 같은 이미지를 사용할 수 있습니다.
 
 기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 변경 내역은 [CHANGELOG_KO.md](CHANGELOG_KO.md)에 정리되어 있습니다.
 
@@ -13,13 +13,13 @@
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2
 ```
 
 Compose에서는 아래 이미지를 사용하면 됩니다.
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+ghcr.io/suikano1304/kavita-gds:0.9.0.2
 ```
 
 아래 수동 다운로드 방식은 GHCR을 쓰지 않는 환경을 위한 대체 방법입니다.
@@ -27,33 +27,33 @@ ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
 Release 페이지에서 아래 파일을 다운로드합니다.
 
 ```text
-kavita-gds-universal.tar.gz
+kavita-gds.tar.gz
 ```
 
 직접 다운로드 예시:
 
 ```bash
-curl -L -o kavita-gds-universal.tar.gz \
-  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-gds-scanfix-20260530-universal/kavita-gds-universal.tar.gz
+curl -L -o kavita-gds.tar.gz \
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2/kavita-gds.tar.gz
 ```
 
 체크섬 확인:
 
 ```bash
-sha256sum kavita-gds-universal.tar.gz
+sha256sum kavita-gds.tar.gz
 ```
 
 기대값:
 
 ```text
-8d85f0f1f24b650047cbc69d8b607cfb6297278f5b996966ee7d59ae4a4f596b
+894b1b88cc1c63f886bc9413e6eda773fbf278fa5abb666fda4e632246d2177b
 ```
 
 ## 압축 해제
 
 ```bash
-tar -xzf kavita-gds-universal.tar.gz
-cd kavita-gds-universal
+tar -xzf kavita-gds.tar.gz
+cd kavita-gds
 ```
 
 주요 파일:
@@ -76,7 +76,7 @@ Docker daemon으로 가져오기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker-daemon:local/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+  docker-daemon:local/kavita-gds:0.9.0.2
 ```
 
 registry로 밀어 넣기:
@@ -84,7 +84,7 @@ registry로 밀어 넣기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2
 ```
 
 registry에 올린 뒤 compose의 `image:` 값을 해당 registry 주소로 바꾸면 됩니다.
@@ -110,7 +110,7 @@ compose/docker-compose.production.yml
 기본 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+ghcr.io/suikano1304/kavita-gds:0.9.0.2
 ```
 
 반드시 자신의 환경에 맞게 아래 경로를 수정하세요.

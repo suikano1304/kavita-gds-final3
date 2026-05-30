@@ -1,23 +1,29 @@
-# Kavita GDS universal
+# Kavita GDS
 
-Kavita `0.9.0.2` 기반 비공식 GDS scanfix 빌드입니다.
+Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
-기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정, GDS scanfix 수정, 그리고 `linux/amd64`/`linux/arm64` universal 배포를 포함합니다.
+`kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix를 포함하며, `linux/amd64`와 `linux/arm64`를 지원합니다.
 
-## 빠른 시작
-
-Docker에서 바로 받을 수 있습니다.
+## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2
 ```
 
-Compose에서는 아래 이미지를 사용하세요.
+최신 태그도 제공합니다.
+
+```bash
+docker pull ghcr.io/suikano1304/kavita-gds:latest
+```
+
+운영에는 `latest`보다 고정 버전 태그 `0.9.0.2`를 권장합니다.
+
+## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
+    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2
     container_name: kavita
     restart: always
     ports:
@@ -34,64 +40,19 @@ services:
 
 `/your/kavita/config`와 `/your/gds/mount`는 본인 환경에 맞게 바꾸세요. GDS/rclone 원본 마운트는 읽기 전용으로 두는 것을 권장합니다.
 
-전체 compose 예시는 [compose/docker-compose.production.yml](compose/docker-compose.production.yml)에 있습니다.
-
-## 지원 아키텍처
-
-GHCR 이미지는 multi-platform manifest입니다.
-
-- `linux/amd64`
-- `linux/arm64`
-
-Oracle Cloud A1 같은 arm64 환경에서도 같은 태그를 사용할 수 있습니다.
-
-## 이미지 태그
-
-고정 버전:
-
-```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
-```
-
-최신 태그:
-
-```text
-ghcr.io/suikano1304/kavita-gds:latest
-```
-
-운영 배포에는 고정 버전 태그를 권장합니다.
+전체 예시는 [compose/docker-compose.production.yml](compose/docker-compose.production.yml)에 있습니다.
 
 ## 수동 다운로드
 
-Docker pull 대신 release asset을 직접 받을 수도 있습니다.
+Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-Release:
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2>
+- File: `kavita-gds.tar.gz`
+- SHA256: `894b1b88cc1c63f886bc9413e6eda773fbf278fa5abb666fda4e632246d2177b`
 
-```text
-https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-gds-scanfix-20260530-universal
-```
-
-파일:
-
-```text
-kavita-gds-universal.tar.gz
-```
-
-SHA256:
-
-```text
-8d85f0f1f24b650047cbc69d8b607cfb6297278f5b996966ee7d59ae4a4f596b
-```
-
-tarball 안에는 multi-platform OCI archive가 들어 있습니다.
-
-```text
-docker-image/kavita-gds.oci.tar
-```
+압축 안에는 `docker-image/kavita-gds.oci.tar`가 들어 있습니다.
 
 ## 주요 변경
-
-`kavita-gds-0.9.0.2-scan-20260528` 이후 주요 변경입니다.
 
 - EPUB manifest 중복 ID 자동 복구
 - 손상 PDF의 XRef 무한 재귀 방지
@@ -102,9 +63,9 @@ docker-image/kavita-gds.oci.tar
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
-- `linux/amd64`, `linux/arm64` universal GHCR 배포
+- `linux/amd64`, `linux/arm64` multi-arch 배포
 
-자세한 변경 내역은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 보세요.
+자세한 내용은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 보세요.
 
 ## 문서
 
@@ -112,15 +73,6 @@ docker-image/kavita-gds.oci.tar
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): 변경 내역
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드 노트
 - [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리스 노트
-
-## 저장소 구성
-
-- [compose/docker-compose.production.yml](compose/docker-compose.production.yml): 배포용 compose 예시
-- [Dockerfile.universal](Dockerfile.universal): universal 이미지 빌드에 사용한 Dockerfile
-- [SHA256SUMS](SHA256SUMS): release asset 및 주요 산출물 체크섬
-- [.github/workflows/publish-ghcr.yml](.github/workflows/publish-ghcr.yml): Release asset을 GHCR 이미지로 publish하는 workflow
-
-큰 binary 파일은 Git repo에 직접 넣지 않고 GitHub Release asset과 GHCR image로 배포합니다.
 
 ## 주의
 

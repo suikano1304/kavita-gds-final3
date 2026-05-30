@@ -9,12 +9,12 @@ This release provides the GDS scanfix build as a universal multi-platform OCI im
 
 ## Asset
 
-`kavita-gds-universal.tar.gz`
+`kavita-gds.tar.gz`
 
 SHA256:
 
 ```text
-8d85f0f1f24b650047cbc69d8b607cfb6297278f5b996966ee7d59ae4a4f596b
+894b1b88cc1c63f886bc9413e6eda773fbf278fa5abb666fda4e632246d2177b
 ```
 
 ## Verification
@@ -49,7 +49,7 @@ SHA256:
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
-- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal`.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2`.
 
 ## Caveat
 

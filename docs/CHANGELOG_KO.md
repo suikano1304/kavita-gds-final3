@@ -2,7 +2,7 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 배포: `kavita-gds-0.9.0.2-gds-scanfix-20260530-universal`
+현재 배포: `kavita-gds-0.9.0.2`
 
 ## 2026-05-30: universal packaging
 
