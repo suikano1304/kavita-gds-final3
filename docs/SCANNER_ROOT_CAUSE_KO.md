@@ -279,6 +279,56 @@ python3 scripts/diagnose_kavita_gds.py \
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 480 warnings, 0 errors.
 - 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
 
+## 원인 6-1: TXT 파일은 자체 cover extraction 대상이 아님
+
+파일:
+
+- `Kavita.Services/Reading/ReadingItemService.cs`
+- `Kavita.Services/MetadataService.cs`
+- `Kavita.Services/Helpers/GdsMetadataParser.cs`
+
+현재 구조:
+
+- TXT는 페이지 수 계산은 `BookService.GetNumberOfPagesText()`를 타지만, cover 추출은 `ReadingItemService.GetCoverImage()`의 switch에서 처리되지 않는다.
+- EPUB/PDF는 `BookService.GetCoverImage()`로 표지 이미지를 추출할 수 있지만, TXT는 파일 내부에서 추출할 표지가 없으므로 빈 cover가 정상 결과다.
+- GDS에서는 TXT 자체보다 폴더 `cover.jpg/png/webp` 또는 `kavita.yaml`의 base64 cover가 권위 있는 커버 소스다.
+- `cover: TEXT`는 이미지가 아니라 텍스트 자료 표식이므로 cover 후보로 취급하면 안 된다.
+
+운영 DB 기준 TXT 커버 상태:
+
+| LibraryId | Library | TXT series | TXT files | config cover series | yaml base64 | yaml TEXT marker | source cover file | no usable cover hint |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| <redacted> | production-library-a | 1 | 1 | 1 | 0 | 1 | 0 | 0 |
+| <redacted> | production-library-b | 80 | 84 | 80 | 1 | 79 | 79 | 0 |
+| <redacted> | production-library-e | 2061 | 2805 | 0 | 0 | 2061 | 0 | 2061 |
+| <redacted> | production-library-c | 3548 | 3548 | 3544 | 3540 | 0 | 1 | 4 |
+| <redacted> | production-library-d | 25 | 125 | 25 | 24 | 1 | 0 | 0 |
+
+해석:
+
+- TXT에 cover가 없다는 것은 파일 오류가 아니다.
+- production-library-e의 `kavita.yaml`은 `cover: TEXT`라서 이미지 커버가 아니다.
+- 진짜로 사용 가능한 원본 cover 후보가 없는 TXT series는 production-library-e 기준 2,061개다.
+
+개선 방향:
+
+- 우선순위는 기존 config cover cache, folder `cover.*`, `kavita.yaml` base64 cover 순으로 유지한다.
+- 위 세 가지가 모두 없으면 스캔 오류를 만들지 않고 GDS/TXT 전용 deterministic title-cover를 Kavita config `covers` 디렉터리에 생성한다.
+- title-cover를 만들더라도 GDS 원본에는 쓰지 않고, 외부 이미지 다운로드도 하지 않는다.
+- title-cover 생성은 source cover가 나중에 생기면 source cover가 다시 이기도록 fallback으로만 동작해야 한다.
+- 진단 스크립트의 `--check-covers` 출력에서 `txt cover state`를 보고, `series_without_any_cover_hint`만 수동 큐레이션 또는 fallback 생성 대상으로 삼는다.
+- 한글 제목 렌더링을 위해 Docker image에 Nanum Gothic TTF를 포함해야 한다.
+
+적용한 보정:
+
+- `cover: TEXT`와 URL 값을 base64 cover로 오인하지 않도록 source branch에서 `GdsMetadataParser`를 보정했다.
+- GDS/TXT에서 folder cover와 YAML base64 cover가 없을 때 제목 기반 cover를 생성하도록 source branch에서 fallback을 추가했다.
+- 생성 cover는 Kavita config `covers`에만 저장되고 GDS 원본에는 쓰지 않는다.
+- Dockerfile에 Nanum Gothic 폰트를 포함해 한글 제목이 네모 박스로 렌더링되지 않도록 했다.
+- C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
+- 런타임 스모크 검증: 제목 기반 PNG 생성 성공, Nanum Gothic 사용 시 한글 제목 렌더링 확인.
+- 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
+
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.
@@ -286,8 +336,9 @@ python3 scripts/diagnose_kavita_gds.py \
 3. 운영 source, release source, GitHub 배포 source를 같은 기준으로 맞춘다. 완료.
 4. 기존 DB의 `Pages=0`, duplicate file path, media error를 읽기 전용 검증 쿼리로 분류한다. 1차 완료.
 5. GDS UI 제목 표시 누락과 cover cache 삭제 방어를 다음 release에 포함한다. source patch 완료, rebuild 필요.
-6. same series/same volume/same range duplicate 26개 group은 repair 후보로 분리한다.
-7. cross-series duplicate 153개 group과 nested archive는 자동 수정하지 말고 자료 구조/분류 의도를 먼저 확인한다.
+6. TXT no-cover는 오류로 처리하지 않고, YAML/base64 cover 반영 누락과 실제 no-cover fallback을 분리한다.
+7. same series/same volume/same range duplicate 26개 group은 repair 후보로 분리한다.
+8. cross-series duplicate 153개 group과 nested archive는 자동 수정하지 말고 자료 구조/분류 의도를 먼저 확인한다.
 
 ## 다음 검증 기준
 
@@ -301,3 +352,4 @@ python3 scripts/diagnose_kavita_gds.py \
 - duplicate path group이 추가 스캔 후 늘어나지 않는다.
 - cover cache 재생성은 원본 GDS 경로가 아니라 Kavita config 경로에만 쓰기를 만든다.
 - source `cover.*`가 없는 series라도 기존 config cover cache를 삭제하지 않는다.
+- TXT series는 source cover가 없어도 스캔 오류로 남기지 않고, YAML/base64 또는 fallback cover 정책으로 일관되게 표시한다.

@@ -9,6 +9,7 @@ the failure modes that matter most for GDS scans:
 - MediaError distribution
 - optional archive validation for Pages=0 archives
 - optional source-cover/config-cache risk classification
+- optional TXT source-cover/config-cache classification
 """
 
 from __future__ import annotations
@@ -16,11 +17,14 @@ from __future__ import annotations
 import argparse
 import collections
 import os
+import re
 import sqlite3
 import zipfile
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".avif"}
 ARCHIVE_EXTENSIONS = {".zip", ".cbz", ".rar", ".cbr", ".7z", ".7zip", ".cb7", ".tar.gz", ".cbt"}
+COVER_FILE_NAMES = ("cover.jpg", "cover.jpeg", "cover.png", "cover.webp")
+METADATA_FILE_NAMES = ("kavita.yaml", "kavita.yml")
 
 
 def connect_readonly(db_path: str) -> sqlite3.Connection:
@@ -34,6 +38,97 @@ def mapped_path(path: str, container_root: str, host_root: str) -> str:
     if path.startswith(prefix):
         return host_root.rstrip("/") + "/" + path[len(prefix):]
     return path
+
+
+def candidate_metadata_dirs(file_path: str, folder_path: str | None = None) -> list[str]:
+    candidates: list[str] = []
+    if folder_path:
+        candidates.append(folder_path)
+    current = os.path.dirname(file_path)
+    for _ in range(4):
+        if not current or current == "/":
+            break
+        candidates.append(current)
+        current = os.path.dirname(current)
+
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for item in candidates:
+        if item in seen:
+            continue
+        seen.add(item)
+        deduped.append(item)
+    return deduped
+
+
+def has_source_cover_hint(file_path: str, folder_path: str | None = None) -> tuple[bool, bool]:
+    has_cover_file = False
+    has_yaml_cover = False
+    for directory in candidate_metadata_dirs(file_path, folder_path):
+        try:
+            names = set(os.listdir(directory))
+        except OSError:
+            continue
+
+        lowered = {name.lower() for name in names}
+        if any(name in lowered for name in COVER_FILE_NAMES):
+            has_cover_file = True
+
+        for metadata_name in METADATA_FILE_NAMES:
+            if metadata_name not in lowered:
+                continue
+            metadata_path = os.path.join(directory, next(name for name in names if name.lower() == metadata_name))
+            try:
+                with open(metadata_path, "r", encoding="utf-8", errors="ignore") as handle:
+                    for line in handle:
+                        if line.strip().lower().startswith("cover:"):
+                            has_yaml_cover = True
+                            break
+            except OSError:
+                pass
+
+    return has_cover_file, has_yaml_cover
+
+
+def classify_yaml_cover_value(value: str | None) -> str:
+    value = (value or "").strip().strip('"').strip("'")
+    if not value:
+        return "empty"
+    if value.upper() == "TEXT":
+        return "text-marker"
+    if value.startswith(("http://", "https://")):
+        return "url"
+    if value.startswith("data:image/"):
+        return "data-uri"
+    if len(value) > 200 and re.fullmatch(r"[A-Za-z0-9+/=]+", value[:240] or ""):
+        return "base64-like"
+    return "other"
+
+
+def read_yaml_cover_value(file_path: str, folder_path: str | None = None) -> str | None:
+    for directory in candidate_metadata_dirs(file_path, folder_path):
+        try:
+            names = os.listdir(directory)
+        except OSError:
+            continue
+
+        for metadata_name in METADATA_FILE_NAMES:
+            metadata_path = next(
+                (os.path.join(directory, name) for name in names if name.lower() == metadata_name),
+                None,
+            )
+            if metadata_path is None:
+                continue
+            try:
+                with open(metadata_path, "r", encoding="utf-8", errors="ignore") as handle:
+                    for line in handle:
+                        if line.strip().lower().startswith("cover:"):
+                            return line.strip()[len("cover:"):].strip()
+                return ""
+            except OSError:
+                return None
+
+    return None
 
 
 def print_rows(title: str, rows: list[sqlite3.Row]) -> None:
@@ -237,6 +332,67 @@ def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root
     print("risk_by_library", dict(sorted(risk_by_library.items())))
 
 
+def summarize_text_cover_state(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+    rows = list(con.execute("""
+        select l.Id as LibraryId, l.Name as LibraryName, s.Id as SeriesId,
+               s.FolderPath, s.CoverImage as SeriesCover, mf.FilePath
+        from MangaFile mf
+        join Chapter c on c.Id = mf.ChapterId
+        join Volume v on v.Id = c.VolumeId
+        join Series s on s.Id = v.SeriesId
+        join Library l on l.Id = s.LibraryId
+        where lower(coalesce(mf.Extension, '')) = '.txt'
+        order by l.Id, s.Id
+    """))
+
+    series: dict[int, dict[str, object]] = {}
+    for row in rows:
+        item = series.setdefault(row["SeriesId"], {
+            "library_id": row["LibraryId"],
+            "library_name": row["LibraryName"],
+            "series_cover": row["SeriesCover"] or "",
+            "files": [],
+            "folder": mapped_path(row["FolderPath"] or "", container_root, host_root),
+        })
+        item["files"].append(mapped_path(row["FilePath"], container_root, host_root))
+
+    summary: dict[int, collections.Counter[str]] = collections.defaultdict(collections.Counter)
+    names: dict[int, str] = {}
+    for item in series.values():
+        library_id = int(item["library_id"])
+        names[library_id] = str(item["library_name"])
+        summary[library_id]["series"] += 1
+        files = item["files"]
+        summary[library_id]["files"] += len(files)
+        if item["series_cover"]:
+            summary[library_id]["series_with_config_cover"] += 1
+
+        source_cover = False
+        yaml_cover_kinds: collections.Counter[str] = collections.Counter()
+        for file_path in files:
+            has_cover_file, has_yaml_cover = has_source_cover_hint(file_path, str(item["folder"]))
+            source_cover = source_cover or has_cover_file
+            if has_yaml_cover:
+                yaml_cover_kinds[classify_yaml_cover_value(read_yaml_cover_value(file_path, str(item["folder"])))] += 1
+
+        if source_cover:
+            summary[library_id]["series_with_source_cover_file"] += 1
+        for kind in sorted(yaml_cover_kinds):
+            summary[library_id][f"series_with_yaml_{kind}"] += 1
+
+        has_usable_yaml_cover = any(yaml_cover_kinds[kind] > 0 for kind in ("base64-like", "data-uri", "url"))
+        if not item["series_cover"] and not source_cover and not has_usable_yaml_cover:
+            summary[library_id]["series_without_any_cover_hint"] += 1
+
+    print("\n## txt cover state")
+    if not summary:
+        print("(none)")
+        return
+    for library_id in sorted(summary):
+        counter = summary[library_id]
+        print(library_id, names[library_id], dict(counter))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--db", required=True, help="Path to kavita.db")
@@ -254,6 +410,7 @@ def main() -> None:
         summarize_pages0_archives(con, args.container_root, args.host_root)
     if args.check_covers:
         summarize_cover_risk(con, args.container_root, args.host_root)
+        summarize_text_cover_state(con, args.container_root, args.host_root)
 
 
 if __name__ == "__main__":

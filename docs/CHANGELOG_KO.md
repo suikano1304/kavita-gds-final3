@@ -10,6 +10,9 @@
 
 - GDS 라이브러리 타입이 UI entity title 계산에서 빠져 일부 화면의 볼륨/회차명이 빈 문자열로 표시될 수 있던 문제를 보정했습니다.
 - GDS 원본 `cover.*`가 없을 때 기존 Kavita config cover cache 파일을 삭제하지 않도록 보정했습니다.
+- GDS TXT에서 `cover: TEXT`를 이미지 base64로 오인하지 않도록 보정했습니다.
+- 원본 커버와 YAML 이미지가 모두 없는 GDS TXT 시리즈는 제목 기반 cover를 Kavita config `covers` 디렉터리에 자동 생성하도록 했습니다.
+- 제목 기반 cover의 한글 렌더링을 위해 Docker image에 Nanum Gothic 폰트를 포함했습니다.
 - C# backend build 검증은 통과했습니다. UI TypeScript 빌드는 로컬 `node_modules`가 없어 별도 release rebuild 단계에서 검증해야 합니다.
 
 ## 2026-05-31: GDS 증분 스캔 안정화 추가
