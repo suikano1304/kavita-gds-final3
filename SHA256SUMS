@@ -1,0 +1,6 @@
+2637d05a2cfe809f3b9fc7ce9a4371a1749b616892b98070b79550a5d07ad371  ./Dockerfile.universal
+98dc5b43d9d183d6d6b9675c6a0030b08b20657204464dde31276a2ca8189ff2  ./README.md
+97b3751a7e5346cd5c5752046cf440e15739f1abc52e82f770758a28b9208034  ./compose/docker-compose.production.yml
+cf931540d85ba80e513b087addf1801731ce8d2b0fd4bc87d281a8bbe21fa2ee  ./docker-image/kavita-gds-0.9.0.2-gds-scanfix-final3-20260530-universal.oci.tar
+ba37b38d8db1c5aef410460d7529c43e6942e67f03a7a9b1df0233af3700be5f  ./docs/KAVITA_GDS_SCANFIX_WORKLOG_20260530.md
+fa6767c55d36004631d32b3cf6cae65332155f752fef3eb8fcc0804796200118  ./source/epub-fix-20260529-scanfix-20260530.tar.gz
