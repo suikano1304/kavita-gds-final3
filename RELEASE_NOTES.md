@@ -26,6 +26,15 @@ SHA256:
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 
+### 2026-05-31 operational verification
+
+- Documented the production cover recovery and YAML metadata validation process.
+- Added the GDS YAML metadata fix to the operational notes.
+- GDS sidecar YAML now supplies safe metadata fields such as summary, tags, people, publisher, release date, and age rating.
+- YAML `meta.Name` is no longer used to overwrite chapter titles.
+- GDS chapter titles are derived from file names with common distribution/quality suffixes removed.
+- Verified that `[production-library-b] ...` duplicate series were not created during validation.
+
 ### 2026-05-29 fixes
 
 - Added EPUB manifest duplicate ID recovery for malformed/generated EPUB files.

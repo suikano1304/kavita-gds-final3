@@ -4,6 +4,8 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix를 포함하며, `linux/amd64`와 `linux/arm64`를 지원합니다.
 
+2026-05-31 운영 서버에는 `kavita.yaml` 메타데이터 반영과 회차 제목 보정 패치를 추가 검증했습니다. 해당 운영 기록은 [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md)에 정리했습니다.
+
 ## Docker Pull
 
 ```bash
@@ -60,6 +62,8 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - GDS reader/runtime 오류 수정
 - 혼합 포맷 GDS 시리즈 분리 완화
 - `kavita.yaml`, `kavita.yml`, `cover.*` 등 메타데이터 파일의 미디어 오인식 방지
+- GDS `kavita.yaml`의 요약/인물/출판사/날짜 등 sidecar metadata 반영
+- YAML `meta.Name`이 회차 제목을 덮어쓰지 않도록 하고 파일명 기반 회차 제목 사용
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
@@ -72,6 +76,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - [docs/USAGE_KO.md](docs/USAGE_KO.md): 한국어 사용 설명서
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): 변경 내역
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드 노트
+- [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md): 커버 복구와 YAML 적용 검증 운영 기록
 - [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리스 노트
 
 ## 주의

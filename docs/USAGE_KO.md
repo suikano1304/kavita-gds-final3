@@ -8,6 +8,8 @@
 
 기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 변경 내역은 [CHANGELOG_KO.md](CHANGELOG_KO.md)에 정리되어 있습니다.
 
+운영 서버에서 수행한 커버 복구, `kavita.yaml` 적용 검증, GitHub 배포 절차 기록은 [OPERATIONS_20260531_KO.md](OPERATIONS_20260531_KO.md)에 따로 정리했습니다.
+
 ## 다운로드
 
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
@@ -146,6 +148,8 @@ docker logs -f kavita
 
 - GDS 원본 경로를 읽기 전용으로 유지
 - Kavita scanfix 변경사항 배포
+- `kavita.yaml` sidecar metadata를 GDS 스캔에 반영
+- 파일명 기반 회차 제목을 유지해 `meta.Name`으로 회차명이 덮이지 않게 처리
 - x86 서버와 arm64 서버에서 같은 release asset 사용
 
 ## 주의사항

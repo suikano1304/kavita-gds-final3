@@ -4,6 +4,17 @@
 
 현재 배포: `kavita-gds-0.9.0.2`
 
+## 2026-05-31: 운영 검증 및 YAML metadata fix
+
+- 운영 Kavita config를 일반 경로(`/mnt/data/docker/kavita/config`)로 정리하고 compose mount를 확인했습니다.
+- 남아 있던 config/test config의 cover 파일을 운영 config로 회수하고, 스캔을 통해 cover cache가 다시 생성되는 것을 확인했습니다.
+- GDS 라이브러리에서 `kavita.yaml`/`kavita.yml` sidecar metadata를 읽도록 보강했습니다.
+- `Summary`, 장르, 태그, 언어, 웹 링크, 작가/번역자/출판사/작화가, 발매일, 연령등급 등 안전한 YAML 필드를 반영합니다.
+- YAML `meta.Name`이 시리즈명 또는 회차 제목을 덮어써 `[production-library-b] 비전`처럼 회차 정보가 사라지는 문제를 막았습니다.
+- GDS 회차 제목은 파일명에서 만들고 `#138`, `[1440px]`, `[직스샷]`, trailing `(리디)` 같은 배포/품질 태그를 제거합니다.
+- `[production-library-b] ...` 접두 중복 시리즈가 새로 생기지 않는 것을 확인했습니다.
+- 상세 운영 기록은 `docs/OPERATIONS_20260531_KO.md`에 남겼습니다.
+
 ## 2026-05-30: universal packaging
 
 - `linux/amd64`, `linux/arm64`를 하나의 OCI archive로 패키징했습니다.
