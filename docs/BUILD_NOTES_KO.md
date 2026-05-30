@@ -28,7 +28,7 @@ docker-image/kavita-gds.oci.tar
 권장 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
 ```
 
 GHCR publish workflow:

@@ -9,7 +9,7 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 ## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
 ```
 
 최신 태그도 제공합니다.
@@ -18,14 +18,14 @@ docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2
 docker pull ghcr.io/suikano1304/kavita-gds:latest
 ```
 
-운영에는 `latest`보다 고정 버전 태그 `0.9.0.2`를 권장합니다.
+운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-1` 사용을 권장합니다.
 
 ## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2
+    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
     container_name: kavita
     restart: always
     ports:
@@ -48,7 +48,7 @@ services:
 
 Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2>
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-1>
 - File: `kavita-gds.tar.gz`
 - SHA256: `894b1b88cc1c63f886bc9413e6eda773fbf278fa5abb666fda4e632246d2177b`
 

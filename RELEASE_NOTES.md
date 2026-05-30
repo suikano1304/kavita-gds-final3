@@ -58,7 +58,7 @@ SHA256:
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
-- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2`.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1`.
 
 ## Caveat
 

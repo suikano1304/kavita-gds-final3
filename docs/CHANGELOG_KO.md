@@ -2,7 +2,7 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 배포: `kavita-gds-0.9.0.2`
+현재 배포: `kavita-gds-0.9.0.2-1`
 
 ## 2026-05-31: 운영 검증 및 YAML metadata fix
 

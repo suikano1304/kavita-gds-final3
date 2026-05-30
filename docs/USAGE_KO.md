@@ -15,13 +15,13 @@
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
 ```
 
 Compose에서는 아래 이미지를 사용하면 됩니다.
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
 ```
 
 아래 수동 다운로드 방식은 GHCR을 쓰지 않는 환경을 위한 대체 방법입니다.
@@ -36,7 +36,7 @@ kavita-gds.tar.gz
 
 ```bash
 curl -L -o kavita-gds.tar.gz \
-  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2/kavita-gds.tar.gz
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-1/kavita-gds.tar.gz
 ```
 
 체크섬 확인:
@@ -78,7 +78,7 @@ Docker daemon으로 가져오기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker-daemon:local/kavita-gds:0.9.0.2
+  docker-daemon:local/kavita-gds:0.9.0.2-1
 ```
 
 registry로 밀어 넣기:
@@ -86,7 +86,7 @@ registry로 밀어 넣기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2
+  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-1
 ```
 
 registry에 올린 뒤 compose의 `image:` 값을 해당 registry 주소로 바꾸면 됩니다.
@@ -112,7 +112,7 @@ compose/docker-compose.production.yml
 기본 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
 ```
 
 반드시 자신의 환경에 맞게 아래 경로를 수정하세요.
