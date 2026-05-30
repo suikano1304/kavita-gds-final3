@@ -8,7 +8,7 @@
 - 운영 compose: `/opt/compose/kavita/docker-compose.yml`
 - 운영 config: `/mnt/data/docker/kavita/config`
 - 운영 컨테이너: `kavita`
-- 운영 이미지: `local/kavita-gds:0.9.0.2-gds-yamlfix-20260531`
+- 운영 이미지: `local/kavita-gds:0.9.0.2-1`
 - GDS 원본은 LXC에서 `/mnt/gds2`, 컨테이너에서 `/mnt/gds`로 읽기 전용 마운트합니다.
 
 ## 커버 복구
@@ -113,7 +113,16 @@ https://github.com/suikano1304/Kavita-GDS
 - latest 태그도 publish workflow에서 같이 갱신합니다.
 - release asset 이름은 `kavita-gds.tar.gz`로 정리했습니다.
 
-현재 운영 서버에는 2026-05-31 YAML fix 로컬 이미지가 먼저 적용되어 있습니다. 이 변경을 공개 이미지로 올릴 때는 다음 순서로 진행합니다.
+현재 운영 서버와 공개 배포는 `0.9.0.2-1` 기준으로 맞췄습니다.
+
+배포 확인:
+
+- Release asset: `kavita-gds.tar.gz`
+- Release asset SHA256: `715964fcaea4bcd5c80892234b6114b6e2fcc43a38b96a5dbc81b00c966478fb`
+- GHCR package visibility: `public`
+- GHCR image index는 `linux/amd64`, `linux/arm64`를 포함합니다.
+
+이후 새 버전을 공개 이미지로 올릴 때는 다음 순서로 진행합니다.
 
 1. amd64/arm64 산출물을 새로 build/publish합니다.
 2. release asset `kavita-gds.tar.gz`와 `SHA256SUMS`를 갱신합니다.
@@ -127,13 +136,17 @@ https://github.com/suikano1304/Kavita-GDS
 
 ```bash
 pct exec 101 -- docker ps --filter name=kavita --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
-pct exec 101 -- sqlite3 /mnt/data/docker/kavita/config/kavita.db 'pragma integrity_check;'
+pct exec 101 -- python3 - <<'PY'
+import sqlite3
+con = sqlite3.connect('file:/mnt/data/docker/kavita/config/kavita.db?mode=ro', uri=True)
+print(con.execute('pragma integrity_check').fetchone()[0])
+PY
 ```
 
 재스캔 전:
 
 ```bash
-pct exec 101 -- cp /mnt/data/docker/kavita/config/kavita.db /mnt/data/docker/kavita/config/kavita.db.pre-yamlfix-$(date +%Y%m%d)
+pct exec 101 -- cp /mnt/data/docker/kavita/config/kavita.db /mnt/data/docker/kavita/config/kavita.db.pre-scanfix-$(date +%Y%m%d)
 ```
 
 검증:
