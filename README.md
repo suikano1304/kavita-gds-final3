@@ -82,6 +82,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): 변경 내역
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드 노트
 - [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md): 커버 복구와 YAML 적용 검증 운영 기록
+- [docs/SCANNER_ROOT_CAUSE_KO.md](docs/SCANNER_ROOT_CAUSE_KO.md): GDS 스캐너 병목/오동작 근본 원인 분석
 - [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리스 노트
 
 ## 주의
