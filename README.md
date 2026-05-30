@@ -22,6 +22,8 @@ docker pull ghcr.io/suikano1304/kavita-gds:latest
 
 운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-1` 사용을 권장합니다.
 
+> 참고: 2026-05-31 production-library-d 혼합 폴더/읽기 불가 보정은 운영 서버 로컬 이미지에서 검증 완료했습니다. 공개 GHCR 이미지와 Release asset에 반영하려면 새 OCI archive 재패키징과 Release asset 갱신이 추가로 필요합니다.
+
 ## Compose 예시
 
 ```yaml
