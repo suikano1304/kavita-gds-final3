@@ -6,7 +6,7 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
 2026-05-31 운영 서버에는 `kavita.yaml` 메타데이터 반영과 회차 제목 보정 패치를 추가 검증했습니다. 해당 운영 기록은 [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md)에 정리했습니다.
 
-추가로 GDS/rclone 재스캔 병목과 production-library-d 혼합 폴더 스캔 문제를 확인해, 일반 재스캔은 빠르게 유지하면서 강제 스캔은 누락 파일 복구용 풀스캔으로 동작하도록 정리했습니다. 자세한 내용은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 확인하세요.
+추가로 GDS/rclone 재스캔 병목과 혼합 폴더 스캔 문제를 확인해, 일반 재스캔은 빠르게 유지하면서 강제 스캔은 누락 파일 복구용 풀스캔으로 동작하도록 정리했습니다. 자세한 내용은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 확인하세요.
 
 ## Docker Pull
 
@@ -69,6 +69,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - GDS/rclone 반복 스캔에서 변경 없는 파일의 page/hash 재계산과 커버 재분석을 줄여 속도 개선
 - GDS EPUB/PDF/TXT가 `Pages=0`으로 남아 읽기 불가처럼 보이는 문제 완화
 - 같은 작품이 `작품명/`과 `작품명 -/`처럼 나뉜 production-library-d 폴더에서도 기존 GDS 볼륨을 보존
+- GDS 증분 스캔에서 포맷 하위 폴더와 정규화명이 같은 형제 폴더를 기존 시리즈로 매칭해 반복 재처리 감소
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정

@@ -58,21 +58,21 @@ Kavita.Services/Reading/ReadingItemService.cs
 검증한 대표 케이스:
 
 ```text
-<redacted-media-path> 비전/비전 Vol. 1 - 인간보다 못할 것 없는 단권 (완결) [1440px] [직스샷] (리디)#138.zip
+<redacted-media-path> 포함 시리즈>/<시리즈명> Vol. 1 - <부제> (완결) [1440px] [직스샷] (리디)#138.zip
 ```
 
 확인 내용:
 
-- 시리즈명은 `비전`으로 유지됩니다.
+- 시리즈명은 접두/분류명이 아니라 실제 시리즈명으로 유지됩니다.
 - YAML `Summary`가 DB chapter summary에 들어왔습니다.
-- `[production-library-b] ...` 접두 시리즈 중복은 생성되지 않았습니다.
+- 접두가 붙은 중복 시리즈는 생성되지 않았습니다.
 - 다른 재스캔 표본에서 회차 제목이 파일명 기반으로 정리되어 들어오는 것을 확인했습니다.
 
 예시:
 
 ```text
-파일: [production-library-b] 판타스틱 포 Vol. 6 (완결) (리디)#186.zip
-회차 제목: 판타스틱 포 Vol. 6 (완결)
+파일: [분류] <시리즈명> Vol. 6 (완결) (리디)#186.zip
+회차 제목: <시리즈명> Vol. 6 (완결)
 ```
 
 검증 명령:
@@ -81,11 +81,11 @@ Kavita.Services/Reading/ReadingItemService.cs
 pct exec 101 -- python3 - <<'PY'
 import sqlite3
 con=sqlite3.connect('/mnt/data/docker/kavita/config/kavita.db')
-print('marvel_prefix_dups', con.execute("select count(*) from Series where Name like '[production-library-b] %'").fetchone()[0])
+print('prefix_dups', con.execute("select count(*) from Series where Name like '[%] %'").fetchone()[0])
 for row in con.execute("""
 select s.Name,c.TitleName,c.Range
 from Chapter c join Volume v on c.VolumeId=v.Id join Series s on v.SeriesId=s.Id
-where s.LibraryId=5 and c.TitleName not like '[production-library-b] %' and c.TitleName != ''
+where s.LibraryId=5 and c.TitleName not like '[%] %' and c.TitleName != ''
 order by c.Id desc limit 10
 """):
     print(row)
@@ -139,7 +139,7 @@ pct exec 101 -- cp /mnt/data/docker/kavita/config/kavita.db /mnt/data/docker/kav
 검증:
 
 - 컨테이너가 healthy인지 확인합니다.
-- `Series where Name like '[production-library-b] %'` 중복이 새로 생기지 않는지 확인합니다.
+- 접두가 붙은 중복 시리즈가 새로 생기지 않는지 확인합니다.
 - `kavita.yaml`의 `Summary`가 DB에 들어왔는지 표본 검사합니다.
 - 회차 제목이 `meta.Name`이 아니라 파일명 기반으로 표시되는지 표본 검사합니다.
 - rclone/GDS 원본 경로에 업로드/삭제/rename이 없는지 host rclone log/RC 기준으로 확인합니다.

@@ -26,6 +26,13 @@ c9ed793dc3c91ce341ea3cbfa5974d79544509353c0c17ca0f5a0a368433e08c
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 
+### 2026-05-31 GDS incremental scan stabilization
+
+- Matched GDS format subfolders back to their parent series folder when checking no-change scan state.
+- Replaced direct unchanged-folder path lookups with a safe fallback lookup so missing alias paths do not trigger repeated scan retries.
+- Matched split sibling folders by normalized directory name for GDS libraries, reducing repeated processing when physical folder names differ slightly.
+- Test verification: repeated normal scan for the affected mixed-format library dropped from `5 Series / 108 files / about 7-10 seconds` to `0 Series / 0 files / about 0.8 seconds`.
+
 ### 2026-05-31 GDS light-novel mixed folder/readability patch
 
 - Fixed GDS `chapter-info` handling for `LibraryType.GDS` so book/PDF reader routing does not hit an unsupported library type path.
@@ -49,7 +56,7 @@ c9ed793dc3c91ce341ea3cbfa5974d79544509353c0c17ca0f5a0a368433e08c
 - GDS sidecar YAML now supplies safe metadata fields such as summary, tags, people, publisher, release date, and age rating.
 - YAML `meta.Name` is no longer used to overwrite chapter titles.
 - GDS chapter titles are derived from file names with common distribution/quality suffixes removed.
-- Verified that `[production-library-b] ...` duplicate series were not created during validation.
+- Verified that publisher/category-prefixed folders did not create duplicate series during validation.
 
 ### 2026-05-29 fixes
 
