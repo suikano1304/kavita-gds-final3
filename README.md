@@ -52,7 +52,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 - Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-1>
 - File: `kavita-gds.tar.gz`
-- SHA256: `294b84ab860f18de8306c49db82ec14479b0060a1d63335702e49aa846ee90dc`
+- SHA256: `715964fcaea4bcd5c80892234b6114b6e2fcc43a38b96a5dbc81b00c966478fb`
 
 압축 안에는 `docker-image/kavita-gds.oci.tar`가 들어 있습니다.
 
