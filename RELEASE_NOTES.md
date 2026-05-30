@@ -14,7 +14,7 @@ This release provides the GDS scanfix build as a multi-platform OCI image archiv
 SHA256:
 
 ```text
-c9ed793dc3c91ce341ea3cbfa5974d79544509353c0c17ca0f5a0a368433e08c
+294b84ab860f18de8306c49db82ec14479b0060a1d63335702e49aa846ee90dc
 ```
 
 ## Verification
