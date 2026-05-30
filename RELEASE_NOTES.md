@@ -1,6 +1,6 @@
-# Kavita GDS universal
+# Kavita GDS
 
-This release provides the GDS scanfix build as a universal multi-platform OCI image archive.
+This release provides the GDS scanfix build as a multi-platform OCI image archive.
 
 ## Included Platforms
 
@@ -45,7 +45,7 @@ SHA256:
 - Rebuilt UI delivery to avoid stale Angular chunks and set static cache policy to no-cache/no-store.
 - Restored default series ordering by last modified descending.
 
-### Universal packaging
+### Multi-arch packaging
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
