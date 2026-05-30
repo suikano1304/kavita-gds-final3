@@ -2,9 +2,9 @@
 
 ## 목적
 
-Kavita `0.9.0.2` 기반 final3 GDS scanfix 빌드를 `linux/amd64`와 `linux/arm64`에서 사용할 수 있도록 multi-platform OCI archive로 패키징했습니다.
+Kavita `0.9.0.2` 기반 GDS scanfix 빌드를 `linux/amd64`와 `linux/arm64`에서 사용할 수 있도록 multi-platform OCI archive로 패키징했습니다.
 
-이 배포는 기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix final3 변경을 포함합니다. 상세 변경 내역은 [CHANGELOG_KO.md](CHANGELOG_KO.md)를 참고하세요.
+이 배포는 기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix 변경을 포함합니다. 상세 변경 내역은 [CHANGELOG_KO.md](CHANGELOG_KO.md)를 참고하세요.
 
 ## 포함 플랫폼
 
@@ -16,19 +16,19 @@ Kavita `0.9.0.2` 기반 final3 GDS scanfix 빌드를 `linux/amd64`와 `linux/arm
 Release asset:
 
 ```text
-kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz
+kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz
 ```
 
 내부 OCI archive:
 
 ```text
-docker-image/kavita-gds-0.9.0.2-gds-scanfix-final3-20260530-universal.oci.tar
+docker-image/kavita-gds-0.9.0.2-gds-scanfix-20260530-universal.oci.tar
 ```
 
 권장 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
 ```
 
 GHCR publish workflow:
@@ -41,7 +41,7 @@ GHCR publish workflow:
 
 ## 검증 내용
 
-- final3 소스 스냅샷 기준으로 빌드했습니다.
+- scanfix 소스 스냅샷 기준으로 빌드했습니다.
 - `linux-x64`와 `linux-arm64` self-contained runtime publish를 생성했습니다.
 - Docker Buildx로 `linux/amd64`, `linux/arm64` OCI image index를 생성했습니다.
 - OCI index에 두 플랫폼이 모두 포함된 것을 확인했습니다.
