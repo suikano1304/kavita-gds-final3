@@ -22,8 +22,6 @@ docker pull ghcr.io/suikano1304/kavita-gds:latest
 
 운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-1` 사용을 권장합니다.
 
-> 참고: 2026-05-31 production-library-d 혼합 폴더/읽기 불가 보정은 운영 서버 로컬 이미지에서 검증 완료했습니다. 공개 GHCR 이미지와 Release asset에 반영하려면 새 OCI archive 재패키징과 Release asset 갱신이 추가로 필요합니다.
-
 ## Compose 예시
 
 ```yaml
@@ -54,7 +52,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 - Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-1>
 - File: `kavita-gds.tar.gz`
-- SHA256: `894b1b88cc1c63f886bc9413e6eda773fbf278fa5abb666fda4e632246d2177b`
+- SHA256: `c9ed793dc3c91ce341ea3cbfa5974d79544509353c0c17ca0f5a0a368433e08c`
 
 압축 안에는 `docker-image/kavita-gds.oci.tar`가 들어 있습니다.
 
