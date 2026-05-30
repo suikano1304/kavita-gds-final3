@@ -4,6 +4,8 @@
 
 Kavita `0.9.0.2` 기반 final3 GDS scanfix 빌드를 `linux/amd64`와 `linux/arm64`에서 사용할 수 있도록 multi-platform OCI archive로 패키징했습니다.
 
+이 배포는 기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix final3 변경을 포함합니다. 상세 변경 내역은 [CHANGELOG_KO.md](CHANGELOG_KO.md)를 참고하세요.
+
 ## 포함 플랫폼
 
 - `linux/amd64`

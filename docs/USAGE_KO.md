@@ -6,6 +6,8 @@
 
 하나의 OCI archive에 `linux/amd64`와 `linux/arm64` 이미지를 같이 넣었습니다. x86 서버와 Oracle Cloud A1 같은 arm64 서버에서 같은 release asset을 공유하기 위한 형태입니다.
 
+기존 `kavita-gds-0.9.0.2-scan-20260528` 이후의 변경 내역은 [CHANGELOG_KO.md](CHANGELOG_KO.md)에 정리되어 있습니다.
+
 ## 다운로드
 
 Release 페이지에서 아래 파일을 다운로드합니다.
