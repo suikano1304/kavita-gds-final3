@@ -71,6 +71,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - 같은 작품이 `작품명/`과 `작품명 -/`처럼 나뉜 production-library-d 폴더에서도 기존 GDS 볼륨을 보존
 - GDS 증분 스캔에서 포맷 하위 폴더와 정규화명이 같은 형제 폴더를 기존 시리즈로 매칭해 반복 재처리 감소
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
+- 읽기 전용 GDS 진단 스크립트 추가
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
 - `linux/amd64`, `linux/arm64` multi-arch 배포
@@ -84,6 +85,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드 노트
 - [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md): 커버 복구와 YAML 적용 검증 운영 기록
 - [docs/SCANNER_ROOT_CAUSE_KO.md](docs/SCANNER_ROOT_CAUSE_KO.md): GDS 스캐너 병목/오동작 근본 원인 분석
+- [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔 상태 진단 도구
 - [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리스 노트
 
 ## 주의

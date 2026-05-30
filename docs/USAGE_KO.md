@@ -140,6 +140,40 @@ docker compose -f compose/docker-compose.production.yml up -d
 docker logs -f kavita
 ```
 
+## 읽기 전용 진단
+
+운영 DB를 수정하지 않고 GDS 스캔 상태를 집계하려면 `scripts/diagnose_kavita_gds.py`를 사용할 수 있습니다.
+
+PVE host에서 실행하는 예:
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --check-archives \
+  --check-covers
+```
+
+LXC 내부에서 실행하는 예:
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/gds2 \
+  --check-archives \
+  --check-covers
+```
+
+확인하는 항목:
+
+- 라이브러리별 series/file/Page=0 수
+- duplicate file path 구조
+- MediaError 분포
+- `Pages=0` ZIP/CBZ의 내부 이미지 또는 nested archive 여부
+- 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
+
 ## 어떤 경우에 쓰는가
 
 이 빌드는 GDS/rclone 마운트 기반 라이브러리에서 Kavita 스캔 동작을 안정화하기 위해 만든 scanfix 패키지입니다.
