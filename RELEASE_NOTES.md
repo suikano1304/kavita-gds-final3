@@ -26,10 +26,18 @@ SHA256:
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 
+### 2026-05-31 GDS light-novel mixed folder/readability patch
+
+- Fixed GDS `chapter-info` handling for `LibraryType.GDS` so book/PDF reader routing does not hit an unsupported library type path.
+- Preserved existing GDS volumes when their files still exist on disk, even if one side of a split folder layout is not present in an incremental scan result.
+- Added a fast minimum page count for unchanged GDS EPUB/PDF/TXT files so they do not remain at `Pages=0` and appear unreadable.
+- Allowed `force=true` GDS scans to perform a real filesystem rescan, which is slower but can recover files missed by an earlier incremental scan.
+- Operational verification: a split-folder light-novel series now keeps 8 files total: 3 ZIP files and 5 EPUB files. The EPUB continue-point returns `pages=1` and the EPUB page endpoint returns content.
+
 ### 2026-05-31 GDS rescan speed patch
 
 - Avoided recalculating page count and KOReader hash for unchanged GDS files during forced scans.
-- Kept GDS/rclone directory change detection active during forced library scans to avoid full tree re-walks.
+- Kept normal GDS/rclone rescans fast by avoiding unnecessary file stat/hash work on unchanged files.
 - Excluded bracketed cover files such as `[Cover].jpg` from GDS media parsing.
 - Skipped repeated folder-cover copy/color analysis when the local cover and colors are already present.
 - Operational verification: `production-library-a` forced scan completed `11 files / 187 series` in about 2.8 seconds, and `production-library-e` completed `2 files / 2061 series` in about 4.5 seconds.
