@@ -28,7 +28,7 @@ docker-image/kavita-gds-0.9.0.2-gds-scanfix-final3-20260530-universal.oci.tar
 권장 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
 ```
 
 GHCR publish workflow:

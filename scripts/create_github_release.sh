@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_NAME="${REPO_NAME:-kavita-gds-final3}"
+REPO_NAME="${REPO_NAME:-Kavita-GDS}"
 VISIBILITY="${VISIBILITY:-public}"
 TAG="${TAG:-v0.9.0.2-gds-scanfix-final3-universal}"
-TITLE="${TITLE:-Kavita GDS final3 universal}"
+TITLE="${TITLE:-Kavita GDS universal}"
 ASSET="${ASSET:-/mnt/data/docker/kavita/release/kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz}"
 NOTES_FILE="${NOTES_FILE:-RELEASE_NOTES.md}"
 
@@ -41,7 +41,7 @@ if ! api "https://api.github.com/repos/$FULL_NAME" >/dev/null 2>&1; then
   fi
 
   api -X POST https://api.github.com/user/repos \
-    -d "{\"name\":\"$REPO_NAME\",\"private\":$private,\"description\":\"Kavita GDS final3 multi-arch OCI image\"}" \
+    -d "{\"name\":\"$REPO_NAME\",\"private\":$private,\"description\":\"Kavita GDS multi-arch image\"}" \
     >/dev/null
 fi
 

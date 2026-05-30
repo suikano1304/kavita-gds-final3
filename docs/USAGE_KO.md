@@ -1,4 +1,4 @@
-# Kavita GDS final3 universal 사용 설명서
+# Kavita GDS universal 사용 설명서
 
 ## 개요
 
@@ -13,13 +13,13 @@
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
 ```
 
 Compose에서는 아래 이미지를 사용하면 됩니다.
 
 ```text
-ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
 ```
 
 아래 수동 다운로드 방식은 GHCR을 쓰지 않는 환경을 위한 대체 방법입니다.
@@ -34,7 +34,7 @@ kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz
 
 ```bash
 curl -L -o kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz \
-  https://github.com/suikano1304/kavita-gds-final3/releases/download/v0.9.0.2-gds-scanfix-final3-universal/kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-gds-scanfix-final3-universal/kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz
 ```
 
 체크섬 확인:
@@ -110,7 +110,7 @@ compose/docker-compose.production.yml
 기본 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
 ```
 
 반드시 자신의 환경에 맞게 아래 경로를 수정하세요.
