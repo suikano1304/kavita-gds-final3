@@ -4,6 +4,14 @@
 
 현재 배포: `kavita-gds-0.9.0.2-1`
 
+## 다음 배포 후보: source-only fixes
+
+아래 변경은 source branch에는 들어갔지만 아직 `0.9.0.2-1` 운영 이미지와 GHCR release에는 포함되지 않았습니다.
+
+- GDS 라이브러리 타입이 UI entity title 계산에서 빠져 일부 화면의 볼륨/회차명이 빈 문자열로 표시될 수 있던 문제를 보정했습니다.
+- GDS 원본 `cover.*`가 없을 때 기존 Kavita config cover cache 파일을 삭제하지 않도록 보정했습니다.
+- C# backend build 검증은 통과했습니다. UI TypeScript 빌드는 로컬 `node_modules`가 없어 별도 release rebuild 단계에서 검증해야 합니다.
+
 ## 2026-05-31: GDS 증분 스캔 안정화 추가
 
 - GDS 라이브러리에서 포맷 하위 폴더가 실제 시리즈 폴더 바로 아래에 있을 때, DB 경로맵에 현재 폴더가 없더라도 부모 시리즈의 변경 상태를 안전하게 재사용하도록 했습니다.
