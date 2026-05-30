@@ -74,19 +74,19 @@ https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-gds-scanfix-2026
 파일:
 
 ```text
-kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz
+kavita-gds-universal.tar.gz
 ```
 
 SHA256:
 
 ```text
-23b887ab6b35522e2c9730089ed082403ae10ffef3e16dd875833ae85b7b969e
+8d85f0f1f24b650047cbc69d8b607cfb6297278f5b996966ee7d59ae4a4f596b
 ```
 
 tarball 안에는 multi-platform OCI archive가 들어 있습니다.
 
 ```text
-docker-image/kavita-gds-0.9.0.2-gds-scanfix-20260530-universal.oci.tar
+docker-image/kavita-gds.oci.tar
 ```
 
 ## 주요 변경

@@ -9,12 +9,12 @@ This release provides the GDS scanfix build as a universal multi-platform OCI im
 
 ## Asset
 
-`kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz`
+`kavita-gds-universal.tar.gz`
 
 SHA256:
 
 ```text
-23b887ab6b35522e2c9730089ed082403ae10ffef3e16dd875833ae85b7b969e
+8d85f0f1f24b650047cbc69d8b607cfb6297278f5b996966ee7d59ae4a4f596b
 ```
 
 ## Verification

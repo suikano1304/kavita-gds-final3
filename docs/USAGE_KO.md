@@ -27,39 +27,39 @@ ghcr.io/suikano1304/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
 Release 페이지에서 아래 파일을 다운로드합니다.
 
 ```text
-kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz
+kavita-gds-universal.tar.gz
 ```
 
 직접 다운로드 예시:
 
 ```bash
-curl -L -o kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz \
-  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-gds-scanfix-20260530-universal/kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz
+curl -L -o kavita-gds-universal.tar.gz \
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-gds-scanfix-20260530-universal/kavita-gds-universal.tar.gz
 ```
 
 체크섬 확인:
 
 ```bash
-sha256sum kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz
+sha256sum kavita-gds-universal.tar.gz
 ```
 
 기대값:
 
 ```text
-23b887ab6b35522e2c9730089ed082403ae10ffef3e16dd875833ae85b7b969e
+8d85f0f1f24b650047cbc69d8b607cfb6297278f5b996966ee7d59ae4a4f596b
 ```
 
 ## 압축 해제
 
 ```bash
-tar -xzf kavita-gds-0.9.0.2-scanfix-universal-20260530.tar.gz
-cd kavita-gds-0.9.0.2-scanfix-universal-20260530
+tar -xzf kavita-gds-universal.tar.gz
+cd kavita-gds-universal
 ```
 
 주요 파일:
 
 ```text
-docker-image/kavita-gds-0.9.0.2-gds-scanfix-20260530-universal.oci.tar
+docker-image/kavita-gds.oci.tar
 compose/docker-compose.production.yml
 Dockerfile.universal
 SHA256SUMS
@@ -75,7 +75,7 @@ Docker daemon으로 가져오기:
 
 ```bash
 skopeo copy \
-  oci-archive:docker-image/kavita-gds-0.9.0.2-gds-scanfix-20260530-universal.oci.tar \
+  oci-archive:docker-image/kavita-gds.oci.tar \
   docker-daemon:local/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
 ```
 
@@ -83,7 +83,7 @@ registry로 밀어 넣기:
 
 ```bash
 skopeo copy \
-  oci-archive:docker-image/kavita-gds-0.9.0.2-gds-scanfix-20260530-universal.oci.tar \
+  oci-archive:docker-image/kavita-gds.oci.tar \
   docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-gds-scanfix-20260530-universal
 ```
 
@@ -94,7 +94,7 @@ registry에 올린 뒤 compose의 `image:` 값을 해당 registry 주소로 바�
 환경에 따라 다음 방식으로 import가 가능합니다.
 
 ```bash
-nerdctl load -i docker-image/kavita-gds-0.9.0.2-gds-scanfix-20260530-universal.oci.tar
+nerdctl load -i docker-image/kavita-gds.oci.tar
 ```
 
 런타임마다 OCI archive 지원 방식이 다르므로, 일반 `docker load`가 실패하면 `skopeo`를 쓰는 방식을 권장합니다.
