@@ -60,6 +60,7 @@ export class EntityTitleService {
       case LibraryType.ComicVine:
         return this.translocoService.translate('entity-title.issue-title' + pluralKeyPart);
       case LibraryType.Images:
+      case LibraryType.GDS:
       case LibraryType.Manga:
         return this.translocoService.translate('entity-title.chapter-title' + pluralKeyPart);
     }
