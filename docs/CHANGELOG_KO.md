@@ -9,6 +9,7 @@
 - `linux/amd64`, `linux/arm64`를 하나의 OCI archive로 패키징했습니다.
 - x86 서버와 Oracle Cloud A1 같은 arm64 서버에서 같은 release asset을 사용할 수 있습니다.
 - 중간 테스트 이미지와 webtoon patch tree는 제외하고 final3 기준으로만 배포했습니다.
+- GitHub Release asset을 GHCR 이미지로 publish하는 workflow를 추가해 `docker pull` 기반 배포가 가능하도록 했습니다.
 
 ## 2026-05-30: GDS scanfix final3
 

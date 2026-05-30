@@ -28,8 +28,16 @@ docker-image/kavita-gds-0.9.0.2-gds-scanfix-final3-20260530-universal.oci.tar
 권장 이미지 태그:
 
 ```text
-local/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
+ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
 ```
+
+GHCR publish workflow:
+
+```text
+.github/workflows/publish-ghcr.yml
+```
+
+이 workflow는 GitHub Release asset을 다운로드한 뒤 내부 OCI archive를 GHCR에 `version tag`와 `latest` tag로 publish합니다.
 
 ## 검증 내용
 

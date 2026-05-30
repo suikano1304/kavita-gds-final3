@@ -49,6 +49,7 @@ a1cc0a3fca45f952b713845a73d3fa725f97bcc173f85b06b8cf64fb01ac26e1
 
 - Packaged final3 as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal`.
 
 ## Caveat
 

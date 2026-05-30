@@ -1,0 +1,51 @@
+name: Publish GHCR image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-ghcr.yml
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/kavita-gds-final3
+  IMAGE_TAG: 0.9.0.2-gds-scanfix-final3-20260530-universal
+  RELEASE_ASSET_URL: https://github.com/suikano1304/kavita-gds-final3/releases/download/v0.9.0.2-gds-scanfix-final3-universal/kavita-gds-0.9.0.2-scanfix-final3-universal.tar.gz
+  RELEASE_ASSET_SHA256: a1cc0a3fca45f952b713845a73d3fa725f97bcc173f85b06b8cf64fb01ac26e1
+  OCI_ARCHIVE_PATH: kavita-gds-0.9.0.2-scanfix-final3-universal/docker-image/kavita-gds-0.9.0.2-gds-scanfix-final3-20260530-universal.oci.tar
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install skopeo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo
+
+      - name: Download release package
+        run: |
+          curl -L -o kavita-gds-final3-universal.tar.gz "$RELEASE_ASSET_URL"
+          echo "$RELEASE_ASSET_SHA256  kavita-gds-final3-universal.tar.gz" | sha256sum -c -
+          tar -xzf kavita-gds-final3-universal.tar.gz
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ github.token }}" | skopeo login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Publish version tag
+        run: |
+          skopeo copy --all \
+            "oci-archive:${OCI_ARCHIVE_PATH}" \
+            "docker://${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Publish latest tag
+        run: |
+          skopeo copy --all \
+            "oci-archive:${OCI_ARCHIVE_PATH}" \
+            "docker://${IMAGE_NAME}:latest"

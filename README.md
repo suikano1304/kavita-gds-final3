@@ -32,10 +32,22 @@ a1cc0a3fca45f952b713845a73d3fa725f97bcc173f85b06b8cf64fb01ac26e1
 
 ## Image
 
+GHCR에서 바로 pull할 수 있는 이미지:
+
+```bash
+docker pull ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
+```
+
+또는:
+
+```bash
+docker pull ghcr.io/suikano1304/kavita-gds-final3:latest
+```
+
 권장 이미지 태그:
 
 ```text
-local/kavita-gds:0.9.0.2-gds-scanfix-final3-20260530-universal
+ghcr.io/suikano1304/kavita-gds-final3:0.9.0.2-gds-scanfix-final3-20260530-universal
 ```
 
 배포 tarball 안의 실제 이미지 파일:
@@ -49,6 +61,7 @@ docker-image/kavita-gds-0.9.0.2-gds-scanfix-final3-20260530-universal.oci.tar
 - [Dockerfile.universal](Dockerfile.universal): universal 이미지 빌드에 사용한 Dockerfile
 - [compose/docker-compose.production.yml](compose/docker-compose.production.yml): 배포용 compose 예시
 - [SHA256SUMS](SHA256SUMS): 배포 패키지 내부 파일 체크섬
+- [.github/workflows/publish-ghcr.yml](.github/workflows/publish-ghcr.yml): Release asset을 GHCR 이미지로 publish하는 workflow
 - [docs/USAGE_KO.md](docs/USAGE_KO.md): 한국어 사용 설명서
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 공개용 빌드 노트
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): `scan-20260528` 이후 변경 내역
