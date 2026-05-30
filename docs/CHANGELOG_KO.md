@@ -4,6 +4,16 @@
 
 현재 배포: `kavita-gds-0.9.0.2-1`
 
+## 2026-05-31: GDS 재스캔 속도 개선
+
+- GDS 강제 스캔에서 변경 없는 파일의 page count와 KOReader hash를 다시 계산하지 않도록 조정했습니다.
+- `force=true` 스캔에서도 GDS/rclone 파일 탐색 단계는 변경 폴더 최적화를 유지하도록 바꿨습니다.
+- `[Cover].jpg`처럼 대괄호가 붙은 커버 파일이 GDS 이미지 미디어로 오인식되어 스캔 오류와 지연을 만드는 문제를 막았습니다.
+- 폴더 커버가 이미 Kavita config cover 디렉터리에 있고 색상 정보도 있는 경우, 반복 스캔에서 커버 복사/색상 분석을 건너뜁니다.
+- 실제 운영 검증 기준 `production-library-a` 강제 스캔은 3분 이상 진행되던 상태에서 `11 files / 187 series`를 약 2.8초에 완료했습니다.
+- `production-library-e` 강제 스캔도 `2 files / 2061 series`를 약 4.5초에 완료했습니다.
+- loose image 폴더를 쓰지 않는 기존 GDS 라이브러리는 `Images` 파일 그룹을 꺼서 불필요한 커버 이미지 열거를 줄였습니다. `production-library-d`처럼 실제 이미지 파일이 등록된 라이브러리는 유지했습니다.
+
 ## 2026-05-31: 운영 검증 및 YAML metadata fix
 
 - 운영 Kavita config를 일반 경로(`/mnt/data/docker/kavita/config`)로 정리하고 compose mount를 확인했습니다.

@@ -26,6 +26,14 @@ SHA256:
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 
+### 2026-05-31 GDS rescan speed patch
+
+- Avoided recalculating page count and KOReader hash for unchanged GDS files during forced scans.
+- Kept GDS/rclone directory change detection active during forced library scans to avoid full tree re-walks.
+- Excluded bracketed cover files such as `[Cover].jpg` from GDS media parsing.
+- Skipped repeated folder-cover copy/color analysis when the local cover and colors are already present.
+- Operational verification: `production-library-a` forced scan completed `11 files / 187 series` in about 2.8 seconds, and `production-library-e` completed `2 files / 2061 series` in about 4.5 seconds.
+
 ### 2026-05-31 operational verification
 
 - Documented the production cover recovery and YAML metadata validation process.
