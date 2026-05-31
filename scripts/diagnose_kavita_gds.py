@@ -9,6 +9,7 @@ the failure modes that matter most for GDS scans:
 - MediaError distribution
 - SQLite foreign key violations
 - duplicate cleanup candidate classification
+- MediaError cause classification
 - optional archive validation for Pages=0 archives
 - optional source-cover/config-cache risk classification
 - optional TXT source-cover/config-cache classification
@@ -216,6 +217,64 @@ def media_error_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
     """))
 
 
+def classify_media_error(ext: str, comment: str, details: str) -> str:
+    ext = (ext or "").lower()
+    comment_lower = (comment or "").lower()
+    details_lower = (details or "").lower()
+
+    if "encrypted pdf" in comment_lower or "encryption not supported" in details_lower:
+        return "pdf-encrypted"
+    if ext == "pdf":
+        return "pdf-malformed-or-metadata"
+
+    if ext in ("cbz", "zip", "cbr", "rar"):
+        if "cannot be read" in comment_lower or "not supported" in comment_lower:
+            return "archive-unreadable-or-unsupported"
+        return "archive-other"
+
+    if ext == "epub":
+        if "unable to parse any meaningful" in comment_lower:
+            return "epub-unrecognized-by-parser"
+        if "end of central directory" in details_lower:
+            return "epub-not-a-valid-zip"
+        if "container.xml" in details_lower:
+            return "epub-missing-container"
+        if "nav item not found" in details_lower:
+            return "epub-missing-nav"
+        if "manifest" in details_lower:
+            return "epub-invalid-manifest"
+        if "not found in the epub file" in details_lower or "does not exist" in details_lower:
+            return "epub-missing-referenced-file"
+        if "number of pages" in comment_lower:
+            return "epub-page-count-failed"
+        return "epub-other"
+
+    if "unable to parse any meaningful" in comment_lower:
+        return "scanner-unrecognized-file"
+    return "other"
+
+
+def media_error_classification_rows(con: sqlite3.Connection) -> list[dict[str, object]]:
+    rows = list(con.execute("""
+        select lower(coalesce(Extension, '')) as Ext,
+               coalesce(Comment, '') as Comment,
+               coalesce(Details, '') as Details,
+               count(*) as Count
+        from MediaError
+        group by Ext, Comment, Details
+    """))
+    counter: collections.Counter[tuple[str, str]] = collections.Counter()
+    for row in rows:
+        ext = row["Ext"]
+        category = classify_media_error(ext, row["Comment"], row["Details"])
+        counter[(ext, category)] += int(row["Count"])
+
+    return [
+        {"Ext": ext, "Category": category, "Count": count}
+        for (ext, category), count in sorted(counter.items(), key=lambda item: (-item[1], item[0]))
+    ]
+
+
 def duplicate_cleanup_candidate_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
     return list(con.execute("""
         with dup as (
@@ -279,6 +338,12 @@ def summarize_db(con: sqlite3.Connection) -> None:
     print_rows("pages0 by library/ext", pages0_rows(con))
     print_rows("duplicate file paths by library/ext", duplicate_file_path_rows(con))
     print_rows("media errors by ext/comment", media_error_rows(con))
+    print("\n## media error classification")
+    rows = media_error_classification_rows(con)
+    if not rows:
+        print("(none)")
+    for row in rows:
+        print(row)
 
 
 def duplicate_structure_counter(con: sqlite3.Connection) -> collections.Counter[tuple[int, int, int, int, int, int, int]]:
@@ -361,6 +426,7 @@ def build_json_summary(
         "duplicate_structure": duplicate_structure,
         "duplicate_cleanup_candidates": rows_to_dicts(duplicate_cleanup_candidate_rows(con)),
         "media_errors_by_ext_comment": rows_to_dicts(media_error_rows(con)),
+        "media_error_classification": media_error_classification_rows(con),
     }
     if include_archive_validation:
         summary["pages0_archive_validation"] = pages0_archive_validation_rows(con, container_root, host_root)
@@ -445,6 +511,13 @@ def print_json_comparison(before_path: str, after: dict[str, object]) -> None:
         after.get("pages0_archive_validation", []),
         ("LibraryId", "Ext"),
         ("files", "exists", "readable", "images", "nested_archives", "missing", "errors"),
+    )
+    print_count_delta(
+        "media error classification delta",
+        before.get("media_error_classification", []),
+        after.get("media_error_classification", []),
+        ("Ext", "Category"),
+        ("Count",),
     )
 
 

@@ -217,6 +217,7 @@ scripts/collect_gds_preflight.sh \
 - 라이브러리별 series/file/Page=0 수
 - duplicate file path 구조
 - MediaError 분포
+- MediaError 원인 분류
 - 로그 기준 library scan 시간, file discovery 시간, 처리된 series/file 수
 - 로그 기준 slow reader request 수와 endpoint 분포
 - 느린 reader request의 file size, format, page count, cache 존재 여부
@@ -226,6 +227,7 @@ scripts/collect_gds_preflight.sh \
 - duplicate file path cleanup 후보 분류
 - JSON baseline 출력 시 `Pages=0`, duplicate, FK 상태를 재스캔 전후로 기계적으로 비교 가능
 - postflight gate 출력 시 SQLite integrity/FK, `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate, cross-series duplicate, MediaError 증가 여부를 명시적으로 판정
+- baseline 비교 출력에는 MediaError 원인 분류별 증감도 포함됩니다.
 
 스캔 로그만 따로 분석하려면 다음처럼 실행합니다. 기본 출력은 library/series 이름을 노출하지 않고 `library_key`, `series_key` 해시만 보여줍니다. reader request도 endpoint와 해시 기준으로만 요약합니다.
 

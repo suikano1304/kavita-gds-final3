@@ -14,6 +14,7 @@
 - BaseUrl 저장에서 `DbUpdateException`이 발생하면 `PRAGMA foreign_key_check` 결과 일부를 로그에 남기도록 했습니다.
 - 같은 volume 안에서 같은 파일 경로가 여러 chapter에 남은 경우, 이번 스캔에서 선택된 chapter만 보존하도록 cleanup을 보강했습니다.
 - 읽기 전용 진단 스크립트가 `PRAGMA foreign_key_check`와 duplicate file path cleanup 후보 분류를 출력하도록 확장했습니다.
+- 읽기 전용 진단 스크립트가 MediaError를 EPUB 구조 문제, PDF metadata/encryption 문제, archive 지원 문제, scanner 미인식 항목으로 분류하도록 확장했습니다.
 - preflight 수집 스크립트가 host architecture와 Docker engine 정보를 manifest에 기록해 Oracle A1 같은 환경별 startup 제보를 비교하기 쉽게 했습니다.
 - postflight 비교에 `--postflight-gates` 옵션을 추가해 integrity/FK/`Pages=0`/duplicate/MediaError 상태를 `PASS`, `WARN`, `FAIL`로 판정할 수 있게 했습니다.
 - `--check-archives` 결과를 JSON에도 기록해 직접 이미지가 있는 복구 가능 `Pages=0` archive와 nested archive를 postflight gate에서 분리할 수 있게 했습니다.
