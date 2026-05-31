@@ -209,7 +209,7 @@ scripts/collect_gds_preflight.sh \
   --label before
 ```
 
-preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다.
+preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다.
 
 운영 적용 후에는 같은 DB를 현재값으로 읽고 before JSON과 비교합니다.
 

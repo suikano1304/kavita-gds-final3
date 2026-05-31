@@ -139,6 +139,17 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
   echo "host_root=$host_root"
   echo "json=$json_file"
   echo "text=$text_file"
+  echo "host_uname=$(uname -a)"
+  echo "host_arch=$(uname -m)"
+  if command -v docker >/dev/null 2>&1; then
+    docker version --format 'docker_client_version={{.Client.Version}}' 2>/dev/null || true
+    docker version --format 'docker_server_version={{.Server.Version}}' 2>/dev/null || true
+    docker info --format 'docker_ostype={{.OSType}}' 2>/dev/null || true
+    docker info --format 'docker_architecture={{.Architecture}}' 2>/dev/null || true
+  fi
+  if docker compose version >/dev/null 2>&1; then
+    docker compose version 2>/dev/null | sed 's/^/docker_compose=/'
+  fi
   if [[ -n "$compare_json" ]]; then
     echo "compare_json=$compare_json"
   fi

@@ -238,5 +238,24 @@ TXT 파일은 파일 내부에서 추출할 표지가 없으므로 원본 `cover
 
 - 공식 Kavita 이미지가 아닙니다.
 - 기존 Kavita DB를 연결하기 전에는 백업을 권장합니다.
-- `arm64` 이미지는 빌드/manifest 검증과 QEMU entrypoint smoke test를 완료했습니다. Oracle A1 같은 native ARM 서버에서 기존 DB를 붙여 startup FK 오류가 나면 이미지 아키텍처보다 DB/migration 상태를 먼저 확인하세요.
+- `arm64` 이미지는 빌드/manifest 검증과 QEMU entrypoint smoke test를 완료했습니다. 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1 같은 native ARM 서버에서만 startup FK 오류가 나면 이미지 아키텍처보다 해당 서버의 DB/migration 상태, 기존 컨테이너 종료 상태, compose volume 연결을 먼저 확인하세요.
 - 이 repo에는 큰 binary 파일을 직접 commit하지 않습니다. 큰 파일은 Release asset으로만 배포합니다.
+
+## Oracle A1 startup FK 오류 확인
+
+`SQLite Error 19: 'FOREIGN KEY constraint failed'`가 startup 중 발생하는 경우, 먼저 기존 DB를 백업한 뒤 읽기 전용 진단만 실행하세요.
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /path/to/kavita.db \
+  --json-output /tmp/kavita-gds-diagnostics.json
+```
+
+간단히 SQLite만 확인할 수도 있습니다.
+
+```bash
+sqlite3 /path/to/kavita.db 'PRAGMA integrity_check;'
+sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
+```
+
+`0.9.0.2-3` 이후 이미지는 BaseUrl 저장 단계에서 FK 오류가 발생하면 `PRAGMA foreign_key_check` 결과 일부를 로그에 남깁니다. x86에서는 정상이고 Oracle 쪽에서만 실패한다면, 우선 새/이전 컨테이너가 같은 DB를 동시에 잡지 않았는지, compose의 `/kavita/config` volume이 의도한 DB를 가리키는지, 이전 이미지에서 일부 migration만 반영된 DB인지 확인하는 것이 좋습니다.

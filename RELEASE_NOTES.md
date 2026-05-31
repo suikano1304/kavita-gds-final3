@@ -30,6 +30,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - If BaseUrl persistence fails with a database update exception, Kavita logs `PRAGMA foreign_key_check` output to make existing DB damage or migration-state issues visible.
 - Same-volume duplicate file path cleanup now preserves the chapter selected by the current scan instead of retaining an arbitrary earlier duplicate.
 - The read-only diagnostic script now prints SQLite foreign-key violations and classifies duplicate file path groups into cleanup-safe and cross-series cases.
+- The preflight collector records host architecture and Docker engine details, which helps separate Oracle A1 environment reports from generic image architecture issues.
 - Built and packaged as `0.9.0.2-3` for `linux/amd64` and `linux/arm64`.
 
 ### 2026-05-31 GDS TXT fallback cover and scan debt recovery

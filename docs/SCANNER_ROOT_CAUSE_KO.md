@@ -377,7 +377,7 @@ Kavita.Server.Startup.Configure(...) Startup.cs:line 289
 - 해당 line은 운영 설정의 BaseUrl을 `ServerSetting`에 저장하는 코드였다.
 - BaseUrl 저장 자체가 외래키를 직접 건드리지는 않는다.
 - 더 가능성이 높은 경로는 startup manual migration 중 FK 오류가 먼저 발생했지만, 기존 코드가 migration 예외를 catch 후 계속 진행하면서 같은 EF context 또는 pooled context에 실패한 변경 상태가 남고, 이후 BaseUrl `SaveChanges()`에서 다시 표면화되는 경우다.
-- x86 NAS에서는 같은 이미지가 정상 기동되고 Oracle 쪽에서만 발생했다면, CPU 아키텍처 자체보다는 Oracle 서버의 기존 DB 상태, 기존 컨테이너와 새 컨테이너의 동시 접근, 또는 이전 이미지에서 생성된 특정 migration 상태 차이를 먼저 의심해야 한다.
+- 일반 x86/NAS에서는 같은 이미지가 정상 기동되고 Oracle 쪽에서만 발생했다면, CPU 아키텍처 자체보다는 Oracle 서버의 기존 DB 상태, 기존 컨테이너와 새 컨테이너의 동시 접근, compose volume이 다른 DB를 가리키는 문제, 또는 이전 이미지에서 생성된 특정 migration 상태 차이를 먼저 의심해야 한다.
 - 실제 DB 자체에 영구 FK 위반이 있는지는 `PRAGMA foreign_key_check;`로 확인해야 한다.
 
 적용한 보정:
@@ -395,6 +395,17 @@ Kavita.Server.Startup.Configure(...) Startup.cs:line 289
 sqlite3 /path/to/kavita.db 'PRAGMA integrity_check;'
 sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
 ```
+
+환경 비교용 preflight 수집:
+
+```bash
+scripts/collect_gds_preflight.sh \
+  --db /path/to/kavita.db \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label oracle-a1-startup
+```
+
+이 manifest에는 `host_arch`, `host_uname`, Docker client/server version, Docker architecture가 기록된다. x86/NAS 쪽 정상 사례와 Oracle 쪽 실패 사례를 비교할 때 이 값과 `foreign_key_check` 결과를 같이 보면 이미지 아키텍처 문제인지, DB/운영 환경 문제인지 더 빨리 분리할 수 있다.
 
 ## 원인 9: same-volume duplicate file path는 스캔 cleanup에서 살아남을 수 있음
 
