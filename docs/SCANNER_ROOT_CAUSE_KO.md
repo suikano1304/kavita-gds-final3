@@ -510,6 +510,19 @@ python3 scripts/analyze_kavita_reader_latency.py \
 
 2026-05-31 운영 로그 기준으로는 3초 이상 느린 reader 요청 8개 중 7개가 ZIP archive였고, 가장 느린 `reader/image` 요청들은 120-367MB archive 및 150-377MB cache folder와 연결됐다. 현재 cache가 남아 있는 항목은 사후 상태라 “요청 당시 이미 cache hit였다”는 뜻은 아니다. `CacheService.Ensure()`가 요청 처리 안에서 cache miss를 채운 뒤 같은 요청을 완료할 수 있기 때문이다.
 
+2026-05-31 17:45 재수집한 운영 baseline에서도 같은 결론이다.
+
+- slow request 25개 중 scanner endpoint가 아니라 reader endpoint가 상위권을 차지했다.
+- reader latency 상관분석 기준 slow reader request 8개 중 7개가 ZIP이었다.
+- 가장 느린 `/api/reader/image`는 약 24.3초였고, 354MB archive와 364MB cache folder에 연결됐다.
+
+따라서 사용자가 “느리다”고 느낀 지점은 최소 두 계층으로 분리해야 한다.
+
+- scan time: file discovery, changed propagation, series update
+- read time: archive open/cache extraction/rclone cold read
+
+두 지표를 섞으면 scanner patch 효과를 과소평가하거나 reader cache 문제를 scanner 문제로 오인하게 된다.
+
 ## 원인 12: MediaError는 scanner bug와 파일 구조 문제를 분리해야 함
 
 운영 DB의 MediaError를 `Extension`, `Comment`, `Details` 기준으로 분류하면 다음과 같다.
@@ -560,3 +573,9 @@ python3 scripts/analyze_kavita_reader_latency.py \
 - cover cache 재생성은 원본 GDS 경로가 아니라 Kavita config 경로에만 쓰기를 만든다.
 - source `cover.*`가 없는 series라도 기존 config cover cache를 삭제하지 않는다.
 - TXT series는 source cover가 없어도 스캔 오류로 남기지 않고, YAML/base64 또는 fallback cover 정책으로 일관되게 표시한다.
+
+운영 baseline 수집도 단계별로 분리한다.
+
+- 먼저 DB-only preflight로 integrity, FK, Pages=0, duplicate, MediaError를 확인한다.
+- 다음으로 `--check-archives`만 실행해 `Pages=0` archive가 파일 문제인지 DB debt인지 분리한다.
+- `--check-covers`는 rclone source cover probe가 많은 directory stat/list를 만들 수 있으므로 별도 단계로 실행하고, 전후 비교용 JSON만 gate에 사용한다.

@@ -14,6 +14,28 @@
 - `0.9.0.2-5` 후보의 `linux/amd64` startup smoke test와 `linux/arm64` manifest 확인은 완료됐다.
 - 운영 컨테이너는 아직 `local/kavita-gds:0.9.0.2-1`이므로, 운영 DB에서 최신 release/source의 회복/cleanup 효과는 아직 검증되지 않았다.
 
+## 2026-05-31 17:45 운영 baseline
+
+운영 컨테이너를 변경하지 않고 read-only preflight를 다시 수집했다.
+
+- DB-only report: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-db-only-diagnostics.json`
+- Archive report: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-archives-diagnostics.json`
+- Scan log summary: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-db-only-scan-log-summary.txt`
+- Reader latency summary: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-db-only-reader-latency-summary.txt`
+
+확인 결과:
+
+- `integrity_check`: `ok`
+- `foreign_key_check`: 위반 없음
+- 운영 DB row count: `Series 23856`, `MangaFile 136427`, `MediaError 637`
+- `Pages=0`: 49개, 세부는 CBZ 10개와 ZIP 39개
+- Archive validation: CBZ 10개는 nested archive 84개 구조, ZIP 39개는 내부 이미지 13,301개가 있어 회복 가능 debt
+- same-series/same-volume duplicate cleanup 후보: 26개 group
+- cross-series duplicate: 153개 group, 자동 삭제 제외 대상
+- slow reader request: 8개 중 7개가 ZIP이고, 가장 느린 `/api/reader/image`는 약 24.3초
+
+`--check-covers`를 archive 검사와 함께 한 번에 실행하면 rclone source cover probe가 길어질 수 있어, 최신 baseline에서는 DB-only와 archive validation을 분리했다. cover gate는 운영 적용 전후에 별도 단계로 실행한다.
+
 ## 완료 조건
 
 | Requirement | 완료 증거 | 현재 증거 | 판정 |
