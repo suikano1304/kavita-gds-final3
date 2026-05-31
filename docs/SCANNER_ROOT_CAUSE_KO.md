@@ -363,6 +363,54 @@ python3 scripts/diagnose_kavita_gds.py \
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
 - 이 패치는 `0.9.0.2-2` 배포 후보 이미지와 source tarball에 포함했다.
 
+## 원인 8: startup migration 실패가 BaseUrl 저장 FK 오류처럼 보일 수 있음
+
+제보 증상:
+
+```text
+Microsoft.Data.Sqlite.SqliteException: SQLite Error 19: 'FOREIGN KEY constraint failed'
+Kavita.Server.Startup.Configure(...) Startup.cs:line 289
+```
+
+해석:
+
+- 해당 line은 운영 설정의 BaseUrl을 `ServerSetting`에 저장하는 코드였다.
+- BaseUrl 저장 자체가 외래키를 직접 건드리지는 않는다.
+- 더 가능성이 높은 경로는 startup manual migration 중 FK 오류가 먼저 발생했지만, 기존 코드가 migration 예외를 catch 후 계속 진행하면서 같은 EF context 또는 pooled context에 실패한 변경 상태가 남고, 이후 BaseUrl `SaveChanges()`에서 다시 표면화되는 경우다.
+- x86 NAS에서는 같은 이미지가 정상 기동되고 Oracle 쪽에서만 발생했다면, CPU 아키텍처 자체보다는 Oracle 서버의 기존 DB 상태, 기존 컨테이너와 새 컨테이너의 동시 접근, 또는 이전 이미지에서 생성된 특정 migration 상태 차이를 먼저 의심해야 한다.
+- 실제 DB 자체에 영구 FK 위반이 있는지는 `PRAGMA foreign_key_check;`로 확인해야 한다.
+
+적용한 보정:
+
+- startup migration은 별도 DI scope에서 실행하고, BaseUrl 저장도 별도 DI scope에서 실행하도록 분리했다.
+- migration 예외를 더 이상 삼키지 않고 rethrow해 실제 실패 지점이 로그에 남도록 했다.
+- BaseUrl 저장에서 `DbUpdateException`이 발생하면 `PRAGMA foreign_key_check` 일부 결과를 로그에 남기도록 했다.
+- source commit: `6fa0173 fix: stabilize GDS startup and cleanup`
+- C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
+- 이 패치는 아직 `0.9.0.2-2` 공개 release에는 포함되지 않았다.
+
+운영자 진단 명령:
+
+```bash
+sqlite3 /path/to/kavita.db 'PRAGMA integrity_check;'
+sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
+```
+
+## 원인 9: same-volume duplicate file path는 스캔 cleanup에서 살아남을 수 있음
+
+현재 구조:
+
+- 같은 volume 안에서 같은 파일 경로가 여러 chapter에 붙어 있어도, 기존 cleanup은 “현재 스캔 결과에 존재하는 파일 경로”이면 각 chapter의 파일을 계속 보존할 수 있었다.
+- 운영 DB 기준 same-series/same-volume duplicate group은 일부 라이브러리에 남아 있으며, 같은 range와 같은 page 값이면 사용자가 보기에는 중복 chapter로 보일 수 있다.
+
+적용한 보정:
+
+- 같은 volume cleanup 중 이미 보존한 normalized file path는 다음 chapter에서 다시 보존하지 않도록 했다.
+- cross-series duplicate는 자료 구조 의도일 수 있어 자동 정리하지 않는다.
+- source commit: `6fa0173 fix: stabilize GDS startup and cleanup`
+- C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
+- 이 패치는 아직 `0.9.0.2-2` 공개 release에는 포함되지 않았다.
+
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.
@@ -371,7 +419,7 @@ python3 scripts/diagnose_kavita_gds.py \
 4. 기존 DB의 `Pages=0`, duplicate file path, media error를 읽기 전용 검증 쿼리로 분류한다. 1차 완료.
 5. GDS UI 제목 표시 누락과 cover cache 삭제 방어를 `0.9.0.2-2` 배포 후보에 포함한다. 완료.
 6. TXT no-cover는 오류로 처리하지 않고, YAML/base64 cover 반영 누락과 실제 no-cover fallback을 분리한다. 완료.
-7. same series/same volume/same range duplicate 26개 group은 repair 후보로 분리한다.
+7. same series/same volume/same range duplicate group은 cleanup patch를 다음 release에 포함하고, 운영 재스캔 후 감소 여부를 확인한다.
 8. cross-series duplicate 153개 group과 nested archive는 자동 수정하지 말고 자료 구조/분류 의도를 먼저 확인한다.
 
 ## 다음 검증 기준
