@@ -338,6 +338,46 @@ scripts/collect_gds_preflight.sh \
 - 현재 운영이 `0.9.0.2-1`이므로 최신 공개 이미지의 회복 효과는 아직 운영 DB에서 증명되지 않았습니다.
 - 운영 목표 완료를 위해서는 `0.9.0.2-5` 전환, 재스캔, postflight 비교가 남아 있습니다.
 
+## 19:07 최신 이미지 별도 스캔 smoke
+
+운영 컨테이너를 변경하지 않고 `0.9.0.2-5` 이미지를 운영 DB snapshot과 임시 config로 별도 기동했습니다.
+
+검증 구성:
+
+- 컨테이너: `kavita-gds-scan-smoke-0902-5`
+- 이미지: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`
+- 포트: `5017:5000`
+- config: LXC `/tmp/kavita-scan-smoke-0902-5-config`
+- media: `/mnt/gds2:/mnt/gds:ro`
+
+확인 결과:
+
+- `/api/health`: `Ok`
+- startup migration 완료
+- restart count `0`
+- 현재 운영 DB snapshot에서는 startup FK 실패가 재현되지 않음
+
+이후 텍스트 중심 라이브러리 force scan을 테스트 DB에만 요청했습니다. API 요청은 정상 enqueue됐지만, 로그는 file scan 시작 이후 추가 진행이 없었습니다.
+
+```text
+Beginning file scan on production-library-e
+Warning! production-library-e has metadata turned off
+```
+
+관찰:
+
+- 컨테이너는 healthy 상태를 유지했습니다.
+- worker thread 하나가 FUSE request 대기 상태로 보였습니다.
+- rclone service는 active였고, rclone 로그상 upload/delete/rename 징후는 없었습니다.
+- 테스트 컨테이너와 임시 config/DB는 부하를 남기지 않도록 제거했습니다.
+
+해석:
+
+- `0.9.0.2-5` startup은 현재 DB snapshot에서 정상입니다.
+- 대형 텍스트 라이브러리 force scan은 최신 이미지에서도 cold rclone/listing 조건에서는 file discovery가 병목이 될 수 있습니다.
+- 운영 전환 후 검증은 전체/대형 force scan부터 시작하지 말고, 작은 라이브러리나 특정 series scan부터 진행해야 합니다.
+- scanner 성능 판정은 `file discovery`와 `series update`를 분리해서 봐야 합니다.
+
 ## 승인 후 운영 전환 절차
 
 현재 운영 compose는 LXC 101의 `/opt/compose/kavita/docker-compose.yml`이고, 실행 중인 이미지는 `local/kavita-gds:0.9.0.2-1`입니다. 전환 대상 이미지는 LXC 101에 이미 받아져 있는 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`입니다. 아래 절차는 운영 컨테이너를 재시작하므로 명시적으로 승인한 뒤에만 실행합니다.

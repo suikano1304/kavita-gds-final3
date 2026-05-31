@@ -120,6 +120,39 @@ postflight gate 결과:
 - 그러나 운영 runtime이 아직 `0.9.0.2-1`이므로 `0.9.0.2-5`의 startup/FK 진단, duplicate cleanup, Pages=0 회복, TXT fallback cover 효과는 운영 DB에서 완료 증거가 아니다.
 - 목표 완료에는 운영 전환 후 같은 postflight gate를 통과하고, 작은 라이브러리부터 재스캔한 실제 개선 결과가 필요하다.
 
+## 2026-05-31 19:07 최신 이미지 스캔 smoke 반례
+
+운영 컨테이너를 변경하지 않고 `0.9.0.2-5` 이미지를 운영 DB snapshot과 임시 config로 별도 기동했다.
+
+- Test container: `kavita-gds-scan-smoke-0902-5`
+- Image: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`
+- Port: `5017:5000`
+- Config: LXC `/tmp/kavita-scan-smoke-0902-5-config`
+- Media mount: `/mnt/gds2:/mnt/gds:ro`
+- Startup: `/api/health` returned `Ok`
+- Startup DB state: migrations completed, no restart, no startup FK failure
+
+그 다음 운영 DB 사본에서 텍스트 중심 라이브러리 `libraryId=<redacted>` force scan을 API로 요청했다. 요청 자체는 `200`으로 enqueue됐지만, 로그는 다음 상태에서 진행되지 않았다.
+
+```text
+Beginning file scan on production-library-e
+Warning! production-library-e has metadata turned off
+```
+
+관찰:
+
+- 컨테이너는 `healthy`, restart count `0`이었다.
+- worker thread 중 하나가 FUSE request 대기 상태로 보였다.
+- rclone service는 active였고 업로드/삭제/rename 징후는 없었다.
+- 불필요한 rclone 부하를 남기지 않기 위해 테스트 컨테이너와 임시 config/DB는 제거했다.
+
+해석:
+
+- `0.9.0.2-5`는 현재 운영 DB snapshot으로 startup FK 문제를 재현하지 않았다.
+- 그러나 대형 텍스트 라이브러리 force scan은 최신 이미지에서도 cold rclone/listing 조건에서 file discovery 단계가 길게 멈출 수 있다.
+- 따라서 운영 전환 후 첫 검증은 대형/전체 force scan이 아니라 작은 라이브러리, 특정 series scan, 또는 이미 file discovery가 안정된 범위부터 진행해야 한다.
+- scanner 개선 검증은 series update 비용 감소와 file discovery/rclone 비용을 계속 분리해서 봐야 한다.
+
 ## 완료 조건
 
 | Requirement | 완료 증거 | 현재 증거 | 판정 |
@@ -134,7 +167,7 @@ postflight gate 결과:
 | duplicate cleanup | same-series/same-volume duplicate group이 운영 재스캔 후 감소 | 현재 same-series/same-volume group이 남아 있음. cleanup patch는 `0.9.0.2-5` 포함 | 미검증 |
 | cross-series duplicate 정책 | 자동 삭제하지 않고 수동 판단 대상으로 분리 | cross-series group 153개가 자동 cleanup 제외 대상으로 문서화됨 | 완료 |
 | startup FK 제보 분리 | x86/NAS 정상, Oracle A1 사례는 DB/migration/volume 상태 확인 대상으로 분리 | `0.9.0.2-5` 빈 config startup 통과. 제보는 Oracle A1 환경별 DB/migration/volume 비교 대상으로 분리 | 부분 완료 |
-| scan timing 병목 분리 | file discovery, series update, total time을 별도 지표로 수집 | scan log summary 도구와 실제 로그 분석 완료 | 완료 |
+| scan timing 병목 분리 | file discovery, series update, total time을 별도 지표로 수집 | scan log summary 도구와 실제 로그 분석, 별도 `0.9.0.2-5` smoke에서 force scan file discovery 대기 재현 | 완료 |
 | reader latency 분리 | scanner 병목과 reader cache/rclone 지연을 별도 지표로 수집 | slow reader request 8개 중 7개 ZIP, cache/file size 상관분석 완료 | 완료 |
 | MediaError 원인 분류 | scanner bug, EPUB 구조 문제, PDF 문제, archive 문제를 분리 | MediaError classification 도구와 운영 DB 분류 완료 | 완료 |
 | source/release/운영 일치 | 운영 이미지가 공개 release와 같은 source 기준으로 실행됨 | `0.9.0.2-5` 후보 빌드 완료. 운영은 아직 `0.9.0.2-1` | 미검증 |
