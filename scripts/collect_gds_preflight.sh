@@ -21,6 +21,8 @@ Options:
                        (default: DB directory/cache)
   --check-archives      Ask diagnose_kavita_gds.py to inspect Pages=0 ZIP/CBZ files
   --check-covers        Ask diagnose_kavita_gds.py to inspect cover state
+  --snapshot-db         Create a SQLite backup copy in the output directory and
+                       run diagnostics against the copy. Recommended for live DBs.
   --compare-json PATH   Compare this run with a previous diagnostics JSON
   --postflight-gates    Print PASS/WARN/FAIL gates for a --compare-json run
   --fail-on-gate-failure
@@ -43,6 +45,7 @@ cache_dir=""
 label="before"
 check_archives=false
 check_covers=false
+snapshot_db=false
 compare_json=""
 postflight_gates=false
 fail_on_gate_failure=false
@@ -88,6 +91,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --check-covers)
       check_covers=true
+      shift
+      ;;
+    --snapshot-db)
+      snapshot_db=true
       shift
       ;;
     --compare-json)
@@ -164,9 +171,22 @@ scan_log_json_file="$output_dir/${label}-scan-log-summary.json"
 request_log_json_file="$output_dir/${label}-request-log-summary.json"
 reader_latency_text_file="$output_dir/${label}-reader-latency-summary.txt"
 reader_latency_json_file="$output_dir/${label}-reader-latency-summary.json"
+analysis_db="$db"
+snapshot_file=""
+
+if [[ "$snapshot_db" == true ]]; then
+  if ! command -v sqlite3 >/dev/null 2>&1; then
+    echo "--snapshot-db requires sqlite3 in PATH" >&2
+    exit 1
+  fi
+  snapshot_file="$output_dir/${label}-kavita.db"
+  rm -f "$snapshot_file"
+  sqlite3 -readonly "$db" ".backup '$snapshot_file'"
+  analysis_db="$snapshot_file"
+fi
 
 diagnose_args=(
-  --db "$db"
+  --db "$analysis_db"
   --container-root "$container_root"
   --host-root "$host_root"
   --json-output "$json_file"
@@ -193,6 +213,11 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
 {
   echo "created_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "db=$db"
+  echo "analysis_db=$analysis_db"
+  echo "snapshot_db=$snapshot_db"
+  if [[ -n "$snapshot_file" ]]; then
+    echo "snapshot_file=$snapshot_file"
+  fi
   echo "container_root=$container_root"
   echo "host_root=$host_root"
   echo "json=$json_file"
@@ -224,6 +249,10 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
   if command -v stat >/dev/null 2>&1; then
     stat -c 'db_size_bytes=%s' "$db"
     stat -c 'db_mtime=%y' "$db"
+    if [[ -n "$snapshot_file" ]]; then
+      stat -c 'snapshot_size_bytes=%s' "$snapshot_file"
+      stat -c 'snapshot_mtime=%y' "$snapshot_file"
+    fi
   fi
   if [[ "$hash_db" == true ]]; then
     sha256sum "$db" | sed 's/^/db_sha256=/' || true
@@ -247,7 +276,7 @@ if [[ ${#scan_logs[@]} -gt 0 ]]; then
     > "$scan_log_text_file"
   python3 -B "$script_dir/analyze_kavita_reader_latency.py" \
     "${scan_logs[@]}" \
-    --db "$db" \
+    --db "$analysis_db" \
     --cache-dir "$cache_dir" \
     --json-output "$reader_latency_json_file" \
     > "$reader_latency_text_file"

@@ -140,6 +140,8 @@ docker logs -f kavita
 
 운영 DB를 수정하지 않고 GDS 스캔 상태를 집계하려면 `scripts/diagnose_kavita_gds.py`를 사용할 수 있습니다. 이 도구는 FK/integrity, 라이브러리별 `Pages=0`, 중복 파일 경로, MediaError뿐 아니라 startup 문제 분석에 필요한 EF migration history, manual migration history, 핵심 server setting, 주요 테이블 row count도 함께 출력합니다.
 
+운영 컨테이너가 켜진 live DB에서는 아래 직접 실행보다, 뒤의 `collect_gds_preflight.sh --snapshot-db` 방식을 우선 사용하세요.
+
 PVE host에서 실행하는 예:
 
 ```bash
@@ -172,7 +174,7 @@ python3 scripts/diagnose_kavita_gds.py \
   --json-output /tmp/kavita-gds-before.json
 ```
 
-운영 적용 전 필요한 파일을 한 번에 모으려면 preflight 스크립트를 사용할 수 있습니다.
+운영 적용 전 필요한 파일을 한 번에 모으려면 preflight 스크립트를 사용할 수 있습니다. live DB는 `--snapshot-db`로 먼저 사본을 만든 뒤 분석하는 것을 권장합니다.
 
 ```bash
 scripts/collect_gds_preflight.sh \
@@ -183,6 +185,7 @@ scripts/collect_gds_preflight.sh \
   --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
+  --snapshot-db \
   --check-archives
 ```
 
@@ -191,6 +194,7 @@ scripts/collect_gds_preflight.sh \
 - `before-diagnostics.txt`: 사람이 읽는 진단 출력
 - `before-diagnostics.json`: 재스캔 전후 비교용 JSON baseline
 - `before-manifest.txt`: DB 경로, 크기, mtime, 생성 시각
+- `before-kavita.db`: `--snapshot-db`를 지정한 경우 분석에 사용한 DB 사본
 - `before-docker-compose.yml`: 지정한 compose 파일 사본
 - `before-scan-log-summary.txt/json`: `--scan-log`를 지정한 경우 scan timing 요약
 - `before-request-log-summary.json`: `--scan-log`를 지정한 경우 slow reader request 요약
@@ -205,6 +209,7 @@ scripts/collect_gds_preflight.sh \
   --host-root /mnt/data/rclone/gds \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
+  --snapshot-db \
   --check-archives \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
   --postflight-gates

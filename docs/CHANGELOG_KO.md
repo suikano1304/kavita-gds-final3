@@ -16,6 +16,7 @@
 - 검증 컨테이너에서 `/kavita/wwwroot` 전체에 `localhost:5000`, `:5000/api`, Angular 개발모드 문자열이 남아 있지 않음을 확인했습니다.
 - production 환경 chunk가 document base URL 기반의 same-origin `/api/`, `/hubs/`를 사용함을 확인했습니다.
 - `linux/amd64`, `linux/arm64` OCI manifest를 새로 생성했습니다.
+- preflight collector에 `--snapshot-db` 옵션을 추가해 live SQLite DB를 직접 오래 열지 않고 backup copy로 진단할 수 있게 했습니다.
 
 ## 2026-05-31: `0.9.0.2-4` source/release 정렬
 

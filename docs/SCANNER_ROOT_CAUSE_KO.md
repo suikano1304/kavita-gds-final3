@@ -90,6 +90,8 @@ python3 scripts/diagnose_kavita_gds.py \
   --check-covers
 ```
 
+운영 중인 live DB는 WAL/SHM 대기로 직접 진단이 오래 멈출 수 있으므로, postflight 수집은 `collect_gds_preflight.sh --snapshot-db`를 우선 사용한다.
+
 ## 원인 1: 변경 상태가 시리즈 단위로 보존되지 않음
 
 파일:
@@ -421,7 +423,8 @@ sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
 scripts/collect_gds_preflight.sh \
   --db /path/to/kavita.db \
   --output-dir /tmp/kavita-gds-preflight \
-  --label oracle-a1-startup
+  --label oracle-a1-startup \
+  --snapshot-db
 ```
 
 이 manifest에는 `host_arch`, `host_uname`, Docker client/server version, Docker architecture가 기록된다. 진단 JSON에는 `ef_migration_summary`, `manual_migration_summary`, `server_settings`, `core_table_counts`가 들어간다. x86/NAS 쪽 정상 사례와 Oracle 쪽 실패 사례를 비교할 때 이 값과 `foreign_key_check` 결과를 같이 보면 이미지 아키텍처 문제인지, DB/운영 환경 문제인지 더 빨리 분리할 수 있다.
@@ -576,6 +579,6 @@ python3 scripts/analyze_kavita_reader_latency.py \
 
 운영 baseline 수집도 단계별로 분리한다.
 
-- 먼저 DB-only preflight로 integrity, FK, Pages=0, duplicate, MediaError를 확인한다.
+- 먼저 `--snapshot-db` DB-only preflight로 integrity, FK, Pages=0, duplicate, MediaError를 확인한다.
 - 다음으로 `--check-archives`만 실행해 `Pages=0` archive가 파일 문제인지 DB debt인지 분리한다.
 - `--check-covers`는 rclone source cover probe가 많은 directory stat/list를 만들 수 있으므로 별도 단계로 실행하고, 전후 비교용 JSON만 gate에 사용한다.

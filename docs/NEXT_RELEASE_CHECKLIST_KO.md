@@ -67,6 +67,7 @@ scripts/collect_gds_preflight.sh \
   --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
+  --snapshot-db \
   --check-archives \
   --check-covers
 ```
@@ -81,6 +82,7 @@ scripts/collect_gds_preflight.sh \
   --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
+  --snapshot-db \
   --check-archives \
   --check-covers \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \

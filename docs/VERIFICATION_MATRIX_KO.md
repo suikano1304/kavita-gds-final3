@@ -83,6 +83,7 @@ scripts/collect_gds_preflight.sh \
   --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
+  --snapshot-db \
   --check-archives \
   --check-covers
 ```
@@ -97,6 +98,7 @@ scripts/collect_gds_preflight.sh \
   --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
+  --snapshot-db \
   --check-archives \
   --check-covers \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
@@ -105,4 +107,6 @@ scripts/collect_gds_preflight.sh \
 
 postflight 결과에 `FAIL`이 없어야 한다. `WARN`은 남은 debt가 줄지 않았다는 뜻이므로, 목표 완료가 아니라 추가 분석 대상으로 남긴다.
 
-`--check-covers`를 before/after 양쪽에 넣으면 cover 관련 gate도 함께 출력된다. `GDS config cover references decreased`는 실패로 보고, `TXT missing-cover debt unchanged`는 fallback cover가 아직 운영 DB에서 검증되지 않았다는 뜻으로 남긴다.
+live DB는 `--snapshot-db`로 `/tmp` 사본을 만든 뒤 분석한다. 이 방식은 운영 DB를 수정하지 않으면서 WAL/SHM 대기로 preflight가 멈추는 문제를 피한다.
+
+`--check-covers`를 before/after 양쪽에 넣으면 cover 관련 gate도 함께 출력된다. 단, rclone source cover probe가 오래 걸릴 수 있으므로 필요하면 DB-only, `--check-archives`, `--check-covers`를 세 단계로 나눠 실행한다. `GDS config cover references decreased`는 실패로 보고, `TXT missing-cover debt unchanged`는 fallback cover가 아직 운영 DB에서 검증되지 않았다는 뜻으로 남긴다.
