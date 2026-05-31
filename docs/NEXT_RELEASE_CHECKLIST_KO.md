@@ -4,7 +4,7 @@
 
 현재 빌드 후보는 `0.9.0.2-5`이다. `0.9.0.2-4` 배포 이미지의 Web UI dev build 문제를 production UI hotfix로 보정한 multi-arch OCI archive를 다시 만들었다.
 
-현재 공개 runtime tag `v0.9.0.2-5`는 `fda1eab` 기준이다. 이후 `main`에는 preflight snapshot 안정화, MediaError full-count gate, scan churn gate, 문서 보강이 추가되어 있다. 다음 runtime 이미지를 다시 만들 때는 이 tooling 변경을 source archive와 release notes에도 포함해 source/release/운영 기준을 다시 맞춘다.
+현재 공개 runtime tag `v0.9.0.2-5`는 `fda1eab` 기준이다. 이후 `main`에는 preflight snapshot 안정화, MediaError full-count gate, scan churn gate, 빠른 cover gate와 source cover probe 분리, 문서 보강이 추가되어 있다. 다음 runtime 이미지를 다시 만들 때는 이 tooling 변경을 source archive와 release notes에도 포함해 source/release/운영 기준을 다시 맞춘다.
 
 ## 목적
 
@@ -95,7 +95,8 @@ scripts/collect_gds_preflight.sh \
 ## 완료 판정
 
 - `FAIL`이 없어야 한다.
-- `Pages=0`, same-series duplicate, TXT missing-cover debt가 `WARN`으로 남으면 목표 완료가 아니라 추가 분석 대상으로 둔다.
+- `Pages=0`, same-series duplicate, TXT config cover가 `WARN`으로 남으면 목표 완료가 아니라 추가 분석 대상으로 둔다.
+- source `cover.*`와 YAML hint까지 포함한 TXT missing-cover debt는 `--check-covers --check-cover-source-files`를 before/after 양쪽에 넣은 별도 느린 검사에서만 판정한다.
 - scan gate에서 non-forced processed series 또는 churn scan count가 `WARN`으로 남으면 재스캔 churn 감소가 아직 증명되지 않은 상태로 둔다.
 - cross-series duplicate는 자동 삭제 대상이 아니므로 증가하지 않는지만 확인한다.
 - cover cache gate가 실패하면 운영 config cover 보존 로직을 다시 봐야 한다.

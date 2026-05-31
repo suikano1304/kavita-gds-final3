@@ -20,7 +20,9 @@ Options:
   --cache-dir PATH      Kavita cache directory for reader latency correlation
                        (default: DB directory/cache)
   --check-archives      Ask diagnose_kavita_gds.py to inspect Pages=0 ZIP/CBZ files
-  --check-covers        Ask diagnose_kavita_gds.py to inspect cover state
+  --check-covers        Ask diagnose_kavita_gds.py to inspect config cover state
+  --check-cover-source-files
+                       Also probe source cover files and YAML cover hints
   --snapshot-db         Create a SQLite backup copy in the output directory and
                        run diagnostics against the copy. Recommended for live DBs.
                        Set KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS to override
@@ -49,6 +51,7 @@ cache_dir=""
 label="before"
 check_archives=false
 check_covers=false
+check_cover_source_files=false
 snapshot_db=false
 compare_json=""
 compare_scan_json=""
@@ -96,6 +99,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --check-covers)
       check_covers=true
+      shift
+      ;;
+    --check-cover-source-files)
+      check_cover_source_files=true
       shift
       ;;
     --snapshot-db)
@@ -158,6 +165,10 @@ if [[ "$postflight_gates" == true && -z "$compare_json" ]]; then
 fi
 if [[ "$fail_on_gate_failure" == true && "$postflight_gates" != true ]]; then
   echo "--fail-on-gate-failure requires --postflight-gates" >&2
+  exit 2
+fi
+if [[ "$check_cover_source_files" == true && "$check_covers" != true ]]; then
+  echo "--check-cover-source-files requires --check-covers" >&2
   exit 2
 fi
 for scan_log in "${scan_logs[@]}"; do
@@ -223,6 +234,9 @@ if [[ "$check_archives" == true ]]; then
 fi
 if [[ "$check_covers" == true ]]; then
   diagnose_args+=(--check-covers)
+fi
+if [[ "$check_cover_source_files" == true ]]; then
+  diagnose_args+=(--check-cover-source-files)
 fi
 if [[ -n "$compare_json" ]]; then
   diagnose_args+=(--compare-json "$compare_json")

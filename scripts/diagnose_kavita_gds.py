@@ -546,6 +546,7 @@ def build_json_summary(
     host_root: str,
     include_archive_validation: bool,
     include_cover_validation: bool,
+    check_cover_source_files: bool,
 ) -> dict[str, object]:
     integrity_check = con.execute("pragma integrity_check").fetchone()[0]
     duplicate_structure = [
@@ -579,8 +580,12 @@ def build_json_summary(
     if include_archive_validation:
         summary["pages0_archive_validation"] = pages0_archive_validation_rows(con, container_root, host_root)
     if include_cover_validation:
-        summary["cover_source_cache_risk"] = cover_source_cache_rows(con, container_root, host_root)
-        summary["txt_cover_state"] = txt_cover_state_rows(con, container_root, host_root)
+        summary["cover_source_cache_risk"] = cover_source_cache_rows(
+            con, container_root, host_root, check_cover_source_files
+        )
+        summary["txt_cover_state"] = txt_cover_state_rows(
+            con, container_root, host_root, check_cover_source_files
+        )
     return summary
 
 
@@ -749,12 +754,16 @@ def txt_cover_metric(summary: dict[str, object], field: str) -> int | None:
     rows = summary.get("txt_cover_state")
     if not isinstance(rows, list):
         return None
+    seen = False
     total = 0
     for row in rows:
         if not isinstance(row, dict):
             continue
+        if field not in row:
+            continue
+        seen = True
         total += int(row.get(field) or 0)
-    return total
+    return total if seen else None
 
 
 def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
@@ -889,6 +898,25 @@ def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
 
     txt_config_before = txt_cover_metric(before, "series_with_config_cover")
     txt_config_after = txt_cover_metric(after, "series_with_config_cover")
+    if None not in (txt_config_before, txt_config_after):
+        assert txt_config_before is not None
+        assert txt_config_after is not None
+        if txt_config_after < txt_config_before:
+            gate_line("FAIL", "TXT config covers decreased", {
+                "before": txt_config_before,
+                "after": txt_config_after,
+            })
+            failed = True
+        else:
+            gate_line("PASS", "TXT config covers did not decrease", {
+                "before": txt_config_before,
+                "after": txt_config_after,
+            })
+    else:
+        gate_line("WARN", "TXT config cover gate skipped", {
+            "reason": "run before and after diagnostics with --check-covers",
+        })
+
     txt_missing_before = txt_cover_metric(before, "series_without_any_cover_hint")
     txt_missing_after = txt_cover_metric(after, "series_without_any_cover_hint")
     if None not in (txt_config_before, txt_config_after, txt_missing_before, txt_missing_after):
@@ -896,13 +924,7 @@ def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
         assert txt_config_after is not None
         assert txt_missing_before is not None
         assert txt_missing_after is not None
-        if txt_config_after < txt_config_before:
-            gate_line("FAIL", "TXT config covers decreased", {
-                "before": txt_config_before,
-                "after": txt_config_after,
-            })
-            failed = True
-        elif txt_missing_after < txt_missing_before:
+        if txt_missing_after < txt_missing_before:
             gate_line("PASS", "TXT missing-cover debt decreased", {
                 "config_covers_before": txt_config_before,
                 "config_covers_after": txt_config_after,
@@ -925,8 +947,8 @@ def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
             })
             failed = True
     else:
-        gate_line("WARN", "TXT cover gate skipped", {
-            "reason": "run before and after diagnostics with --check-covers",
+        gate_line("WARN", "TXT missing-cover debt gate skipped", {
+            "reason": "run before and after diagnostics with --check-covers --check-cover-source-files",
         })
 
     return failed
@@ -989,7 +1011,12 @@ def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host
         print(key, counter)
 
 
-def cover_source_cache_rows(con: sqlite3.Connection, container_root: str, host_root: str) -> list[dict[str, object]]:
+def cover_source_cache_rows(
+    con: sqlite3.Connection,
+    container_root: str,
+    host_root: str,
+    check_source_files: bool,
+) -> list[dict[str, object]]:
     rows = list(con.execute("""
         select l.Id as LibraryId, s.Id as SeriesId, s.FolderPath, s.CoverImage as SeriesCover,
                v.CoverImage as VolumeCover, c.CoverImage as ChapterCover
@@ -1014,10 +1041,12 @@ def cover_source_cache_rows(con: sqlite3.Connection, container_root: str, host_r
         if row["ChapterCover"]:
             item["chapter_covers"].add(row["ChapterCover"])
 
-    summary: collections.Counter[tuple[int, bool, bool]] = collections.Counter()
+    summary: collections.Counter[tuple[int, bool | None, bool]] = collections.Counter()
     for series_id, item in series.items():
-        folder = mapped_path(str(item["folder"]), container_root, host_root)
-        has_source_cover = any(os.path.exists(os.path.join(folder, name)) for name in ("cover.jpg", "cover.png", "cover.webp"))
+        has_source_cover = None
+        if check_source_files:
+            folder = mapped_path(str(item["folder"]), container_root, host_root)
+            has_source_cover = any(os.path.exists(os.path.join(folder, name)) for name in ("cover.jpg", "cover.png", "cover.webp"))
         expected = {f"_s{series_id}.jpg", f"_s{series_id}.png", f"_s{series_id}.webp"}
         uses_expected_cache = (
             item["series_cover"] in expected
@@ -1033,15 +1062,22 @@ def cover_source_cache_rows(con: sqlite3.Connection, container_root: str, host_r
             "HasSourceCover": key[1],
             "UsesExpectedCacheName": key[2],
             "Series": count,
-            "RiskWithoutSourceCover": key[2] and not key[1],
+            "RiskWithoutSourceCover": key[2] and key[1] is False,
+            "SourceCoverProbe": check_source_files,
         }
-        for key, count in sorted(summary.items())
+        for key, count in sorted(summary.items(), key=lambda item: (item[0][0], str(item[0][1]), item[0][2]))
     ]
 
 
-def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
-    rows = cover_source_cache_rows(con, container_root, host_root)
+def summarize_cover_risk(
+    con: sqlite3.Connection,
+    container_root: str,
+    host_root: str,
+    check_source_files: bool,
+) -> None:
+    rows = cover_source_cache_rows(con, container_root, host_root, check_source_files)
     print("\n## cover source/cache risk")
+    print("source_cover_probe", check_source_files)
     print("(LibraryId, HasSourceCover, UsesExpectedCacheName) -> Series")
     risk_by_library: collections.Counter[int] = collections.Counter()
     for row in rows:
@@ -1052,7 +1088,12 @@ def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root
     print("risk_by_library", dict(sorted(risk_by_library.items())))
 
 
-def txt_cover_state_rows(con: sqlite3.Connection, container_root: str, host_root: str) -> list[dict[str, object]]:
+def txt_cover_state_rows(
+    con: sqlite3.Connection,
+    container_root: str,
+    host_root: str,
+    check_source_files: bool,
+) -> list[dict[str, object]]:
     rows = list(con.execute("""
         select l.Id as LibraryId, l.Name as LibraryName, s.Id as SeriesId,
                s.FolderPath, s.CoverImage as SeriesCover, mf.FilePath
@@ -1089,20 +1130,23 @@ def txt_cover_state_rows(con: sqlite3.Connection, container_root: str, host_root
 
         source_cover = False
         yaml_cover_kinds: collections.Counter[str] = collections.Counter()
-        for file_path in files:
-            has_cover_file, has_yaml_cover = has_source_cover_hint(file_path, str(item["folder"]))
-            source_cover = source_cover or has_cover_file
-            if has_yaml_cover:
-                yaml_cover_kinds[classify_yaml_cover_value(read_yaml_cover_value(file_path, str(item["folder"])))] += 1
+        if check_source_files:
+            for file_path in files:
+                has_cover_file, has_yaml_cover = has_source_cover_hint(file_path, str(item["folder"]))
+                source_cover = source_cover or has_cover_file
+                if has_yaml_cover:
+                    yaml_cover_kinds[classify_yaml_cover_value(read_yaml_cover_value(file_path, str(item["folder"])))] += 1
 
-        if source_cover:
-            summary[library_id]["series_with_source_cover_file"] += 1
-        for kind in sorted(yaml_cover_kinds):
-            summary[library_id][f"series_with_yaml_{kind}"] += 1
+            if source_cover:
+                summary[library_id]["series_with_source_cover_file"] += 1
+            for kind in sorted(yaml_cover_kinds):
+                summary[library_id][f"series_with_yaml_{kind}"] += 1
 
-        has_usable_yaml_cover = any(yaml_cover_kinds[kind] > 0 for kind in ("base64-like", "data-uri", "url"))
-        if not item["series_cover"] and not source_cover and not has_usable_yaml_cover:
-            summary[library_id]["series_without_any_cover_hint"] += 1
+            has_usable_yaml_cover = any(yaml_cover_kinds[kind] > 0 for kind in ("base64-like", "data-uri", "url"))
+            if not item["series_cover"] and not source_cover and not has_usable_yaml_cover:
+                summary[library_id]["series_without_any_cover_hint"] += 1
+        elif not item["series_cover"]:
+            summary[library_id]["series_without_config_cover"] += 1
 
     output: list[dict[str, object]] = []
     for library_id in sorted(summary):
@@ -1110,14 +1154,21 @@ def txt_cover_state_rows(con: sqlite3.Connection, container_root: str, host_root
         output.append({
             "LibraryId": library_id,
             "LibraryName": names[library_id],
+            "SourceCoverProbe": check_source_files,
             **dict(counter),
         })
     return output
 
 
-def summarize_text_cover_state(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
-    rows = txt_cover_state_rows(con, container_root, host_root)
+def summarize_text_cover_state(
+    con: sqlite3.Connection,
+    container_root: str,
+    host_root: str,
+    check_source_files: bool,
+) -> None:
+    rows = txt_cover_state_rows(con, container_root, host_root, check_source_files)
     print("\n## txt cover state")
+    print("source_cover_probe", check_source_files)
     if not rows:
         print("(none)")
         return
@@ -1134,7 +1185,8 @@ def main() -> None:
     parser.add_argument("--container-root", default="/mnt/gds", help="Media root stored in DB paths")
     parser.add_argument("--host-root", default="/mnt/gds2", help="Readable media root for this script")
     parser.add_argument("--check-archives", action="store_true", help="Open Pages=0 ZIP/CBZ files and classify contents")
-    parser.add_argument("--check-covers", action="store_true", help="Check source cover files vs expected cache names")
+    parser.add_argument("--check-covers", action="store_true", help="Check config cover state without probing source files")
+    parser.add_argument("--check-cover-source-files", action="store_true", help="Also probe source cover files and YAML cover hints")
     parser.add_argument("--json-output", help="Write machine-readable baseline summary to this JSON file")
     parser.add_argument("--compare-json", help="Compare current summary with a previous --json-output file")
     parser.add_argument("--postflight-gates", action="store_true", help="Print PASS/WARN/FAIL gates for a --compare-json run")
@@ -1144,6 +1196,8 @@ def main() -> None:
         parser.error("--postflight-gates requires --compare-json")
     if args.fail_on_gate_failure and not args.postflight_gates:
         parser.error("--fail-on-gate-failure requires --postflight-gates")
+    if args.check_cover_source_files and not args.check_covers:
+        parser.error("--check-cover-source-files requires --check-covers")
 
     con = connect_readonly(args.db)
     json_summary = build_json_summary(
@@ -1152,6 +1206,7 @@ def main() -> None:
         args.host_root,
         args.check_archives,
         args.check_covers,
+        args.check_cover_source_files,
     ) if args.json_output or args.compare_json else None
     print("integrity_check", con.execute("pragma integrity_check").fetchone()[0])
     summarize_foreign_keys(con)
@@ -1162,8 +1217,8 @@ def main() -> None:
     if args.check_archives:
         summarize_pages0_archives(con, args.container_root, args.host_root)
     if args.check_covers:
-        summarize_cover_risk(con, args.container_root, args.host_root)
-        summarize_text_cover_state(con, args.container_root, args.host_root)
+        summarize_cover_risk(con, args.container_root, args.host_root, args.check_cover_source_files)
+        summarize_text_cover_state(con, args.container_root, args.host_root, args.check_cover_source_files)
     if args.json_output:
         with open(args.json_output, "w", encoding="utf-8") as handle:
             json.dump(json_summary, handle, ensure_ascii=False, indent=2, sort_keys=True)

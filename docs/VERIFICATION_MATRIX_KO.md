@@ -12,7 +12,7 @@
 - 진단 도구와 postflight gate는 준비됐다.
 - `0.9.0.2-5` 후보는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋까지 포함해 빌드됐다.
 - `0.9.0.2-5` 공개 GHCR image의 `linux/amd64` startup smoke test와 `linux/arm64` manifest 확인은 완료됐다.
-- release tag `v0.9.0.2-5`는 `fda1eab`이고, 현재 `main`은 `5a697dd`다. `v0.9.0.2-5..main` 차이는 진단 스크립트와 문서 보강이며 Docker runtime image 변경은 아니다.
+- release tag `v0.9.0.2-5`는 `fda1eab`이고, 현재 `main`의 차이는 진단 스크립트와 문서 보강이며 Docker runtime image 변경은 아니다.
 - 운영 컨테이너는 아직 `local/kavita-gds:0.9.0.2-1`이므로, 운영 DB에서 최신 release/source의 회복/cleanup 효과는 아직 검증되지 않았다.
 
 ## 2026-05-31 17:55 공개 GHCR image smoke
@@ -61,7 +61,26 @@ self-check:
 - DB postflight self-check: `FAIL` 없음. `Pages=0`, recoverable archive, same-series duplicate는 같은 baseline 비교이므로 `WARN`으로 남음
 - scan postflight self-check: `FAIL` 없음. non-forced processed series와 churn scan count는 같은 baseline 비교이므로 `WARN`으로 남음
 
-`--check-covers`를 archive 검사와 함께 한 번에 실행하면 rclone source cover probe가 길어질 수 있어, 최신 baseline에서는 DB-only와 archive validation을 분리했다. cover gate는 운영 적용 전후에 별도 단계로 실행한다.
+`--check-covers`는 현재 DB/config cover reference만 확인하는 빠른 검사로 분리했다. rclone source `cover.*`와 `kavita.yaml` cover hint를 직접 확인하는 느린 검사는 `--check-cover-source-files`를 추가한 별도 단계로만 실행한다.
+
+## 2026-05-31 18:57 cover gate 기준
+
+운영 컨테이너를 변경하지 않고 `before-kavita.db` snapshot 기준으로 빠른 cover baseline을 별도 수집했다.
+
+- Diagnostics: `/tmp/kavita-gds-preflight/before-covers-fast-diagnostics.json`
+- Self-check: `/tmp/kavita-gds-preflight/before-covers-fast-selfcheck-diagnostics.json`
+- `source_cover_probe`: `False`
+- GDS config cover reference: `4,423`
+- TXT config cover series: `3,650`
+- TXT config cover 누락: production-library-e `2,061`, 웹소설 단행 `4`
+- postflight self-check: `FAIL` 없음
+- source cover/YAML hint 기반 missing-cover debt gate는 `--check-cover-source-files` 없이 실행했으므로 `WARN`으로 skip됨
+
+해석:
+
+- 일반 postflight에는 `--check-covers`를 넣어도 rclone source cover probe를 수행하지 않는다.
+- TXT title-cover fallback의 운영 효과는 운영 컨테이너를 `0.9.0.2-5`로 전환하고 대상 라이브러리를 재스캔한 뒤 같은 fast cover gate로 config cover 증가/감소를 확인한다.
+- 원본 `cover.*` 또는 YAML cover hint까지 확인해야 할 때만 `--check-covers --check-cover-source-files`를 별도 실행한다.
 
 ## 완료 조건
 
@@ -72,8 +91,8 @@ self-check:
 | nested archive 한계 분리 | nested archive CBZ를 자동 회복 대상에서 제외하고 자료 구조 문제로 분류 | 10개 CBZ가 내부 ZIP 84개 구조로 분류됨 | 완료 |
 | `kavita.yaml` 우선 메타데이터 | `EnableMetadata=false`에서도 YAML 안전 필드가 반영되고 `meta.Name`이 회차명을 덮지 않음 | 표본 검증과 source 보정 완료 | 부분 완료 |
 | GDS reader/title routing | GDS mixed-format에서 chapter-info/title rendering 예외가 사라짐 | `0.9.0.2-5` 후보에 이어보기/볼륨 표시와 오래된 file type migration 보강 포함. 운영 적용 전 | 부분 완료 |
-| cover cache 보존 | source `cover.*`가 없어도 기존 config cover cache가 불필요하게 삭제되지 않음 | cover risk 분류와 postflight cover gate 준비, 보정 포함 | 미검증 |
-| TXT fallback cover | 원본 cover 없는 TXT가 오류가 아니라 config cover fallback으로 처리됨 | TXT cover state JSON/gate 준비, fallback 보정 포함 | 미검증 |
+| cover cache 보존 | source `cover.*`가 없어도 기존 config cover cache가 불필요하게 삭제되지 않음 | fast cover gate 준비, 현재 GDS config cover reference 4,423개 baseline 확보 | 미검증 |
+| TXT fallback cover | 원본 cover 없는 TXT가 오류가 아니라 config cover fallback으로 처리됨 | fast TXT config cover gate 준비, 현재 TXT config cover 3,650개 baseline 확보 | 미검증 |
 | duplicate cleanup | same-series/same-volume duplicate group이 운영 재스캔 후 감소 | 현재 same-series/same-volume group이 남아 있음. cleanup patch는 `0.9.0.2-5` 포함 | 미검증 |
 | cross-series duplicate 정책 | 자동 삭제하지 않고 수동 판단 대상으로 분리 | cross-series group 153개가 자동 cleanup 제외 대상으로 문서화됨 | 완료 |
 | startup FK 제보 분리 | x86/NAS 정상, Oracle A1 사례는 DB/migration/volume 상태 확인 대상으로 분리 | `0.9.0.2-5` 빈 config startup 통과. 제보는 Oracle A1 환경별 DB/migration/volume 비교 대상으로 분리 | 부분 완료 |
@@ -137,6 +156,6 @@ postflight 결과에 `FAIL`이 없어야 한다. DB gate의 `WARN`은 남은 deb
 
 live DB는 `--snapshot-db`로 `/tmp` 사본을 만든 뒤 분석한다. 이 방식은 운영 DB를 수정하지 않으면서 WAL/SHM 대기로 preflight가 멈추는 문제를 피한다.
 
-`--check-covers`를 before/after 양쪽에 넣으면 cover 관련 gate도 함께 출력된다. 단, rclone source cover probe가 오래 걸릴 수 있으므로 필요하면 DB-only, `--check-archives`, `--check-covers`를 세 단계로 나눠 실행한다. `GDS config cover references decreased`는 실패로 보고, `TXT missing-cover debt unchanged`는 fallback cover가 아직 운영 DB에서 검증되지 않았다는 뜻으로 남긴다.
+`--check-covers`를 before/after 양쪽에 넣으면 DB/config 기준 cover gate도 함께 출력된다. `GDS config cover references decreased`와 `TXT config covers decreased`는 실패로 본다. source `cover.*`와 YAML hint까지 확인하는 `TXT missing-cover debt` gate는 `--check-covers --check-cover-source-files`를 before/after 양쪽에 넣은 경우에만 의미가 있으며, rclone mount에서는 오래 걸릴 수 있어 별도 단계로 실행한다.
 
 `--compare-scan-json`을 넣으면 scan log summary에도 postflight gate가 붙는다. `non-forced processed series increased` 또는 `non-forced churn scan count increased`는 scanner churn이 악화된 것으로 보고 실패 처리한다. 두 항목이 `WARN`이면 scanner가 더 나빠지지는 않았지만 목표한 재스캔 churn 감소가 아직 증명되지 않은 상태다.

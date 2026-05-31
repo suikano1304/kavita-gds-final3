@@ -212,7 +212,7 @@ scripts/collect_gds_preflight.sh \
   --check-archives
 ```
 
-preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. `--snapshot-db`를 넣으면 live DB를 직접 오래 열지 않고 output directory의 SQLite backup copy를 분석합니다. 같은 label을 다시 써도 이전 snapshot sidecar를 정리하고 임시 파일에 백업한 뒤 성공 시 교체합니다. 기본 snapshot timeout은 120초이며 느린 스토리지에서는 `KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS=300`처럼 조절합니다. JSON에는 `integrity_check`, `foreign_key_check`, `core_table_counts`, `ef_migration_summary`, `manual_migration_summary`, `server_settings`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. `--check-archives`를 넣으면 `pages0_archive_validation`도 JSON에 포함되어 직접 이미지가 있는 복구 가능 archive와 nested archive를 분리할 수 있습니다. `--check-covers`를 넣으면 `cover_source_cache_risk`와 `txt_cover_state`도 JSON에 포함되어 cover cache 보존과 TXT fallback cover 효과를 비교할 수 있습니다. `--scan-log`를 넣으면 library scan 시간, file discovery 시간, series update 시간, slow reader request, reader latency와 DB/cache 상태의 상관분석을 별도 summary로 남깁니다.
+preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. `--snapshot-db`를 넣으면 live DB를 직접 오래 열지 않고 output directory의 SQLite backup copy를 분석합니다. 같은 label을 다시 써도 이전 snapshot sidecar를 정리하고 임시 파일에 백업한 뒤 성공 시 교체합니다. 기본 snapshot timeout은 120초이며 느린 스토리지에서는 `KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS=300`처럼 조절합니다. JSON에는 `integrity_check`, `foreign_key_check`, `core_table_counts`, `ef_migration_summary`, `manual_migration_summary`, `server_settings`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. `--check-archives`를 넣으면 `pages0_archive_validation`도 JSON에 포함되어 직접 이미지가 있는 복구 가능 archive와 nested archive를 분리할 수 있습니다. `--check-covers`를 넣으면 DB/config 기준 `cover_source_cache_risk`와 `txt_cover_state`도 JSON에 포함되어 cover cache 보존과 TXT fallback cover 효과를 비교할 수 있습니다. source `cover.*`와 `kavita.yaml` cover hint까지 직접 확인하려면 `--check-covers --check-cover-source-files`를 별도 실행합니다. 이 원본 probe는 rclone mount에서 오래 걸릴 수 있으므로 일반 postflight에는 기본으로 넣지 않습니다. `--scan-log`를 넣으면 library scan 시간, file discovery 시간, series update 시간, slow reader request, reader latency와 DB/cache 상태의 상관분석을 별도 summary로 남깁니다.
 
 운영 적용 후에는 같은 DB를 현재값으로 읽고 before JSON과 비교합니다.
 
@@ -236,6 +236,35 @@ postflight gate는 다음 기준으로 봅니다.
 - `FAIL`: SQLite integrity/FK 위반, `Pages=0` 증가, 복구 가능 `Pages=0` archive 증가, same-series duplicate 증가, cross-series duplicate 증가, MediaError 증가
 - `WARN`: `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate가 줄지 않고 그대로 남음
 - `PASS`: 정합성 위반이 없고, 회복 대상이 줄었거나 최소한 증가하지 않음
+- cover gate는 `--check-covers`가 before/after 양쪽에 있을 때 DB/config 기준으로 판정합니다. 원본 cover/YAML hint까지 포함한 TXT missing-cover debt는 `--check-cover-source-files`를 같이 넣은 별도 느린 검사에서만 판정합니다.
+
+## 빠른 cover baseline
+
+2026-05-31 18:57 기준, 운영 컨테이너를 변경하지 않고 `before-kavita.db` snapshot으로 빠른 cover gate를 확인했습니다.
+
+명령 요지:
+
+```bash
+scripts/collect_gds_preflight.sh \
+  --db /tmp/kavita-gds-preflight/before-kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --cache-dir /mnt/data/docker/kavita/config/cache \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label before-covers-fast \
+  --check-covers
+```
+
+결과:
+
+- `source_cover_probe`: `False`
+- GDS config cover reference: `4,423`
+- TXT config cover series: `3,650`
+- production-library-e TXT series는 `2,061`개가 config cover 없이 남아 있습니다.
+- 웹소설 단행 TXT series는 `4`개가 config cover 없이 남아 있습니다.
+- 같은 baseline self-check에서 cover 관련 `FAIL`은 없었습니다.
+
+이 값은 운영 전환 후 TXT fallback cover와 cover cache 보존을 비교할 기준입니다.
 
 ## 승인 후 운영 전환 절차
 

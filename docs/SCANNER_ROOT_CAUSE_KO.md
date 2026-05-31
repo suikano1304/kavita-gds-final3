@@ -337,7 +337,8 @@ python3 scripts/diagnose_kavita_gds.py \
 - 위 세 가지가 모두 없으면 스캔 오류를 만들지 않고 GDS/TXT 전용 deterministic title-cover를 Kavita config `covers` 디렉터리에 생성한다.
 - title-cover를 만들더라도 GDS 원본에는 쓰지 않고, 외부 이미지 다운로드도 하지 않는다.
 - title-cover 생성은 source cover가 나중에 생기면 source cover가 다시 이기도록 fallback으로만 동작해야 한다.
-- 진단 스크립트의 `--check-covers` 출력에서 `txt cover state`를 보고, `series_without_any_cover_hint`만 수동 큐레이션 또는 fallback 생성 대상으로 삼는다.
+- 진단 스크립트의 빠른 `--check-covers` 출력에서는 DB/config cover 감소 여부를 본다.
+- source `cover.*`와 YAML hint까지 포함한 `series_without_any_cover_hint`는 `--check-covers --check-cover-source-files`를 별도 실행했을 때만 수동 큐레이션 또는 fallback 생성 대상으로 삼는다.
 - 한글 제목 렌더링을 위해 Docker image에 Nanum Gothic TTF를 포함해야 한다.
 
 적용한 보정:
@@ -581,4 +582,5 @@ python3 scripts/analyze_kavita_reader_latency.py \
 
 - 먼저 `--snapshot-db` DB-only preflight로 integrity, FK, Pages=0, duplicate, MediaError를 확인한다.
 - 다음으로 `--check-archives`만 실행해 `Pages=0` archive가 파일 문제인지 DB debt인지 분리한다.
-- `--check-covers`는 rclone source cover probe가 많은 directory stat/list를 만들 수 있으므로 별도 단계로 실행하고, 전후 비교용 JSON만 gate에 사용한다.
+- `--check-covers`는 DB/config cover reference만 확인하는 빠른 gate로 일반 postflight에 포함할 수 있다.
+- rclone source cover probe가 필요한 경우에만 `--check-covers --check-cover-source-files`를 별도 단계로 실행한다. 이 검사는 많은 directory stat/list를 만들 수 있다.

@@ -14,6 +14,8 @@
 - MediaError postflight gate가 상위 40개 출력이 아니라 전체 MediaError count를 기준으로 판정하도록 수정했습니다.
 - scan log summary에 before/after 비교와 non-forced scan churn gate를 추가했습니다.
 - `collect_gds_preflight.sh`에서 DB gate와 scan churn gate를 한 번에 실행할 수 있도록 `--compare-scan-json`을 추가했습니다.
+- `--check-covers`를 DB/config cover reference 중심의 빠른 검사로 바꾸고, rclone 원본 `cover.*`와 `kavita.yaml` cover hint 탐색은 새 `--check-cover-source-files` 옵션으로 분리했습니다.
+- cover postflight gate를 config cover 감소 여부와 원본 missing-cover debt 판정으로 나눠, 일반 postflight가 rclone source probe 때문에 멈추지 않도록 했습니다.
 - 로그인 화면에서 `localhost:5000/api`로 요청하는 `0.9.0.2-4` 증상 설명을 사용 설명서에 추가했습니다.
 
 ## 2026-05-31: `0.9.0.2-5` Web UI production hotfix
