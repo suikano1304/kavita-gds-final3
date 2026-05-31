@@ -415,16 +415,37 @@ du -sh /mnt/data/rclone/cache/gds-service
 확인 결과:
 
 - mount 옵션은 `--read-only`, `--dir-cache-time=1000h`, `--poll-interval=0`, `--vfs-cache-mode=full`입니다.
-- RC `core/stats`: `listed 180,305`, `errors 0`, `deletes 0`, `renames 0`, `serverSideMoves 0`
-- RC `vfs/stats`: metadata cache `dirs 40,708`, `files 117,162`
-- VFS disk cache: 581 files, 약 4.7GB
+- 반복 측정 전 RC `core/stats`: `listed 201,862`, `errors 0`, `deletes 0`, `renames 0`, `serverSideMoves 0`
+- 반복 측정 전 RC `vfs/stats`: metadata cache `dirs 40,708`, `files 145,847`
+- 반복 측정 전 VFS disk cache: 581 files, 약 4.7GB
 - host cache directory: 약 4.3GB
+
+같은 full-depth traversal을 다시 돌린 결과:
+
+- 이전에 120초 timeout에 걸렸던 두 번째 top-level child는 약 39초에 완료됐습니다.
+- 대신 다음 cold top-level child가 약 81초를 소비한 뒤 전체 120초 time limit에 도달했습니다.
+- 반복 측정 후 RC `core/stats`: `listed 203,425`, `errors 0`, `deletes 0`, `renames 0`, `serverSideMoves 0`
+- 반복 측정 후 RC `vfs/stats`: metadata cache `dirs 40,900`, `files 146,546`
+- 반복 측정 후 VFS disk cache: 586 files, 약 5.5GB
 
 해석:
 
 - GDS 원본 쓰기나 rename/delete 위험은 현재 관찰되지 않았습니다.
 - dir cache TTL이 짧아서 반복 listing이 발생하는 구조도 아닙니다.
 - 문제는 깊은 하위 tree를 처음 강제 순회할 때 많은 작은 file/directory metadata를 rclone/FUSE가 채워야 하는 비용입니다.
+- metadata warming은 실제로 일부 subtree 시간을 줄였지만, 아직 cache가 없는 다음 subtree로 병목이 이동했습니다.
+- 따라서 운영 전환 직후 전체 텍스트 라이브러리 force scan을 성공/실패 기준으로 삼으면 scanner 개선 효과를 제대로 분리하기 어렵습니다.
+- 필요한 경우 `profile_gds_tree.py` 또는 rclone RC refresh로 subtree 단위 warming을 계획하되, 이는 Google Drive listing 부하를 만들 수 있으므로 운영 스캔과 별도 단계로 다뤄야 합니다.
+
+## report 폴더 제보 해석 보정
+
+`/mnt/data/docker/kavita/report`에 받은 외부 제보의 compose 들여쓰기는 Discord 전달 과정에서 깨졌을 가능성이 큽니다. 따라서 해당 제보의 핵심은 YAML 문법 문제가 아니라, `0.9.0.2-4` 이미지에서 Web UI가 production bundle이 아니라 개발 bundle로 들어가 외부 브라우저가 `localhost:5000/api`를 호출하던 증상입니다.
+
+현재 정리:
+
+- `0.9.0.2-4` Web UI bundle 문제는 `0.9.0.2-5`에서 수정했습니다.
+- compose 문법 자체가 원인인지 판단하려면 원본 compose 파일이나 `docker compose config` 출력이 필요합니다.
+- 제보에 포함된 UI 증상만 놓고 보면 `localhost:5000` 호출 문제가 우선 원인입니다.
 
 ## 승인 후 운영 전환 절차
 

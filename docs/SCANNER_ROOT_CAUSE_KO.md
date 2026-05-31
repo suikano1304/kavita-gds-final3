@@ -509,9 +509,14 @@ rclone 상태:
 
 - mount 옵션은 이미 `--read-only`, `--dir-cache-time=1000h`, `--poll-interval=0`, `--vfs-cache-mode=full`이다.
 - 따라서 원본 쓰기 문제나 짧은 dir cache TTL 문제가 아니라, 아직 cache가 채워지지 않은 깊은 하위 tree를 처음 재귀 순회할 때 발생하는 비용으로 보는 편이 맞다.
-- RC `core/stats` 기준 `listed`는 180,305까지 증가했고, delete/rename/server-side move는 0이었다.
-- RC `vfs/stats` 기준 metadata cache는 `dirs 40,708`, `files 117,162`, disk cache는 약 581 files / 4.7GB였다.
+- 반복 측정 전 RC `core/stats` 기준 `listed`는 201,862였고, delete/rename/server-side move는 0이었다.
+- 반복 측정 전 RC `vfs/stats` 기준 metadata cache는 `dirs 40,708`, `files 145,847`, disk cache는 약 581 files / 4.7GB였다.
+- 같은 full-depth 측정을 다시 실행하자 이전에 120초 timeout에 걸렸던 두 번째 top-level child는 약 39초에 끝났지만, 다음 cold child가 약 81초를 소비한 뒤 전체 120초 timeout에 도달했다.
+- 반복 측정 후 RC `core/stats`의 `listed`는 203,425로 증가했고, delete/rename/server-side move는 계속 0이었다.
+- 반복 측정 후 RC `vfs/stats`의 metadata cache는 `dirs 40,900`, `files 146,546`, disk cache는 약 586 files / 5.5GB로 증가했다.
 - 이 수치는 분석/reader/scan 과정에서 이미 많은 directory metadata와 file cache가 쌓였음을 보여주지만, 특정 subtree의 cold traversal은 여전히 길게 걸릴 수 있다.
+- 즉 prewarming은 효과가 있지만, 한 번에 전체 문제를 없애는 방식이 아니라 아직 차가운 다음 subtree로 병목이 이동하는 방식이다.
+- 대형 force scan을 운영 검증의 첫 단계로 쓰면 scanner 개선 효과와 rclone metadata warming 비용이 섞인다. 최신 이미지 검증은 작은 범위 scan, 특정 series scan, no-change scan을 먼저 보고 필요한 경우 subtree 단위 prewarm을 별도 절차로 분리해야 한다.
 
 ## 원인 11: reader 지연은 scanner 병목과 분리해야 함
 
