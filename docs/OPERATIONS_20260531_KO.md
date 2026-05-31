@@ -200,22 +200,26 @@ https://github.com/suikano1304/Kavita-GDS
 전후 비교용 JSON baseline:
 
 ```bash
-python3 scripts/diagnose_kavita_gds.py \
+scripts/collect_gds_preflight.sh \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
-  --json-output /tmp/kavita-gds-before-090203.json
+  --compose-file compose/docker-compose.production.yml \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label before
 ```
 
-이 JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. 운영 적용 후 같은 명령으로 after 파일을 만든 뒤 `Pages=0`과 same-series/same-volume duplicate가 줄었는지 비교합니다.
+preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다.
+
+운영 적용 후에는 같은 DB를 현재값으로 읽고 before JSON과 비교합니다.
 
 ```bash
 python3 scripts/diagnose_kavita_gds.py \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
-  --compare-json /tmp/kavita-gds-before-090203.json \
-  --json-output /tmp/kavita-gds-after-090203.json
+  --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --json-output /tmp/kavita-gds-preflight/after-diagnostics.json
 ```
 
 ## 운영 체크리스트

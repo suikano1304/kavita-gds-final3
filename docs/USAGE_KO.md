@@ -172,6 +172,25 @@ python3 scripts/diagnose_kavita_gds.py \
   --json-output /tmp/kavita-gds-before.json
 ```
 
+운영 적용 전 필요한 파일을 한 번에 모으려면 preflight 스크립트를 사용할 수 있습니다.
+
+```bash
+scripts/collect_gds_preflight.sh \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --compose-file compose/docker-compose.production.yml \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label before
+```
+
+생성되는 파일:
+
+- `before-diagnostics.txt`: 사람이 읽는 진단 출력
+- `before-diagnostics.json`: 재스캔 전후 비교용 JSON baseline
+- `before-manifest.txt`: DB 경로, 크기, mtime, 생성 시각
+- `before-docker-compose.yml`: 지정한 compose 파일 사본
+
 재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
 
 ```bash
