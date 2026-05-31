@@ -211,7 +211,7 @@ scripts/collect_gds_preflight.sh \
   --check-archives
 ```
 
-preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. `--check-archives`를 넣으면 `pages0_archive_validation`도 JSON에 포함되어 직접 이미지가 있는 복구 가능 archive와 nested archive를 분리할 수 있습니다. `--scan-log`를 넣으면 library scan 시간, file discovery 시간, series update 시간을 별도 summary로 남깁니다.
+preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. `--check-archives`를 넣으면 `pages0_archive_validation`도 JSON에 포함되어 직접 이미지가 있는 복구 가능 archive와 nested archive를 분리할 수 있습니다. `--scan-log`를 넣으면 library scan 시간, file discovery 시간, series update 시간, slow reader request를 별도 summary로 남깁니다.
 
 운영 적용 후에는 같은 DB를 현재값으로 읽고 before JSON과 비교합니다.
 

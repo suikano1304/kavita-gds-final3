@@ -147,6 +147,7 @@ text_file="$output_dir/${label}-diagnostics.txt"
 manifest_file="$output_dir/${label}-manifest.txt"
 scan_log_text_file="$output_dir/${label}-scan-log-summary.txt"
 scan_log_json_file="$output_dir/${label}-scan-log-summary.json"
+request_log_json_file="$output_dir/${label}-request-log-summary.json"
 
 diagnose_args=(
   --db "$db"
@@ -183,6 +184,7 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
   if [[ ${#scan_logs[@]} -gt 0 ]]; then
     echo "scan_log_json=$scan_log_json_file"
     echo "scan_log_text=$scan_log_text_file"
+    echo "request_log_json=$request_log_json_file"
   fi
   echo "host_uname=$(uname -a)"
   echo "host_arch=$(uname -m)"
@@ -222,6 +224,7 @@ if [[ ${#scan_logs[@]} -gt 0 ]]; then
   python3 -B "$script_dir/summarize_kavita_scan_logs.py" \
     "${scan_logs[@]}" \
     --json-output "$scan_log_json_file" \
+    --request-json-output "$request_log_json_file" \
     > "$scan_log_text_file"
   echo "scan_logs=${scan_logs[*]}" >> "$manifest_file"
 fi

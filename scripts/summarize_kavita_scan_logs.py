@@ -14,6 +14,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 from statistics import median
 
 
@@ -30,6 +31,10 @@ FOUND_RE = re.compile(r"Found (?P<series>\d+) Series that need processing in (?P
 PROCESSING_RE = re.compile(r"Processing series (?P<series>.+) with (?P<files>\d+) files$")
 START_ALL_RE = re.compile(r"Starting Scan of All Libraries, Forced: (?P<forced>true|false)", re.IGNORECASE)
 TIMESTAMP_RE = re.compile(r"^\[Kavita\] \[(?P<timestamp>\d{4}-\d{2}-\d{2} [^\]]+)\]")
+REQUEST_RE = re.compile(
+    r"HTTP (?P<method>[A-Z]+) (?P<target>\"[^\"]+\"|\S+) responded "
+    r"(?P<status>\d+) in (?P<ms>\d+(?:\.\d+)?) ms"
+)
 
 
 @dataclass
@@ -55,6 +60,17 @@ class LibraryScan:
     updates: list[SeriesUpdate] = field(default_factory=list)
 
 
+@dataclass
+class RequestTiming:
+    timestamp: str | None
+    method: str
+    endpoint: str
+    status: int
+    ms: float
+    chapter_id: str | None = None
+    page: str | None = None
+
+
 def timestamp_from_line(line: str) -> str | None:
     match = TIMESTAMP_RE.search(line)
     if match:
@@ -64,6 +80,11 @@ def timestamp_from_line(line: str) -> str | None:
 
 def anonymize(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
+
+
+def sanitize_endpoint(path: str) -> str:
+    parts = [":id" if part.isdigit() else part for part in path.split("/")]
+    return "/".join(parts)
 
 
 def percentile(values: list[int], percent: float) -> int | None:
@@ -152,6 +173,32 @@ def parse_logs(paths: list[Path]) -> list[LibraryScan]:
     return scans
 
 
+def parse_request_logs(paths: list[Path]) -> list[RequestTiming]:
+    requests: list[RequestTiming] = []
+    for path in paths:
+        with path.open("r", encoding="utf-8", errors="ignore") as handle:
+            for line in handle:
+                request = REQUEST_RE.search(line)
+                if not request:
+                    continue
+
+                target = request.group("target").strip('"')
+                parsed = urlsplit(target)
+                query = parse_qs(parsed.query)
+                requests.append(
+                    RequestTiming(
+                        timestamp=timestamp_from_line(line),
+                        method=request.group("method"),
+                        endpoint=sanitize_endpoint(parsed.path),
+                        status=int(request.group("status")),
+                        ms=float(request.group("ms")),
+                        chapter_id=(query.get("chapterId") or [None])[0],
+                        page=(query.get("page") or [None])[0],
+                    )
+                )
+    return requests
+
+
 def scan_to_dict(
     scan: LibraryScan,
     show_library_names: bool,
@@ -195,6 +242,63 @@ def scan_to_dict(
     return result
 
 
+def request_to_dict(request: RequestTiming, show_request_ids: bool) -> dict[str, object]:
+    item: dict[str, object] = {
+        "timestamp": request.timestamp,
+        "method": request.method,
+        "endpoint": request.endpoint,
+        "status": request.status,
+        "ms": request.ms,
+    }
+    if request.chapter_id is not None:
+        item["chapter_key"] = anonymize(request.chapter_id)
+    if request.page is not None:
+        item["page"] = request.page
+    if show_request_ids:
+        item["chapter_id"] = request.chapter_id
+    return item
+
+
+def summarize_requests(
+    requests: list[RequestTiming],
+    slow_request_ms: float,
+    slow_limit: int,
+    show_request_ids: bool,
+) -> dict[str, object]:
+    slow = [request for request in requests if request.ms >= slow_request_ms]
+    by_endpoint: dict[str, dict[str, object]] = {}
+    for request in slow:
+        key = f"{request.method} {request.endpoint}"
+        item = by_endpoint.setdefault(
+            key,
+            {"endpoint": key, "count": 0, "max_ms": 0.0, "total_ms": 0.0},
+        )
+        item["count"] = int(item["count"]) + 1
+        item["max_ms"] = max(float(item["max_ms"]), request.ms)
+        item["total_ms"] = float(item["total_ms"]) + request.ms
+
+    for item in by_endpoint.values():
+        count = int(item["count"])
+        item["avg_ms"] = round(float(item["total_ms"]) / count, 3) if count else 0
+        item["max_ms"] = round(float(item["max_ms"]), 3)
+        item["total_ms"] = round(float(item["total_ms"]), 3)
+
+    return {
+        "request_count": len(requests),
+        "slow_request_ms": slow_request_ms,
+        "slow_request_count": len(slow),
+        "slowest_requests": [
+            request_to_dict(request, show_request_ids)
+            for request in sorted(slow, key=lambda item: item.ms, reverse=True)[:slow_limit]
+        ],
+        "slow_by_endpoint": sorted(
+            by_endpoint.values(),
+            key=lambda item: (int(item["count"]), float(item["max_ms"])),
+            reverse=True,
+        ),
+    }
+
+
 def print_table(scans: list[LibraryScan], show_library_names: bool) -> None:
     library_column = "library" if show_library_names else "library_key"
     print(f"start\t{library_column}\tforced\tfound\tprocessed\tproc_files\tfound_ms\ttotal_ms\tempty\tno_changes")
@@ -215,9 +319,12 @@ def print_table(scans: list[LibraryScan], show_library_names: bool) -> None:
 
 def print_summary(
     scans: list[LibraryScan],
+    requests: list[RequestTiming],
     show_library_names: bool,
     show_series_names: bool,
+    show_request_ids: bool,
     slow_limit: int,
+    slow_request_ms: float,
 ) -> None:
     print("## scan log summary")
     print({"library_scan_count": len(scans)})
@@ -251,6 +358,19 @@ def print_summary(
             item["library"] = library
         print(item)
 
+    print("\n## slow request summary")
+    request_summary = summarize_requests(requests, slow_request_ms, slow_limit, show_request_ids)
+    for key in ("request_count", "slow_request_ms", "slow_request_count"):
+        print({key: request_summary[key]})
+
+    print("\n## slowest requests")
+    for item in request_summary["slowest_requests"]:
+        print(item)
+
+    print("\n## slow requests by endpoint")
+    for item in request_summary["slow_by_endpoint"]:
+        print(item)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -259,14 +379,26 @@ def main() -> None:
     parser.add_argument("--table", action="store_true", help="Print a compact tab-separated table")
     parser.add_argument("--show-library-names", action="store_true", help="Include raw library names in output")
     parser.add_argument("--show-series-names", action="store_true", help="Include raw series names in slow-series output")
+    parser.add_argument("--show-request-ids", action="store_true", help="Include raw chapter ids in slow request output")
     parser.add_argument("--slow-limit", type=int, default=5, help="Slow series entries to keep per scan")
+    parser.add_argument("--slow-request-ms", type=float, default=1000.0, help="HTTP request threshold for slow request summary")
+    parser.add_argument("--request-json-output", help="Write machine-readable slow request summary to this JSON file")
     args = parser.parse_args()
 
     scans = parse_logs(args.logs)
+    requests = parse_request_logs(args.logs)
     if args.table:
         print_table(scans, args.show_library_names)
     else:
-        print_summary(scans, args.show_library_names, args.show_series_names, args.slow_limit)
+        print_summary(
+            scans,
+            requests,
+            args.show_library_names,
+            args.show_series_names,
+            args.show_request_ids,
+            args.slow_limit,
+            args.slow_request_ms,
+        )
 
     if args.json_output:
         payload = [
@@ -277,6 +409,13 @@ def main() -> None:
             json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
             handle.write("\n")
         print(f"\nWrote JSON summary: {args.json_output}")
+
+    if args.request_json_output:
+        payload = summarize_requests(requests, args.slow_request_ms, args.slow_limit, args.show_request_ids)
+        with open(args.request_json_output, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            handle.write("\n")
+        print(f"\nWrote request JSON summary: {args.request_json_output}")
 
 
 if __name__ == "__main__":

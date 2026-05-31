@@ -193,6 +193,7 @@ scripts/collect_gds_preflight.sh \
 - `before-manifest.txt`: DB 경로, 크기, mtime, 생성 시각
 - `before-docker-compose.yml`: 지정한 compose 파일 사본
 - `before-scan-log-summary.txt/json`: `--scan-log`를 지정한 경우 scan timing 요약
+- `before-request-log-summary.json`: `--scan-log`를 지정한 경우 slow reader request 요약
 
 재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
 
@@ -216,6 +217,7 @@ scripts/collect_gds_preflight.sh \
 - duplicate file path 구조
 - MediaError 분포
 - 로그 기준 library scan 시간, file discovery 시간, 처리된 series/file 수
+- 로그 기준 slow reader request 수와 endpoint 분포
 - `Pages=0` ZIP/CBZ의 내부 이미지 또는 nested archive 여부
 - 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
 - SQLite foreign key 위반 여부
@@ -223,7 +225,7 @@ scripts/collect_gds_preflight.sh \
 - JSON baseline 출력 시 `Pages=0`, duplicate, FK 상태를 재스캔 전후로 기계적으로 비교 가능
 - postflight gate 출력 시 SQLite integrity/FK, `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate, cross-series duplicate, MediaError 증가 여부를 명시적으로 판정
 
-스캔 로그만 따로 분석하려면 다음처럼 실행합니다. 기본 출력은 library/series 이름을 노출하지 않고 `library_key`, `series_key` 해시만 보여줍니다.
+스캔 로그만 따로 분석하려면 다음처럼 실행합니다. 기본 출력은 library/series 이름을 노출하지 않고 `library_key`, `series_key` 해시만 보여줍니다. reader request도 endpoint와 해시 기준으로만 요약합니다.
 
 ```bash
 python3 scripts/summarize_kavita_scan_logs.py \
@@ -231,6 +233,7 @@ python3 scripts/summarize_kavita_scan_logs.py \
 ```
 
 로컬에서 이름까지 확인해야 할 때만 `--show-library-names` 또는 `--show-series-names`를 추가합니다.
+느린 reader request 기준값은 기본 `1000ms`입니다. 기준을 바꾸려면 `--slow-request-ms 3000`처럼 지정합니다. raw chapter id가 필요할 때만 `--show-request-ids`를 붙입니다.
 
 ## TXT 커버 정책
 
