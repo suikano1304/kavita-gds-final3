@@ -2,9 +2,20 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-0.9.0.2-4`
+현재 공개 릴리즈: `kavita-gds-0.9.0.2-5`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-05-31: `0.9.0.2-5` Web UI production hotfix
+
+아래 변경은 `0.9.0.2-5` 배포 후보에 포함했습니다.
+
+- `0.9.0.2-4` Docker image의 Web UI가 production 번들이 아니라 개발 번들로 포함되어, 외부 브라우저에서 `localhost:5000/api`를 호출하던 문제를 수정했습니다.
+- Angular `dist`를 삭제한 뒤 production UI를 다시 빌드했습니다.
+- Docker image 빌드 시 기존 `/kavita/wwwroot`를 삭제하고 새 production UI만 복사하도록 했습니다.
+- 검증 컨테이너에서 `/kavita/wwwroot` 전체에 `localhost:5000`, `:5000/api`, Angular 개발모드 문자열이 남아 있지 않음을 확인했습니다.
+- production 환경 chunk가 document base URL 기반의 same-origin `/api/`, `/hubs/`를 사용함을 확인했습니다.
+- `linux/amd64`, `linux/arm64` OCI manifest를 새로 생성했습니다.
 
 ## 2026-05-31: `0.9.0.2-4` source/release 정렬
 

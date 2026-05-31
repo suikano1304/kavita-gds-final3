@@ -28,7 +28,7 @@ docker-image/kavita-gds.oci.tar
 권장 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-4
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-5
 ```
 
 GHCR publish workflow:
@@ -41,12 +41,13 @@ GHCR publish workflow:
 
 ## 검증 내용
 
-- scanfix 소스 스냅샷 기준으로 빌드했습니다.
-- `linux-x64`와 `linux-arm64` self-contained runtime publish를 생성했습니다.
+- `0.9.0.2-4` multi-arch image를 기준으로 production Web UI hotfix layer를 적용했습니다.
+- Angular `dist`와 image의 `/kavita/wwwroot`를 정리한 뒤 production UI만 포함했습니다.
 - Docker Buildx로 `linux/amd64`, `linux/arm64` OCI image index를 생성했습니다.
 - OCI index에 두 플랫폼이 모두 포함된 것을 확인했습니다.
-- `linux/amd64` 이미지는 `0.9.0.2-4` 임시 컨테이너로 기동 검증했습니다.
+- `linux/amd64` 이미지는 `0.9.0.2-5` 임시 컨테이너로 기동 검증했습니다.
 - `linux/arm64` 이미지는 OCI manifest 포함과 QEMU 기반 image build 경로를 검증했습니다.
+- `/kavita/wwwroot` 전체에서 `localhost:5000`, `:5000/api`, Angular development mode 문자열이 없는 것을 확인했습니다.
 - 제목 기반 TXT fallback cover 생성을 위해 Docker image에 Nanum Gothic 폰트를 포함했습니다.
 - 중간 테스트 이미지와 webtoon patch tree는 배포 패키지에 넣지 않았습니다.
 - 큰 binary 파일은 Git repo에 직접 commit하지 않고 GitHub Release asset으로만 배포합니다.

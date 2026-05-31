@@ -2,7 +2,7 @@
 
 This release provides the GDS scanfix build as a multi-platform OCI image archive.
 
-Version: `0.9.0.2-4`
+Version: `0.9.0.2-5`
 
 ## Included Platforms
 
@@ -21,11 +21,20 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
 - `linux/amd64` image startup was smoke-tested locally.
 - `linux/arm64` image build path and manifest were verified; native ARM validation should still be done on the target server.
-- `linux/amd64` container startup smoke test passed for `0.9.0.2-4`.
+- `linux/amd64` container startup smoke test passed for `0.9.0.2-5`.
 - The OCI manifest list was verified to contain both `linux/amd64` and `linux/arm64`.
 - The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 `0.9.0.2-5` Web UI production hotfix
+
+- Fixed the public Docker image Web UI bundle so it uses the production environment.
+- The broken `0.9.0.2-4` image could call `localhost:5000/api` from the browser when accessed through a host port such as `5657:5000`.
+- Rebuilt the Angular UI after deleting stale `dist` output, then rebuilt the image after deleting the old `/kavita/wwwroot` contents.
+- Verified the container no longer contains `localhost:5000`, `:5000/api`, or Angular development-mode strings in `/kavita/wwwroot`.
+- Verified the production environment chunk uses the document base URL and resolves API calls as same-origin `/api/`.
+- Built a new `linux/amd64` and `linux/arm64` OCI archive for `0.9.0.2-5`.
 
 ### 2026-05-31 `0.9.0.2-4` source/release alignment
 
@@ -117,7 +126,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
-- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-4`.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`.
 
 ## Caveat
 
