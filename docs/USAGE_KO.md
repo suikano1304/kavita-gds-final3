@@ -281,6 +281,19 @@ TXT 파일은 파일 내부에서 추출할 표지가 없으므로 원본 `cover
 - `arm64` 이미지는 빌드/manifest 검증까지 완료했습니다. 현재 startup FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 native ARM 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 나면 이미지 아키텍처보다 해당 서버의 DB/migration 상태, 기존 컨테이너 종료 상태, compose volume 연결을 먼저 확인하세요.
 - 이 repo에는 큰 binary 파일을 직접 commit하지 않습니다. 큰 파일은 Release asset으로만 배포합니다.
 
+## 로그인 화면에서 localhost:5000으로 요청하는 경우
+
+브라우저 콘솔에 `localhost:5000/api/... ERR_CONNECTION_REFUSED`가 보이거나, 로그인 화면에서 `Something unexpected went wrong`, `You are not authorized to view this page`, `errors.generic`이 같이 뜨면 compose 들여쓰기보다 이미지 버전을 먼저 확인하세요.
+
+`0.9.0.2-4` 이미지는 Web UI가 개발 번들로 들어가 외부 브라우저에서 API를 `localhost:5000`으로 호출할 수 있습니다. 이 문제는 `0.9.0.2-5`에서 production UI 번들로 수정했습니다.
+
+```bash
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-5
+docker compose up -d
+```
+
+컨테이너 안의 `appsettings.json`에서 `Port: 5000`은 정상입니다. Docker compose의 `ports`에서 `5657:5000`처럼 외부 포트만 매핑하면 됩니다.
+
 ## Oracle A1 startup FK 오류 확인
 
 `SQLite Error 19: 'FOREIGN KEY constraint failed'`가 startup 중 발생하는 경우, 먼저 기존 DB를 백업한 뒤 읽기 전용 진단만 실행하세요.
