@@ -89,6 +89,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드 노트
 - [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md): 커버 복구와 YAML 적용 검증 운영 기록
 - [docs/SCANNER_ROOT_CAUSE_KO.md](docs/SCANNER_ROOT_CAUSE_KO.md): GDS 스캐너 병목/오동작 근본 원인 분석
+- [docs/VERIFICATION_MATRIX_KO.md](docs/VERIFICATION_MATRIX_KO.md): 목표 완료 판단용 검증 매트릭스
 - [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔 상태 진단 도구
 - [scripts/summarize_kavita_scan_logs.py](scripts/summarize_kavita_scan_logs.py): 읽기 전용 scan log 및 slow reader request timing 요약 도구
 - [scripts/analyze_kavita_reader_latency.py](scripts/analyze_kavita_reader_latency.py): 느린 reader 요청과 DB/cache 상태 상관분석 도구
