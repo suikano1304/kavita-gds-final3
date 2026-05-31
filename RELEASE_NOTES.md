@@ -2,7 +2,7 @@
 
 This release provides the GDS scanfix build as a multi-platform OCI image archive.
 
-Version: `0.9.0.2-5`
+Version: `0.9.0.2-6`
 
 ## Included Platforms
 
@@ -21,11 +21,20 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
 - `linux/amd64` image startup was smoke-tested locally.
 - `linux/arm64` image build path and manifest were verified; native ARM validation should still be done on the target server.
-- `linux/amd64` container startup smoke test passed for `0.9.0.2-5`.
+- `linux/amd64` container startup smoke test passed for `0.9.0.2-6`.
 - The OCI manifest list was verified to contain both `linux/amd64` and `linux/arm64`.
 - The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 `0.9.0.2-6` mixed-format word-count hotfix
+
+- Fixed the word-count analyzer so an EPUB-format series skips non-EPUB files instead of opening PDF/TXT files with the EPUB reader.
+- This prevents misleading "There was an issue counting words on an epub" errors when a GDS mixed-format series contains non-EPUB chapters.
+- Added a regression test for non-EPUB files inside an EPUB-format series.
+- Verified `linux/amd64` and `linux/arm64` self-contained publish.
+- Built a new multi-platform OCI archive with both `linux/amd64` and `linux/arm64`.
+- Passed a local `linux/amd64` startup smoke test and confirmed the Web UI bundle does not contain `localhost:5000`, `:5000/api`, or Angular development-mode strings.
 
 ### 2026-05-31 `0.9.0.2-5` Web UI production hotfix
 
