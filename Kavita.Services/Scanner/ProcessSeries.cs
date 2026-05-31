@@ -681,6 +681,8 @@ public class ProcessSeries(
 
     private async Task UpdateChapters(UpdateChapterArgs args)
     {
+        var preferredChapterByFile = new Dictionary<string, Chapter>();
+
         // Add new chapters
         foreach (var info in args.ParsedInfos)
         {
@@ -732,6 +734,7 @@ public class ProcessSeries(
 
             // Add files
             AddOrUpdateFileForChapter(chapter, info, args.ForceUpdate, args.Series.Library?.Type == LibraryType.GDS);
+            preferredChapterByFile[Parser.NormalizePath(info.FullFilePath)] = chapter;
 
             chapter.Number = info.LowestChapter.ToString(CultureInfo.InvariantCulture);
             chapter.MinNumber = info.LowestChapter;
@@ -784,10 +787,10 @@ public class ProcessSeries(
             chapter.HardcoverId = info.HardcoverId ?? 0;
         }
 
-        RemoveChapters(args.Volume, args.ParsedInfos);
+        RemoveChapters(args.Volume, args.ParsedInfos, preferredChapterByFile);
     }
 
-    private void RemoveChapters(Volume volume, IList<ParserInfo> parsedInfos)
+    private void RemoveChapters(Volume volume, IList<ParserInfo> parsedInfos, IReadOnlyDictionary<string, Chapter> preferredChapterByFile)
     {
         // Chapters to remove after enumeration
         var chaptersToRemove = new List<Chapter>();
@@ -800,6 +803,9 @@ public class ProcessSeries(
             .Distinct()
             .ToList();
 
+        var parsedFiles = parsedInfos
+            .Select(p => Parser.NormalizePath(p.FullFilePath))
+            .ToHashSet();
         var seenFilesInVolume = new HashSet<string>();
         foreach (var existingChapter in existingChapters)
         {
@@ -816,8 +822,14 @@ public class ProcessSeries(
                     .Where(f =>
                     {
                         var normalizedPath = Parser.NormalizePath(f.FilePath);
-                        return parsedInfos.Any(p => Parser.NormalizePath(p.FullFilePath) == normalizedPath)
-                               && seenFilesInVolume.Add(normalizedPath);
+                        if (!parsedFiles.Contains(normalizedPath)) return false;
+                        if (preferredChapterByFile.TryGetValue(normalizedPath, out var preferredChapter))
+                        {
+                            return ReferenceEquals(preferredChapter, existingChapter)
+                                   || preferredChapter.Id != 0 && preferredChapter.Id == existingChapter.Id;
+                        }
+
+                        return seenFilesInVolume.Add(normalizedPath);
                     })
                     .OrderByNatural(f => f.FilePath)
                     .ToList();
