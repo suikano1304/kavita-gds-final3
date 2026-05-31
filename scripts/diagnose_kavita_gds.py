@@ -332,7 +332,12 @@ def summarize_duplicate_cleanup_candidates(con: sqlite3.Connection) -> None:
     print_rows("duplicate cleanup candidates", duplicate_cleanup_candidate_rows(con))
 
 
-def build_json_summary(con: sqlite3.Connection) -> dict[str, object]:
+def build_json_summary(
+    con: sqlite3.Connection,
+    container_root: str,
+    host_root: str,
+    include_archive_validation: bool,
+) -> dict[str, object]:
     integrity_check = con.execute("pragma integrity_check").fetchone()[0]
     duplicate_structure = [
         {
@@ -347,7 +352,7 @@ def build_json_summary(con: sqlite3.Connection) -> dict[str, object]:
         }
         for key, count in sorted(duplicate_structure_counter(con).items())
     ]
-    return {
+    summary: dict[str, object] = {
         "integrity_check": integrity_check,
         "foreign_key_check": rows_to_dicts(foreign_key_rows(con)),
         "libraries": rows_to_dicts(library_rows(con)),
@@ -357,6 +362,9 @@ def build_json_summary(con: sqlite3.Connection) -> dict[str, object]:
         "duplicate_cleanup_candidates": rows_to_dicts(duplicate_cleanup_candidate_rows(con)),
         "media_errors_by_ext_comment": rows_to_dicts(media_error_rows(con)),
     }
+    if include_archive_validation:
+        summary["pages0_archive_validation"] = pages0_archive_validation_rows(con, container_root, host_root)
+    return summary
 
 
 def row_key(row: dict[str, object], fields: tuple[str, ...]) -> tuple[object, ...]:
@@ -431,6 +439,13 @@ def print_json_comparison(before_path: str, after: dict[str, object]) -> None:
         ("LibraryId", "LibraryName", "Ext", "Kind"),
         ("Groups", "RowRefs", "SamePageGroups", "SameRangeGroups"),
     )
+    print_count_delta(
+        "pages0 archive validation delta",
+        before.get("pages0_archive_validation", []),
+        after.get("pages0_archive_validation", []),
+        ("LibraryId", "Ext"),
+        ("files", "exists", "readable", "images", "nested_archives", "missing", "errors"),
+    )
 
 
 def sum_count(rows: list[dict[str, object]], field: str, kind: str | None = None) -> int:
@@ -448,6 +463,25 @@ def gate_line(status: str, name: str, details: dict[str, object]) -> None:
         "gate": name,
         **details,
     })
+
+
+def recoverable_pages0_archive_count(summary: dict[str, object]) -> int | None:
+    rows = summary.get("pages0_archive_validation")
+    if not isinstance(rows, list):
+        return None
+
+    total = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        files = int(row.get("files") or 0)
+        images = int(row.get("images") or 0)
+        nested_archives = int(row.get("nested_archives") or 0)
+        errors = int(row.get("errors") or 0)
+        missing = int(row.get("missing") or 0)
+        if images > 0 and nested_archives == 0 and errors == 0 and missing == 0:
+            total += files
+    return total
 
 
 def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
@@ -481,6 +515,30 @@ def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
     else:
         gate_line("FAIL", "Pages=0 debt increased", {"before": pages0_before, "after": pages0_after})
         failed = True
+
+    recoverable_pages0_before = recoverable_pages0_archive_count(before)
+    recoverable_pages0_after = recoverable_pages0_archive_count(after)
+    if recoverable_pages0_before is not None and recoverable_pages0_after is not None:
+        if recoverable_pages0_after < recoverable_pages0_before:
+            gate_line("PASS", "recoverable Pages=0 archives decreased", {
+                "before": recoverable_pages0_before,
+                "after": recoverable_pages0_after,
+            })
+        elif recoverable_pages0_after == recoverable_pages0_before:
+            gate_line("WARN", "recoverable Pages=0 archives unchanged", {
+                "before": recoverable_pages0_before,
+                "after": recoverable_pages0_after,
+            })
+        else:
+            gate_line("FAIL", "recoverable Pages=0 archives increased", {
+                "before": recoverable_pages0_before,
+                "after": recoverable_pages0_after,
+            })
+            failed = True
+    else:
+        gate_line("WARN", "recoverable Pages=0 archive gate skipped", {
+            "reason": "run before and after diagnostics with --check-archives",
+        })
 
     same_dup_before = sum_count(
         before.get("duplicate_cleanup_candidates", []),
@@ -540,7 +598,7 @@ def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
     return failed
 
 
-def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+def pages0_archive_validation_rows(con: sqlite3.Connection, container_root: str, host_root: str) -> list[dict[str, object]]:
     rows = list(con.execute("""
         select l.Id as LibraryId, lower(coalesce(mf.Extension, '')) as Ext, mf.FilePath
         from MangaFile mf
@@ -575,12 +633,26 @@ def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host
         except Exception:
             stats[key]["errors"] += 1
 
+    return [
+        {
+            "LibraryId": key[0],
+            "Ext": key[1],
+            **dict(counter),
+        }
+        for key, counter in sorted(stats.items())
+    ]
+
+
+def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+    rows = pages0_archive_validation_rows(con, container_root, host_root)
     print("\n## pages0 archive validation")
-    if not stats:
+    if not rows:
         print("(none)")
         return
-    for key, counter in sorted(stats.items()):
-        print(key, dict(counter))
+    for row in rows:
+        key = (row["LibraryId"], row["Ext"])
+        counter = {k: v for k, v in row.items() if k not in {"LibraryId", "Ext"}}
+        print(key, counter)
 
 
 def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
@@ -710,7 +782,12 @@ def main() -> None:
         parser.error("--fail-on-gate-failure requires --postflight-gates")
 
     con = connect_readonly(args.db)
-    json_summary = build_json_summary(con) if args.json_output or args.compare_json else None
+    json_summary = build_json_summary(
+        con,
+        args.container_root,
+        args.host_root,
+        args.check_archives,
+    ) if args.json_output or args.compare_json else None
     print("integrity_check", con.execute("pragma integrity_check").fetchone()[0])
     summarize_foreign_keys(con)
     summarize_db(con)

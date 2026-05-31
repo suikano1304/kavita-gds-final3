@@ -32,6 +32,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - The read-only diagnostic script now prints SQLite foreign-key violations and classifies duplicate file path groups into cleanup-safe and cross-series cases.
 - The preflight collector records host architecture and Docker engine details, which helps separate Oracle A1 environment reports from generic image architecture issues.
 - Postflight comparison can now print explicit `PASS`, `WARN`, and `FAIL` gates for integrity, foreign keys, `Pages=0`, duplicate file paths, and media errors.
+- Archive validation can be written into the JSON baseline, so postflight gates can separate recoverable direct-image `Pages=0` archives from nested archive structures.
 - Built and packaged as `0.9.0.2-3` for `linux/amd64` and `linux/arm64`.
 
 ### 2026-05-31 GDS TXT fallback cover and scan debt recovery

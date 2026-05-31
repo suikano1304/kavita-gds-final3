@@ -206,10 +206,11 @@ scripts/collect_gds_preflight.sh \
   --host-root /mnt/data/rclone/gds \
   --compose-file compose/docker-compose.production.yml \
   --output-dir /tmp/kavita-gds-preflight \
-  --label before
+  --label before \
+  --check-archives
 ```
 
-preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다.
+preflight 결과에는 사람이 읽는 진단 텍스트, JSON baseline, DB 크기/mtime/host architecture/Docker engine manifest, compose 사본이 포함됩니다. JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. `--check-archives`를 넣으면 `pages0_archive_validation`도 JSON에 포함되어 직접 이미지가 있는 복구 가능 archive와 nested archive를 분리할 수 있습니다.
 
 운영 적용 후에는 같은 DB를 현재값으로 읽고 before JSON과 비교합니다.
 
@@ -220,14 +221,15 @@ scripts/collect_gds_preflight.sh \
   --host-root /mnt/data/rclone/gds \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
+  --check-archives \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
   --postflight-gates
 ```
 
 postflight gate는 다음 기준으로 봅니다.
 
-- `FAIL`: SQLite integrity/FK 위반, `Pages=0` 증가, same-series duplicate 증가, cross-series duplicate 증가, MediaError 증가
-- `WARN`: `Pages=0` 또는 same-series duplicate가 줄지 않고 그대로 남음
+- `FAIL`: SQLite integrity/FK 위반, `Pages=0` 증가, 복구 가능 `Pages=0` archive 증가, same-series duplicate 증가, cross-series duplicate 증가, MediaError 증가
+- `WARN`: `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate가 줄지 않고 그대로 남음
 - `PASS`: 정합성 위반이 없고, 회복 대상이 줄었거나 최소한 증가하지 않음
 
 ## 운영 체크리스트

@@ -181,7 +181,8 @@ scripts/collect_gds_preflight.sh \
   --host-root /mnt/data/rclone/gds \
   --compose-file compose/docker-compose.production.yml \
   --output-dir /tmp/kavita-gds-preflight \
-  --label before
+  --label before \
+  --check-archives
 ```
 
 생성되는 파일:
@@ -200,11 +201,12 @@ scripts/collect_gds_preflight.sh \
   --host-root /mnt/data/rclone/gds \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
+  --check-archives \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
   --postflight-gates
 ```
 
-`--postflight-gates`는 전후 비교 결과를 `PASS`, `WARN`, `FAIL`로 요약합니다. CI나 자동화에서 실패 코드를 받고 싶으면 `--fail-on-gate-failure`를 추가합니다.
+`--postflight-gates`는 전후 비교 결과를 `PASS`, `WARN`, `FAIL`로 요약합니다. `--check-archives`를 before/after 양쪽에 넣으면 직접 이미지가 있는 복구 가능 `Pages=0` archive와 nested archive를 분리해서 판정합니다. CI나 자동화에서 실패 코드를 받고 싶으면 `--fail-on-gate-failure`를 추가합니다.
 
 확인하는 항목:
 
@@ -216,7 +218,7 @@ scripts/collect_gds_preflight.sh \
 - SQLite foreign key 위반 여부
 - duplicate file path cleanup 후보 분류
 - JSON baseline 출력 시 `Pages=0`, duplicate, FK 상태를 재스캔 전후로 기계적으로 비교 가능
-- postflight gate 출력 시 SQLite integrity/FK, `Pages=0`, same-series duplicate, cross-series duplicate, MediaError 증가 여부를 명시적으로 판정
+- postflight gate 출력 시 SQLite integrity/FK, `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate, cross-series duplicate, MediaError 증가 여부를 명시적으로 판정
 
 ## TXT 커버 정책
 
