@@ -40,12 +40,12 @@ jobs:
 
       - name: Publish version tag
         run: |
-          skopeo copy --all \
-            "oci-archive:${OCI_ARCHIVE_PATH}" \
+          skopeo --tmpdir "$RUNNER_TEMP" copy --all \
+            "oci-archive:${OCI_ARCHIVE_PATH}:${IMAGE_TAG}" \
             "docker://${IMAGE_NAME}:${IMAGE_TAG}"
 
       - name: Publish latest tag
         run: |
-          skopeo copy --all \
-            "oci-archive:${OCI_ARCHIVE_PATH}" \
+          skopeo --tmpdir "$RUNNER_TEMP" copy --all \
+            "oci-archive:${OCI_ARCHIVE_PATH}:latest" \
             "docker://${IMAGE_NAME}:latest"
