@@ -82,6 +82,44 @@ self-check:
 - TXT title-cover fallback의 운영 효과는 운영 컨테이너를 `0.9.0.2-5`로 전환하고 대상 라이브러리를 재스캔한 뒤 같은 fast cover gate로 config cover 증가/감소를 확인한다.
 - 원본 `cover.*` 또는 YAML cover hint까지 확인해야 할 때만 `--check-covers --check-cover-source-files`를 별도 실행한다.
 
+## 2026-05-31 19:03 운영 read-only 재확인
+
+운영 컨테이너와 DB를 변경하지 않고 최신 `main` 진단 도구로 현재 상태를 다시 확인했다.
+
+- Runtime image: `local/kavita-gds:0.9.0.2-1`
+- Compose image: `local/kavita-gds:0.9.0.2-1`
+- Container state: `healthy`
+- Current diagnostics: `/tmp/kavita-gds-preflight/current-readonly-diagnostics.json`
+- Current cover diagnostics: `/tmp/kavita-gds-preflight/current-covers-fast-diagnostics.json`
+- DB snapshot: `/tmp/kavita-gds-preflight/current-readonly-kavita.db`
+- `integrity_check`: `ok`
+- `foreign_key_check`: 위반 없음
+- `Pages=0`: 49개로 baseline과 동일
+- 직접 이미지가 있는 복구 가능 ZIP `Pages=0`: 39개로 baseline과 동일
+- same-series/same-volume duplicate cleanup 후보: 26개 group으로 baseline과 동일
+- MediaError: 637개로 baseline과 동일
+- GDS config cover reference: 4,423개로 baseline과 동일
+- TXT config cover series: 3,650개로 baseline과 동일
+
+postflight gate 결과:
+
+- `PASS`: SQLite integrity, FK, cross-series duplicate 증가 없음, MediaError 증가 없음, config cover reference 감소 없음, TXT config cover 감소 없음
+- `WARN`: `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate가 아직 줄지 않음
+- `WARN`: source cover/YAML hint 기반 TXT missing-cover debt는 느린 source probe를 실행하지 않아 skip
+
+로그 분석 결과:
+
+- `2026-05-31` 로그에서 library scan row는 52개다.
+- 느린 library scan의 원인은 두 종류로 분리된다. 강제 스캔은 file discovery/rclone listing 시간이 주된 비용이고, 일부 일반 스캔은 old runtime에서 series update 시간이 주된 비용이다.
+- slow reader request는 3초 기준 21개이며, reader latency 상관분석에서는 확인 가능한 18개 중 17개가 ZIP reader 요청이다. 대부분 cache가 있어도 100MB 이상 ZIP chapter에서 지연이 남았다.
+- report 폴더의 외부 제보는 `0.9.0.2-4` 이미지에서 `localhost:5000`을 호출한 Web UI dev bundle 증상으로 확인했다. 들여쓰기 깨짐만으로 설명되는 문제는 아니다.
+
+해석:
+
+- 현재 운영 DB는 정합성 측면에서 안정적이고, read-only 기준 악화는 없다.
+- 그러나 운영 runtime이 아직 `0.9.0.2-1`이므로 `0.9.0.2-5`의 startup/FK 진단, duplicate cleanup, Pages=0 회복, TXT fallback cover 효과는 운영 DB에서 완료 증거가 아니다.
+- 목표 완료에는 운영 전환 후 같은 postflight gate를 통과하고, 작은 라이브러리부터 재스캔한 실제 개선 결과가 필요하다.
+
 ## 완료 조건
 
 | Requirement | 완료 증거 | 현재 증거 | 판정 |

@@ -266,6 +266,78 @@ scripts/collect_gds_preflight.sh \
 
 이 값은 운영 전환 후 TXT fallback cover와 cover cache 보존을 비교할 기준입니다.
 
+## 19:03 read-only 재확인
+
+운영 컨테이너를 변경하지 않고 현재 runtime/DB/log 상태를 다시 확인했습니다.
+
+현재 운영 상태:
+
+- 실행 이미지: `local/kavita-gds:0.9.0.2-1`
+- compose 이미지: `local/kavita-gds:0.9.0.2-1`
+- 컨테이너 상태: healthy
+- DB `PRAGMA integrity_check`: `ok`
+- DB `PRAGMA foreign_key_check`: 위반 없음
+
+현재 snapshot/postflight:
+
+```bash
+scripts/collect_gds_preflight.sh \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label current-readonly \
+  --snapshot-db \
+  --check-archives \
+  --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --compare-scan-json /tmp/kavita-gds-preflight/before-scan-log-summary.json \
+  --postflight-gates
+```
+
+결과:
+
+- `current-readonly-diagnostics.json` 생성
+- `Pages=0`: 49개로 baseline과 동일
+- 복구 가능 ZIP `Pages=0`: 39개로 baseline과 동일
+- same-series duplicate cleanup 후보: 26개 group으로 baseline과 동일
+- cross-series duplicate: 증가 없음
+- MediaError: 637개로 baseline과 동일
+
+빠른 cover gate:
+
+```bash
+scripts/collect_gds_preflight.sh \
+  --db /tmp/kavita-gds-preflight/current-readonly-kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --cache-dir /mnt/data/docker/kavita/config/cache \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label current-covers-fast \
+  --check-covers \
+  --compare-json /tmp/kavita-gds-preflight/before-covers-fast-diagnostics.json \
+  --postflight-gates
+```
+
+결과:
+
+- GDS config cover reference: `4,423`개로 감소 없음
+- TXT config cover series: `3,650`개로 감소 없음
+- source cover/YAML hint 기반 missing-cover debt는 `--check-cover-source-files`를 실행하지 않아 skip
+
+로그 해석:
+
+- `2026-05-31` 로그에서 3초 이상 slow request는 21개였습니다.
+- reader latency 상관분석에서 DB와 매칭된 slow reader request 18개 중 17개는 ZIP이었고, 대부분 100MB 이상 chapter였습니다.
+- 스캔 병목은 force scan의 file discovery/rclone listing 비용과 old runtime의 일부 일반 scan series update 비용으로 분리됩니다.
+- report 폴더의 외부 제보는 `0.9.0.2-4` Web UI dev bundle이 `localhost:5000`을 호출한 문제로 확인했습니다.
+
+운영 결론:
+
+- 현재 운영 DB는 read-only 기준 정합성 위반이 없습니다.
+- 현재 운영이 `0.9.0.2-1`이므로 최신 공개 이미지의 회복 효과는 아직 운영 DB에서 증명되지 않았습니다.
+- 운영 목표 완료를 위해서는 `0.9.0.2-5` 전환, 재스캔, postflight 비교가 남아 있습니다.
+
 ## 승인 후 운영 전환 절차
 
 현재 운영 compose는 LXC 101의 `/opt/compose/kavita/docker-compose.yml`이고, 실행 중인 이미지는 `local/kavita-gds:0.9.0.2-1`입니다. 전환 대상 이미지는 LXC 101에 이미 받아져 있는 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`입니다. 아래 절차는 운영 컨테이너를 재시작하므로 명시적으로 승인한 뒤에만 실행합니다.
