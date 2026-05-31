@@ -23,6 +23,8 @@ Options:
   --check-covers        Ask diagnose_kavita_gds.py to inspect cover state
   --snapshot-db         Create a SQLite backup copy in the output directory and
                        run diagnostics against the copy. Recommended for live DBs.
+                       Set KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS to override
+                       the default 120 second snapshot timeout.
   --compare-json PATH   Compare this run with a previous diagnostics JSON
   --postflight-gates    Print PASS/WARN/FAIL gates for a --compare-json run
   --fail-on-gate-failure
@@ -173,15 +175,28 @@ reader_latency_text_file="$output_dir/${label}-reader-latency-summary.txt"
 reader_latency_json_file="$output_dir/${label}-reader-latency-summary.json"
 analysis_db="$db"
 snapshot_file=""
+snapshot_timeout_seconds="${KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS:-120}"
 
 if [[ "$snapshot_db" == true ]]; then
   if ! command -v sqlite3 >/dev/null 2>&1; then
     echo "--snapshot-db requires sqlite3 in PATH" >&2
     exit 1
   fi
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "--snapshot-db requires timeout in PATH" >&2
+    exit 1
+  fi
   snapshot_file="$output_dir/${label}-kavita.db"
-  rm -f "$snapshot_file"
-  sqlite3 -readonly "$db" ".backup '$snapshot_file'"
+  tmp_snapshot_file="$output_dir/.${label}-kavita.db.tmp.$$"
+  rm -f "$tmp_snapshot_file" "$tmp_snapshot_file-shm" "$tmp_snapshot_file-wal" "$tmp_snapshot_file-journal"
+  if ! timeout "$snapshot_timeout_seconds" sqlite3 -readonly "$db" ".backup '$tmp_snapshot_file'"; then
+    rm -f "$tmp_snapshot_file" "$tmp_snapshot_file-shm" "$tmp_snapshot_file-wal" "$tmp_snapshot_file-journal"
+    echo "SQLite snapshot failed or timed out after ${snapshot_timeout_seconds}s: $db" >&2
+    exit 1
+  fi
+  rm -f "$snapshot_file" "$snapshot_file-shm" "$snapshot_file-wal" "$snapshot_file-journal"
+  mv "$tmp_snapshot_file" "$snapshot_file"
+  rm -f "$tmp_snapshot_file-shm" "$tmp_snapshot_file-wal" "$tmp_snapshot_file-journal"
   analysis_db="$snapshot_file"
 fi
 

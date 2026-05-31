@@ -200,6 +200,8 @@ scripts/collect_gds_preflight.sh \
 - `before-request-log-summary.json`: `--scan-log`를 지정한 경우 slow reader request 요약
 - `before-reader-latency-summary.txt/json`: `--scan-log`를 지정한 경우 slow reader request와 DB/cache 상태 상관분석
 
+`--snapshot-db`는 같은 label을 재사용해도 이전 DB 사본과 SQLite sidecar 파일을 정리한 뒤 새 임시 파일에 백업하고, 성공한 경우에만 최종 snapshot으로 교체합니다. 기본 snapshot timeout은 120초입니다. 매우 느린 스토리지에서는 `KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS=300`처럼 늘릴 수 있습니다.
+
 재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
 
 ```bash
