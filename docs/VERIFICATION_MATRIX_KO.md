@@ -22,8 +22,8 @@
 | nested archive 한계 분리 | nested archive CBZ를 자동 회복 대상에서 제외하고 자료 구조 문제로 분류 | 10개 CBZ가 내부 ZIP 84개 구조로 분류됨 | 완료 |
 | `kavita.yaml` 우선 메타데이터 | `EnableMetadata=false`에서도 YAML 안전 필드가 반영되고 `meta.Name`이 회차명을 덮지 않음 | 표본 검증과 source 보정 완료 | 부분 완료 |
 | GDS reader/title routing | GDS mixed-format에서 chapter-info/title rendering 예외가 사라짐 | source/release에 보정 포함. 운영 구버전 로그에는 `libraryType` 예외가 남아 있음 | 미검증 |
-| cover cache 보존 | source `cover.*`가 없어도 기존 config cover cache가 불필요하게 삭제되지 않음 | cover risk 4,315개 분류, 보정 포함 | 미검증 |
-| TXT fallback cover | 원본 cover 없는 TXT가 오류가 아니라 config cover fallback으로 처리됨 | source/release에 보정 포함, TXT cover state 분류 완료 | 미검증 |
+| cover cache 보존 | source `cover.*`가 없어도 기존 config cover cache가 불필요하게 삭제되지 않음 | cover risk 분류와 postflight cover gate 준비, 보정 포함 | 미검증 |
+| TXT fallback cover | 원본 cover 없는 TXT가 오류가 아니라 config cover fallback으로 처리됨 | TXT cover state JSON/gate 준비, fallback 보정 포함 | 미검증 |
 | duplicate cleanup | same-series/same-volume duplicate group이 운영 재스캔 후 감소 | 현재 same-series/same-volume group이 남아 있음. cleanup patch는 `0.9.0.2-3` 포함 | 미검증 |
 | cross-series duplicate 정책 | 자동 삭제하지 않고 수동 판단 대상으로 분리 | cross-series group 153개가 자동 cleanup 제외 대상으로 문서화됨 | 완료 |
 | startup FK 제보 분리 | x86/NAS 정상, Oracle A1 사례는 DB/migration/volume 상태 확인 대상으로 분리 | 운영 DB 사본 startup smoke test 통과, FK 위반 없음 | 부분 완료 |
@@ -81,3 +81,5 @@ scripts/collect_gds_preflight.sh \
 ```
 
 postflight 결과에 `FAIL`이 없어야 한다. `WARN`은 남은 debt가 줄지 않았다는 뜻이므로, 목표 완료가 아니라 추가 분석 대상으로 남긴다.
+
+`--check-covers`를 before/after 양쪽에 넣으면 cover 관련 gate도 함께 출력된다. `GDS config cover references decreased`는 실패로 보고, `TXT missing-cover debt unchanged`는 fallback cover가 아직 운영 DB에서 검증되지 않았다는 뜻으로 남긴다.

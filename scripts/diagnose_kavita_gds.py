@@ -542,6 +542,7 @@ def build_json_summary(
     container_root: str,
     host_root: str,
     include_archive_validation: bool,
+    include_cover_validation: bool,
 ) -> dict[str, object]:
     integrity_check = con.execute("pragma integrity_check").fetchone()[0]
     duplicate_structure = [
@@ -574,6 +575,9 @@ def build_json_summary(
     }
     if include_archive_validation:
         summary["pages0_archive_validation"] = pages0_archive_validation_rows(con, container_root, host_root)
+    if include_cover_validation:
+        summary["cover_source_cache_risk"] = cover_source_cache_rows(con, container_root, host_root)
+        summary["txt_cover_state"] = txt_cover_state_rows(con, container_root, host_root)
     return summary
 
 
@@ -667,6 +671,26 @@ def print_json_comparison(before_path: str, after: dict[str, object]) -> None:
         ("Ext", "Category"),
         ("Count",),
     )
+    print_count_delta(
+        "cover source/cache delta",
+        before.get("cover_source_cache_risk", []),
+        after.get("cover_source_cache_risk", []),
+        ("LibraryId", "HasSourceCover", "UsesExpectedCacheName"),
+        ("Series",),
+    )
+    print_count_delta(
+        "txt cover state delta",
+        before.get("txt_cover_state", []),
+        after.get("txt_cover_state", []),
+        ("LibraryId", "LibraryName"),
+        (
+            "series",
+            "files",
+            "series_with_config_cover",
+            "series_with_source_cover_file",
+            "series_without_any_cover_hint",
+        ),
+    )
 
 
 def sum_count(rows: list[dict[str, object]], field: str, kind: str | None = None) -> int:
@@ -702,6 +726,31 @@ def recoverable_pages0_archive_count(summary: dict[str, object]) -> int | None:
         missing = int(row.get("missing") or 0)
         if images > 0 and nested_archives == 0 and errors == 0 and missing == 0:
             total += files
+    return total
+
+
+def gds_config_cover_reference_count(summary: dict[str, object]) -> int | None:
+    rows = summary.get("cover_source_cache_risk")
+    if not isinstance(rows, list):
+        return None
+    total = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        if row.get("UsesExpectedCacheName") is True:
+            total += int(row.get("Series") or 0)
+    return total
+
+
+def txt_cover_metric(summary: dict[str, object], field: str) -> int | None:
+    rows = summary.get("txt_cover_state")
+    if not isinstance(rows, list):
+        return None
+    total = 0
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        total += int(row.get(field) or 0)
     return total
 
 
@@ -816,6 +865,67 @@ def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
         })
         failed = True
 
+    cover_refs_before = gds_config_cover_reference_count(before)
+    cover_refs_after = gds_config_cover_reference_count(after)
+    if cover_refs_before is not None and cover_refs_after is not None:
+        if cover_refs_after >= cover_refs_before:
+            gate_line("PASS", "GDS config cover references did not decrease", {
+                "before": cover_refs_before,
+                "after": cover_refs_after,
+            })
+        else:
+            gate_line("FAIL", "GDS config cover references decreased", {
+                "before": cover_refs_before,
+                "after": cover_refs_after,
+            })
+            failed = True
+    else:
+        gate_line("WARN", "cover cache gate skipped", {
+            "reason": "run before and after diagnostics with --check-covers",
+        })
+
+    txt_config_before = txt_cover_metric(before, "series_with_config_cover")
+    txt_config_after = txt_cover_metric(after, "series_with_config_cover")
+    txt_missing_before = txt_cover_metric(before, "series_without_any_cover_hint")
+    txt_missing_after = txt_cover_metric(after, "series_without_any_cover_hint")
+    if None not in (txt_config_before, txt_config_after, txt_missing_before, txt_missing_after):
+        assert txt_config_before is not None
+        assert txt_config_after is not None
+        assert txt_missing_before is not None
+        assert txt_missing_after is not None
+        if txt_config_after < txt_config_before:
+            gate_line("FAIL", "TXT config covers decreased", {
+                "before": txt_config_before,
+                "after": txt_config_after,
+            })
+            failed = True
+        elif txt_missing_after < txt_missing_before:
+            gate_line("PASS", "TXT missing-cover debt decreased", {
+                "config_covers_before": txt_config_before,
+                "config_covers_after": txt_config_after,
+                "missing_cover_debt_before": txt_missing_before,
+                "missing_cover_debt_after": txt_missing_after,
+            })
+        elif txt_missing_after == txt_missing_before:
+            gate_line("WARN", "TXT missing-cover debt unchanged", {
+                "config_covers_before": txt_config_before,
+                "config_covers_after": txt_config_after,
+                "missing_cover_debt_before": txt_missing_before,
+                "missing_cover_debt_after": txt_missing_after,
+            })
+        else:
+            gate_line("FAIL", "TXT missing-cover debt increased", {
+                "config_covers_before": txt_config_before,
+                "config_covers_after": txt_config_after,
+                "missing_cover_debt_before": txt_missing_before,
+                "missing_cover_debt_after": txt_missing_after,
+            })
+            failed = True
+    else:
+        gate_line("WARN", "TXT cover gate skipped", {
+            "reason": "run before and after diagnostics with --check-covers",
+        })
+
     return failed
 
 
@@ -876,7 +986,7 @@ def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host
         print(key, counter)
 
 
-def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+def cover_source_cache_rows(con: sqlite3.Connection, container_root: str, host_root: str) -> list[dict[str, object]]:
     rows = list(con.execute("""
         select l.Id as LibraryId, s.Id as SeriesId, s.FolderPath, s.CoverImage as SeriesCover,
                v.CoverImage as VolumeCover, c.CoverImage as ChapterCover
@@ -902,7 +1012,6 @@ def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root
             item["chapter_covers"].add(row["ChapterCover"])
 
     summary: collections.Counter[tuple[int, bool, bool]] = collections.Counter()
-    risk_by_library: collections.Counter[int] = collections.Counter()
     for series_id, item in series.items():
         folder = mapped_path(str(item["folder"]), container_root, host_root)
         has_source_cover = any(os.path.exists(os.path.join(folder, name)) for name in ("cover.jpg", "cover.png", "cover.webp"))
@@ -914,17 +1023,33 @@ def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root
         )
         library_id = int(item["library_id"])
         summary[(library_id, has_source_cover, uses_expected_cache)] += 1
-        if uses_expected_cache and not has_source_cover:
-            risk_by_library[library_id] += 1
 
+    return [
+        {
+            "LibraryId": key[0],
+            "HasSourceCover": key[1],
+            "UsesExpectedCacheName": key[2],
+            "Series": count,
+            "RiskWithoutSourceCover": key[2] and not key[1],
+        }
+        for key, count in sorted(summary.items())
+    ]
+
+
+def summarize_cover_risk(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+    rows = cover_source_cache_rows(con, container_root, host_root)
     print("\n## cover source/cache risk")
     print("(LibraryId, HasSourceCover, UsesExpectedCacheName) -> Series")
-    for key, count in sorted(summary.items()):
-        print(f"{key} -> {count}")
+    risk_by_library: collections.Counter[int] = collections.Counter()
+    for row in rows:
+        key = (row["LibraryId"], row["HasSourceCover"], row["UsesExpectedCacheName"])
+        print(f"{key} -> {row['Series']}")
+        if row["RiskWithoutSourceCover"]:
+            risk_by_library[int(row["LibraryId"])] += int(row["Series"])
     print("risk_by_library", dict(sorted(risk_by_library.items())))
 
 
-def summarize_text_cover_state(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+def txt_cover_state_rows(con: sqlite3.Connection, container_root: str, host_root: str) -> list[dict[str, object]]:
     rows = list(con.execute("""
         select l.Id as LibraryId, l.Name as LibraryName, s.Id as SeriesId,
                s.FolderPath, s.CoverImage as SeriesCover, mf.FilePath
@@ -976,13 +1101,28 @@ def summarize_text_cover_state(con: sqlite3.Connection, container_root: str, hos
         if not item["series_cover"] and not source_cover and not has_usable_yaml_cover:
             summary[library_id]["series_without_any_cover_hint"] += 1
 
-    print("\n## txt cover state")
-    if not summary:
-        print("(none)")
-        return
+    output: list[dict[str, object]] = []
     for library_id in sorted(summary):
         counter = summary[library_id]
-        print(library_id, names[library_id], dict(counter))
+        output.append({
+            "LibraryId": library_id,
+            "LibraryName": names[library_id],
+            **dict(counter),
+        })
+    return output
+
+
+def summarize_text_cover_state(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
+    rows = txt_cover_state_rows(con, container_root, host_root)
+    print("\n## txt cover state")
+    if not rows:
+        print("(none)")
+        return
+    for row in rows:
+        library_id = row["LibraryId"]
+        name = row["LibraryName"]
+        counter = {k: v for k, v in row.items() if k not in {"LibraryId", "LibraryName"}}
+        print(library_id, name, counter)
 
 
 def main() -> None:
@@ -1008,6 +1148,7 @@ def main() -> None:
         args.container_root,
         args.host_root,
         args.check_archives,
+        args.check_covers,
     ) if args.json_output or args.compare_json else None
     print("integrity_check", con.execute("pragma integrity_check").fetchone()[0])
     summarize_foreign_keys(con)

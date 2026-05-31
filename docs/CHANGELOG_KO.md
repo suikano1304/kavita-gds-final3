@@ -17,7 +17,7 @@
 - 읽기 전용 진단 스크립트가 EF migration history, manual migration history, 핵심 server setting, 주요 테이블 row count를 출력하도록 확장했습니다. x86/NAS 정상 사례와 Oracle A1 startup FK 사례를 비교할 때 DB/migration 상태 차이를 바로 볼 수 있습니다.
 - 읽기 전용 진단 스크립트가 MediaError를 EPUB 구조 문제, PDF metadata/encryption 문제, archive 지원 문제, scanner 미인식 항목으로 분류하도록 확장했습니다.
 - preflight 수집 스크립트가 host architecture와 Docker engine 정보를 manifest에 기록해 Oracle A1 같은 환경별 startup 제보를 비교하기 쉽게 했습니다.
-- postflight 비교에 `--postflight-gates` 옵션을 추가해 integrity/FK/`Pages=0`/duplicate/MediaError 상태를 `PASS`, `WARN`, `FAIL`로 판정할 수 있게 했습니다.
+- postflight 비교에 `--postflight-gates` 옵션을 추가해 integrity/FK/`Pages=0`/duplicate/MediaError/cover cache/TXT missing-cover 상태를 `PASS`, `WARN`, `FAIL`로 판정할 수 있게 했습니다.
 - `--check-archives` 결과를 JSON에도 기록해 직접 이미지가 있는 복구 가능 `Pages=0` archive와 nested archive를 postflight gate에서 분리할 수 있게 했습니다.
 - scan log timing 요약 도구를 추가해 library scan 시간, file discovery 시간, series update 시간, 느린 reader HTTP 요청을 기본적으로 library/series 이름 노출 없이 분석할 수 있게 했습니다.
 - reader latency 상관분석 도구를 추가해 느린 reader 요청이 DB 파일 크기, format, page 수, cache folder 상태와 어떻게 연결되는지 경로/제목 노출 없이 확인할 수 있게 했습니다.

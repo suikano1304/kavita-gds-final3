@@ -33,7 +33,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - The read-only diagnostic script now includes EF migration history, manual migration history, selected server settings, and core table row counts to compare x86/NAS and Oracle A1 startup reports.
 - The read-only diagnostic script now classifies MediaError rows into EPUB structure, PDF metadata/encryption, archive support, and scanner-unrecognized buckets.
 - The preflight collector records host architecture and Docker engine details, which helps separate Oracle A1-only startup reports from generic x86 or image architecture issues.
-- Postflight comparison can now print explicit `PASS`, `WARN`, and `FAIL` gates for integrity, foreign keys, `Pages=0`, duplicate file paths, and media errors.
+- Postflight comparison can now print explicit `PASS`, `WARN`, and `FAIL` gates for integrity, foreign keys, `Pages=0`, duplicate file paths, media errors, GDS config cover references, and TXT missing-cover debt.
 - Archive validation can be written into the JSON baseline, so postflight gates can separate recoverable direct-image `Pages=0` archives from nested archive structures.
 - Added a read-only scan-log timing summarizer that reports library scan, file discovery, series update timings, and slow reader HTTP requests without exposing library or series names by default.
 - Added a read-only reader latency correlator that maps slow reader requests to DB file size, format, page count, and cache-folder state without exposing titles or paths by default.
