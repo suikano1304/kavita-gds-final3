@@ -162,6 +162,41 @@ https://github.com/suikano1304/Kavita-GDS
 - same-series/same-volume duplicate file path group이 감소하는지 확인합니다.
 - `Pages=0` 잔여 ZIP/CBZ 중 실제로 복구 가능한 파일과 nested archive 구조를 분리합니다.
 
+## 운영 적용 전 baseline
+
+`0.9.0.2-3` 운영 적용 전, 현재 운영 컨테이너와 DB 상태를 다시 확인했습니다.
+
+운영 상태:
+
+- 실행 이미지: `local/kavita-gds:0.9.0.2-1`
+- 컨테이너 상태: healthy
+- compose 이미지: `local/kavita-gds:0.9.0.2-1`
+- DB `PRAGMA integrity_check`: `ok`
+- DB `PRAGMA foreign_key_check`: 위반 없음
+
+남은 `Pages=0`:
+
+| LibraryId | Library | Ext | Count |
+| --- | --- | --- | ---: |
+| <redacted> | production-library-a | `.cbz` | 10 |
+| <redacted> | production-library-d | `.zip` | 39 |
+
+남은 duplicate file path:
+
+| LibraryId | Library | Ext | Groups | RowRefs | Cleanup kind |
+| --- | --- | --- | ---: | ---: | --- |
+| <redacted> | production-library-a | `.cbz` | 10 | 30 | same series / same volume |
+| <redacted> | production-library-b | `.zip` | 13 | 45 | same series / same volume |
+| <redacted> | production-library-c | `.epub` | 97 | 194 | cross series |
+| <redacted> | production-library-c | `.txt` | 56 | 112 | cross series |
+| <redacted> | production-library-d | `.zip` | 3 | 6 | same series / same volume |
+
+해석:
+
+- `0.9.0.2-3` 적용 후 우선 확인할 자동 cleanup 대상은 same-series/same-volume duplicate입니다.
+- cross-series duplicate는 자료 구조나 분류 의도일 수 있으므로 자동 삭제 검증 대상으로 보지 않습니다.
+- `Pages=0` 중 nested archive 중심 CBZ는 파일 구조 문제일 가능성이 크고, 직접 이미지가 있는 ZIP 잔여는 재스캔으로 회복 가능한지 확인해야 합니다.
+
 ## 운영 체크리스트
 
 재배포 전:
