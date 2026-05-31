@@ -6,6 +6,16 @@
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
 
+## 2026-05-31: `0.9.0.2-5` 이후 main 브랜치 진단 도구 보강
+
+아래 변경은 Docker runtime image 재빌드가 아니라 `main` 브랜치의 운영 검증 도구와 문서 보강입니다. 공개 runtime 기준은 계속 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`입니다.
+
+- live DB snapshot preflight가 같은 label을 재사용해도 SQLite sidecar를 정리하고 임시 파일 성공 후 교체하도록 보강했습니다.
+- MediaError postflight gate가 상위 40개 출력이 아니라 전체 MediaError count를 기준으로 판정하도록 수정했습니다.
+- scan log summary에 before/after 비교와 non-forced scan churn gate를 추가했습니다.
+- `collect_gds_preflight.sh`에서 DB gate와 scan churn gate를 한 번에 실행할 수 있도록 `--compare-scan-json`을 추가했습니다.
+- 로그인 화면에서 `localhost:5000/api`로 요청하는 `0.9.0.2-4` 증상 설명을 사용 설명서에 추가했습니다.
+
 ## 2026-05-31: `0.9.0.2-5` Web UI production hotfix
 
 아래 변경은 `0.9.0.2-5` 배포 후보에 포함했습니다.

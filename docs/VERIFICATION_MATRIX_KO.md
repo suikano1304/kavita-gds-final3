@@ -12,6 +12,7 @@
 - 진단 도구와 postflight gate는 준비됐다.
 - `0.9.0.2-5` 후보는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋까지 포함해 빌드됐다.
 - `0.9.0.2-5` 공개 GHCR image의 `linux/amd64` startup smoke test와 `linux/arm64` manifest 확인은 완료됐다.
+- release tag `v0.9.0.2-5`는 `fda1eab`이고, 현재 `main`은 `5a697dd`다. `v0.9.0.2-5..main` 차이는 진단 스크립트와 문서 보강이며 Docker runtime image 변경은 아니다.
 - 운영 컨테이너는 아직 `local/kavita-gds:0.9.0.2-1`이므로, 운영 DB에서 최신 release/source의 회복/cleanup 효과는 아직 검증되지 않았다.
 
 ## 2026-05-31 17:55 공개 GHCR image smoke

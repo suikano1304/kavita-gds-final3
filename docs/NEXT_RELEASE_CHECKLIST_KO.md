@@ -4,6 +4,8 @@
 
 현재 빌드 후보는 `0.9.0.2-5`이다. `0.9.0.2-4` 배포 이미지의 Web UI dev build 문제를 production UI hotfix로 보정한 multi-arch OCI archive를 다시 만들었다.
 
+현재 공개 runtime tag `v0.9.0.2-5`는 `fda1eab` 기준이다. 이후 `main`에는 preflight snapshot 안정화, MediaError full-count gate, scan churn gate, 문서 보강이 추가되어 있다. 다음 runtime 이미지를 다시 만들 때는 이 tooling 변경을 source archive와 release notes에도 포함해 source/release/운영 기준을 다시 맞춘다.
+
 ## 목적
 
 - source branch, release source archive, GHCR image, 운영 compose image tag를 같은 기준으로 맞춘다.

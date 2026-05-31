@@ -6,6 +6,8 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
 현재 배포 기준은 `0.9.0.2-5`입니다. `0.9.0.2-4` 배포 이미지에서 Web UI가 개발 빌드로 포함되어 `localhost:5000/api`를 호출하던 문제를 production UI 번들로 교체해 수정했습니다.
 
+참고: 현재 `main` 브랜치에는 `v0.9.0.2-5` 태그 이후 postflight 진단 도구와 문서 보강이 추가되어 있습니다. Docker runtime 이미지는 여전히 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`가 기준입니다.
+
 2026-05-31 운영 서버에는 `kavita.yaml` 메타데이터 반영과 회차 제목 보정 패치를 추가 검증했습니다. 해당 운영 기록은 [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md)에 정리했습니다.
 
 추가로 GDS/rclone 재스캔 병목, 혼합 폴더 스캔 문제, TXT 커버 부재 문제를 확인했습니다. 일반 재스캔은 빠르게 유지하고, 누락 복구가 필요한 경우만 실제 파일 목록을 다시 읽도록 정리했습니다. 커버가 없는 GDS TXT 시리즈는 외부 API 없이 제목 기반 커버를 Kavita config에 생성합니다.
