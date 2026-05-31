@@ -653,3 +653,17 @@ GitHub release package 준비:
 - archive tags verified with skopeo:
   - `local/kavita-gds:9.0.6-1`
   - `local/kavita-gds:latest`
+
+GitHub/GHCR 등록:
+
+- source/docs commit: `5ab2c78 release: prepare 9.0.6-1`
+- release: `https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1`
+- release assets:
+  - `kavita-gds.tar.gz`
+  - `SHA256SUMS`
+- GHCR publish workflow: `https://github.com/suikano1304/Kavita-GDS/actions/runs/26727930051`
+- workflow result: `success`
+- published image tags verified with skopeo:
+  - `ghcr.io/suikano1304/kavita-gds:9.0.6-1`
+  - `ghcr.io/suikano1304/kavita-gds:latest`
+  - digest: `sha256:492f6de4106b51a374697c8f01b870384a242691371fb4088aa9ba7e9c5b60ea`

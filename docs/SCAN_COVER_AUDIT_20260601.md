@@ -385,3 +385,13 @@ Release package prepared:
 kavita-gds.tar.gz sha256=0605e92b5af4984d96aa41babb1af2368f5edc35ae848a085c97e25277b34517
 docker-image/kavita-gds.docker.tar sha256=1f29634c96d7d12650389794c17039ba514f4340d1fd42f9675c3cfa0dd147ab
 ```
+
+GitHub release and GHCR publish completed:
+
+```text
+release=https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1
+workflow=https://github.com/suikano1304/Kavita-GDS/actions/runs/26727930051
+workflow_result=success
+ghcr.io/suikano1304/kavita-gds:9.0.6-1 digest=sha256:492f6de4106b51a374697c8f01b870384a242691371fb4088aa9ba7e9c5b60ea
+ghcr.io/suikano1304/kavita-gds:latest digest=sha256:492f6de4106b51a374697c8f01b870384a242691371fb4088aa9ba7e9c5b60ea
+```
