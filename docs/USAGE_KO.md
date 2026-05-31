@@ -194,12 +194,13 @@ scripts/collect_gds_preflight.sh \
 재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
 
 ```bash
-python3 scripts/diagnose_kavita_gds.py \
+scripts/collect_gds_preflight.sh \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
-  --compare-json /tmp/kavita-gds-before.json \
-  --json-output /tmp/kavita-gds-after.json
+  --output-dir /tmp/kavita-gds-preflight \
+  --label after \
+  --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json
 ```
 
 확인하는 항목:

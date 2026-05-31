@@ -18,6 +18,7 @@ Options:
   --label TEXT          Prefix output filenames with this label (default: before)
   --check-archives      Ask diagnose_kavita_gds.py to inspect Pages=0 ZIP/CBZ files
   --check-covers        Ask diagnose_kavita_gds.py to inspect cover state
+  --compare-json PATH   Compare this run with a previous diagnostics JSON
   --hash-db             Record a SHA256 hash of the DB file
   -h, --help            Show this help
 
@@ -34,6 +35,7 @@ compose_file=""
 label="before"
 check_archives=false
 check_covers=false
+compare_json=""
 hash_db=false
 
 while [[ $# -gt 0 ]]; do
@@ -70,6 +72,10 @@ while [[ $# -gt 0 ]]; do
       check_covers=true
       shift
       ;;
+    --compare-json)
+      compare_json="${2:-}"
+      shift 2
+      ;;
     --hash-db)
       hash_db=true
       shift
@@ -96,6 +102,11 @@ if [[ ! -f "$db" ]]; then
   exit 1
 fi
 
+if [[ -n "$compare_json" && ! -f "$compare_json" ]]; then
+  echo "Compare JSON not found: $compare_json" >&2
+  exit 1
+fi
+
 mkdir -p "$output_dir"
 
 json_file="$output_dir/${label}-diagnostics.json"
@@ -115,6 +126,9 @@ fi
 if [[ "$check_covers" == true ]]; then
   diagnose_args+=(--check-covers)
 fi
+if [[ -n "$compare_json" ]]; then
+  diagnose_args+=(--compare-json "$compare_json")
+fi
 
 python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$text_file"
 
@@ -125,6 +139,9 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
   echo "host_root=$host_root"
   echo "json=$json_file"
   echo "text=$text_file"
+  if [[ -n "$compare_json" ]]; then
+    echo "compare_json=$compare_json"
+  fi
   if command -v stat >/dev/null 2>&1; then
     stat -c 'db_size_bytes=%s' "$db"
     stat -c 'db_mtime=%y' "$db"
