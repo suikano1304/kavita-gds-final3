@@ -299,6 +299,104 @@ def summarize_requests(
     }
 
 
+def scan_health(scans: list[dict[str, object]]) -> dict[str, object]:
+    finished = [scan for scan in scans if scan.get("total_ms") is not None]
+    non_forced = [scan for scan in finished if scan.get("forced") is not True]
+    forced = [scan for scan in finished if scan.get("forced") is True]
+    no_change = [scan for scan in finished if scan.get("no_changes") is True]
+    non_forced_churn = [
+        scan for scan in non_forced
+        if int(scan.get("processed_series") or 0) > 0
+    ]
+    no_change_with_processing = [
+        scan for scan in no_change
+        if int(scan.get("processed_series") or 0) > 0
+    ]
+
+    return {
+        "scan_count": len(scans),
+        "finished_scan_count": len(finished),
+        "forced_scan_count": len(forced),
+        "non_forced_scan_count": len(non_forced),
+        "no_change_scan_count": len(no_change),
+        "non_forced_churn_scan_count": len(non_forced_churn),
+        "no_change_with_processing_count": len(no_change_with_processing),
+        "processed_series_sum": sum(int(scan.get("processed_series") or 0) for scan in finished),
+        "processed_files_sum": sum(int(scan.get("processed_files") or 0) for scan in finished),
+        "non_forced_processed_series_sum": sum(int(scan.get("processed_series") or 0) for scan in non_forced),
+        "non_forced_processed_files_sum": sum(int(scan.get("processed_files") or 0) for scan in non_forced),
+        "found_series_sum": sum(int(scan.get("found_series") or 0) for scan in finished),
+        "total_ms_sum": sum(int(scan.get("total_ms") or 0) for scan in finished),
+        "total_ms_max": max((int(scan.get("total_ms") or 0) for scan in finished), default=0),
+        "found_ms_sum": sum(int(scan.get("found_ms") or 0) for scan in finished),
+        "series_update_ms_sum": sum(int(scan.get("series_update_ms_sum") or 0) for scan in finished),
+        "empty_folder_logs_sum": sum(int(scan.get("empty_folder_logs") or 0) for scan in finished),
+    }
+
+
+def gate_line(status: str, name: str, details: dict[str, object]) -> None:
+    print({
+        "status": status,
+        "gate": name,
+        **details,
+    })
+
+
+def print_scan_json_comparison(before_path: str, after_payload: list[dict[str, object]]) -> None:
+    with open(before_path, "r", encoding="utf-8") as handle:
+        before_payload = json.load(handle)
+    before = scan_health(before_payload)
+    after = scan_health(after_payload)
+    print("\n## scan baseline comparison")
+    print({"before": before, "after": after})
+
+
+def print_scan_postflight_gates(before_path: str, after_payload: list[dict[str, object]]) -> bool:
+    with open(before_path, "r", encoding="utf-8") as handle:
+        before_payload = json.load(handle)
+    before = scan_health(before_payload)
+    after = scan_health(after_payload)
+    failed = False
+
+    print("\n## scan postflight gates")
+    no_change_after = int(after["no_change_with_processing_count"])
+    if no_change_after == 0:
+        gate_line("PASS", "no-change scans have no processing", {"after": no_change_after})
+    else:
+        gate_line("FAIL", "no-change scans processed series", {"after": no_change_after})
+        failed = True
+
+    before_churn = int(before["non_forced_processed_series_sum"])
+    after_churn = int(after["non_forced_processed_series_sum"])
+    if after_churn < before_churn:
+        gate_line("PASS", "non-forced processed series decreased", {"before": before_churn, "after": after_churn})
+    elif after_churn == before_churn:
+        gate_line("WARN", "non-forced processed series unchanged", {"before": before_churn, "after": after_churn})
+    else:
+        gate_line("FAIL", "non-forced processed series increased", {"before": before_churn, "after": after_churn})
+        failed = True
+
+    before_scans = int(before["non_forced_churn_scan_count"])
+    after_scans = int(after["non_forced_churn_scan_count"])
+    if after_scans < before_scans:
+        gate_line("PASS", "non-forced churn scan count decreased", {"before": before_scans, "after": after_scans})
+    elif after_scans == before_scans:
+        gate_line("WARN", "non-forced churn scan count unchanged", {"before": before_scans, "after": after_scans})
+    else:
+        gate_line("FAIL", "non-forced churn scan count increased", {"before": before_scans, "after": after_scans})
+        failed = True
+
+    gate_line("PASS", "scan timing metrics recorded", {
+        "before_total_ms_sum": before["total_ms_sum"],
+        "after_total_ms_sum": after["total_ms_sum"],
+        "before_found_ms_sum": before["found_ms_sum"],
+        "after_found_ms_sum": after["found_ms_sum"],
+        "before_series_update_ms_sum": before["series_update_ms_sum"],
+        "after_series_update_ms_sum": after["series_update_ms_sum"],
+    })
+    return failed
+
+
 def print_table(scans: list[LibraryScan], show_library_names: bool) -> None:
     library_column = "library" if show_library_names else "library_key"
     print(f"start\t{library_column}\tforced\tfound\tprocessed\tproc_files\tfound_ms\ttotal_ms\tempty\tno_changes")
@@ -383,10 +481,21 @@ def main() -> None:
     parser.add_argument("--slow-limit", type=int, default=5, help="Slow series entries to keep per scan")
     parser.add_argument("--slow-request-ms", type=float, default=1000.0, help="HTTP request threshold for slow request summary")
     parser.add_argument("--request-json-output", help="Write machine-readable slow request summary to this JSON file")
+    parser.add_argument("--compare-json", help="Compare current scan summary with a previous scan JSON")
+    parser.add_argument("--postflight-gates", action="store_true", help="Print PASS/WARN/FAIL gates for a --compare-json run")
+    parser.add_argument("--fail-on-gate-failure", action="store_true", help="Exit non-zero if any --postflight-gates check fails")
     args = parser.parse_args()
+    if args.postflight_gates and not args.compare_json:
+        parser.error("--postflight-gates requires --compare-json")
+    if args.fail_on_gate_failure and not args.postflight_gates:
+        parser.error("--fail-on-gate-failure requires --postflight-gates")
 
     scans = parse_logs(args.logs)
     requests = parse_request_logs(args.logs)
+    scan_payload = [
+        scan_to_dict(scan, args.show_library_names, args.show_series_names, args.slow_limit)
+        for scan in scans
+    ]
     if args.table:
         print_table(scans, args.show_library_names)
     else:
@@ -401,12 +510,8 @@ def main() -> None:
         )
 
     if args.json_output:
-        payload = [
-            scan_to_dict(scan, args.show_library_names, args.show_series_names, args.slow_limit)
-            for scan in scans
-        ]
         with open(args.json_output, "w", encoding="utf-8") as handle:
-            json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            json.dump(scan_payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
             handle.write("\n")
         print(f"\nWrote JSON summary: {args.json_output}")
 
@@ -416,6 +521,13 @@ def main() -> None:
             json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
             handle.write("\n")
         print(f"\nWrote request JSON summary: {args.request_json_output}")
+
+    if args.compare_json:
+        print_scan_json_comparison(args.compare_json, scan_payload)
+    if args.postflight_gates:
+        failed = print_scan_postflight_gates(args.compare_json, scan_payload)
+        if failed and args.fail_on_gate_failure:
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":

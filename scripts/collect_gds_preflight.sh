@@ -26,7 +26,9 @@ Options:
                        Set KAVITA_PREFLIGHT_SNAPSHOT_TIMEOUT_SECONDS to override
                        the default 120 second snapshot timeout.
   --compare-json PATH   Compare this run with a previous diagnostics JSON
-  --postflight-gates    Print PASS/WARN/FAIL gates for a --compare-json run
+  --compare-scan-json PATH
+                        Compare scan log summary with a previous scan JSON
+  --postflight-gates    Print PASS/WARN/FAIL gates for compare runs
   --fail-on-gate-failure
                         Exit non-zero if any postflight gate fails
   --hash-db             Record a SHA256 hash of the DB file
@@ -49,6 +51,7 @@ check_archives=false
 check_covers=false
 snapshot_db=false
 compare_json=""
+compare_scan_json=""
 postflight_gates=false
 fail_on_gate_failure=false
 hash_db=false
@@ -103,6 +106,10 @@ while [[ $# -gt 0 ]]; do
       compare_json="${2:-}"
       shift 2
       ;;
+    --compare-scan-json)
+      compare_scan_json="${2:-}"
+      shift 2
+      ;;
     --postflight-gates)
       postflight_gates=true
       shift
@@ -139,6 +146,10 @@ fi
 
 if [[ -n "$compare_json" && ! -f "$compare_json" ]]; then
   echo "Compare JSON not found: $compare_json" >&2
+  exit 1
+fi
+if [[ -n "$compare_scan_json" && ! -f "$compare_scan_json" ]]; then
+  echo "Compare scan JSON not found: $compare_scan_json" >&2
   exit 1
 fi
 if [[ "$postflight_gates" == true && -z "$compare_json" ]]; then
@@ -259,6 +270,9 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
   if [[ -n "$compare_json" ]]; then
     echo "compare_json=$compare_json"
   fi
+  if [[ -n "$compare_scan_json" ]]; then
+    echo "compare_scan_json=$compare_scan_json"
+  fi
   echo "postflight_gates=$postflight_gates"
   echo "fail_on_gate_failure=$fail_on_gate_failure"
   if command -v stat >/dev/null 2>&1; then
@@ -284,10 +298,22 @@ if [[ -n "$compose_file" ]]; then
 fi
 
 if [[ ${#scan_logs[@]} -gt 0 ]]; then
+  scan_log_args=(
+    "${scan_logs[@]}"
+    --json-output "$scan_log_json_file"
+    --request-json-output "$request_log_json_file"
+  )
+  if [[ -n "$compare_scan_json" ]]; then
+    scan_log_args+=(--compare-json "$compare_scan_json")
+  fi
+  if [[ "$postflight_gates" == true && -n "$compare_scan_json" ]]; then
+    scan_log_args+=(--postflight-gates)
+  fi
+  if [[ "$fail_on_gate_failure" == true && -n "$compare_scan_json" ]]; then
+    scan_log_args+=(--fail-on-gate-failure)
+  fi
   python3 -B "$script_dir/summarize_kavita_scan_logs.py" \
-    "${scan_logs[@]}" \
-    --json-output "$scan_log_json_file" \
-    --request-json-output "$request_log_json_file" \
+    "${scan_log_args[@]}" \
     > "$scan_log_text_file"
   python3 -B "$script_dir/analyze_kavita_reader_latency.py" \
     "${scan_logs[@]}" \

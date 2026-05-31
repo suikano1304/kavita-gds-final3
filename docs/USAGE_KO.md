@@ -209,15 +209,17 @@ scripts/collect_gds_preflight.sh \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
   --snapshot-db \
   --check-archives \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --compare-scan-json /tmp/kavita-gds-preflight/before-scan-log-summary.json \
   --postflight-gates
 ```
 
-`--postflight-gates`는 전후 비교 결과를 `PASS`, `WARN`, `FAIL`로 요약합니다. `--check-archives`를 before/after 양쪽에 넣으면 직접 이미지가 있는 복구 가능 `Pages=0` archive와 nested archive를 분리해서 판정합니다. `--check-covers`를 양쪽에 넣으면 GDS config cover reference 감소 여부와 TXT missing-cover debt 변화도 판정합니다. CI나 자동화에서 실패 코드를 받고 싶으면 `--fail-on-gate-failure`를 추가합니다.
+`--postflight-gates`는 전후 비교 결과를 `PASS`, `WARN`, `FAIL`로 요약합니다. `--check-archives`를 before/after 양쪽에 넣으면 직접 이미지가 있는 복구 가능 `Pages=0` archive와 nested archive를 분리해서 판정합니다. `--check-covers`를 양쪽에 넣으면 GDS config cover reference 감소 여부와 TXT missing-cover debt 변화도 판정합니다. `--compare-scan-json`을 함께 넣으면 비강제 재스캔에서 처리된 series 수와 churn scan 수가 증가했는지도 별도로 판정합니다. CI나 자동화에서 실패 코드를 받고 싶으면 `--fail-on-gate-failure`를 추가합니다.
 
 확인하는 항목:
 

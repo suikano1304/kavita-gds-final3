@@ -86,6 +86,7 @@ scripts/collect_gds_preflight.sh \
   --check-archives \
   --check-covers \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --compare-scan-json /tmp/kavita-gds-preflight/before-scan-log-summary.json \
   --postflight-gates
 ```
 
@@ -93,5 +94,6 @@ scripts/collect_gds_preflight.sh \
 
 - `FAIL`이 없어야 한다.
 - `Pages=0`, same-series duplicate, TXT missing-cover debt가 `WARN`으로 남으면 목표 완료가 아니라 추가 분석 대상으로 둔다.
+- scan gate에서 non-forced processed series 또는 churn scan count가 `WARN`으로 남으면 재스캔 churn 감소가 아직 증명되지 않은 상태로 둔다.
 - cross-series duplicate는 자동 삭제 대상이 아니므로 증가하지 않는지만 확인한다.
 - cover cache gate가 실패하면 운영 config cover 보존 로직을 다시 봐야 한다.

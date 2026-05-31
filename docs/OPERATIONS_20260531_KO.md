@@ -221,11 +221,13 @@ scripts/collect_gds_preflight.sh \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
   --snapshot-db \
   --check-archives \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --compare-scan-json /tmp/kavita-gds-preflight/before-scan-log-summary.json \
   --postflight-gates
 ```
 

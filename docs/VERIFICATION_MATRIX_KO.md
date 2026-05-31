@@ -119,11 +119,14 @@ scripts/collect_gds_preflight.sh \
   --check-archives \
   --check-covers \
   --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --compare-scan-json /tmp/kavita-gds-preflight/before-scan-log-summary.json \
   --postflight-gates
 ```
 
-postflight 결과에 `FAIL`이 없어야 한다. `WARN`은 남은 debt가 줄지 않았다는 뜻이므로, 목표 완료가 아니라 추가 분석 대상으로 남긴다.
+postflight 결과에 `FAIL`이 없어야 한다. DB gate의 `WARN`은 남은 debt가 줄지 않았다는 뜻이고, scan gate의 `WARN`은 비강제 재스캔 churn이 줄지 않았다는 뜻이므로 목표 완료가 아니라 추가 분석 대상으로 남긴다.
 
 live DB는 `--snapshot-db`로 `/tmp` 사본을 만든 뒤 분석한다. 이 방식은 운영 DB를 수정하지 않으면서 WAL/SHM 대기로 preflight가 멈추는 문제를 피한다.
 
 `--check-covers`를 before/after 양쪽에 넣으면 cover 관련 gate도 함께 출력된다. 단, rclone source cover probe가 오래 걸릴 수 있으므로 필요하면 DB-only, `--check-archives`, `--check-covers`를 세 단계로 나눠 실행한다. `GDS config cover references decreased`는 실패로 보고, `TXT missing-cover debt unchanged`는 fallback cover가 아직 운영 DB에서 검증되지 않았다는 뜻으로 남긴다.
+
+`--compare-scan-json`을 넣으면 scan log summary에도 postflight gate가 붙는다. `non-forced processed series increased` 또는 `non-forced churn scan count increased`는 scanner churn이 악화된 것으로 보고 실패 처리한다. 두 항목이 `WARN`이면 scanner가 더 나빠지지는 않았지만 목표한 재스캔 churn 감소가 아직 증명되지 않은 상태다.
