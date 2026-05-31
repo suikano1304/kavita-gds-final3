@@ -518,6 +518,16 @@ rclone 상태:
 - 즉 prewarming은 효과가 있지만, 한 번에 전체 문제를 없애는 방식이 아니라 아직 차가운 다음 subtree로 병목이 이동하는 방식이다.
 - 대형 force scan을 운영 검증의 첫 단계로 쓰면 scanner 개선 효과와 rclone metadata warming 비용이 섞인다. 최신 이미지 검증은 작은 범위 scan, 특정 series scan, no-change scan을 먼저 보고 필요한 경우 subtree 단위 prewarm을 별도 절차로 분리해야 한다.
 
+운영 전환 후 추가 증거:
+
+- `0.9.0.2-5` 운영 이미지에서 작은 GDS 라이브러리를 일반 스캔했을 때, 새로 발견된 실제 폴더 1개만 처리한 뒤 다음 일반 스캔은 `Found 0 Series`, 전체 약 `70 ms`로 끝났다.
+- 같은 라이브러리를 force scan하자 `Found 69 Series that need processing in 90,796 ms`, 전체 `134 files / 69 series / 92,147 ms`가 걸렸다.
+- force scan의 series update 로그는 대부분 ms 단위였고, 총 시간의 대부분은 `Found ...` 로그 전 file discovery/YAML/rclone read 단계에서 발생했다.
+- force scan 중 rclone RC는 여러 `kavita.yaml` 읽기와 VFS cache 증가를 보여줬고, delete/rename/server-side move는 계속 0이었다.
+- force scan 후 same-series duplicate cleanup 후보는 전체 기준 `26 -> 13`으로 줄었고, 대상 작은 라이브러리의 duplicate file path는 0이 됐다.
+
+따라서 현재 남은 성능 병목은 “scanner가 series update를 오래 잡고 있는 문제”보다 “force scan이 GDS 트리의 YAML/파일 목록을 다시 읽는 비용” 쪽으로 더 강하게 좁혀진다. 일반 스캔은 최적화 효과가 확인됐고, duplicate cleanup은 force scan이 해당 라이브러리에 닿으면 실제로 작동한다.
+
 ## 원인 11: reader 지연은 scanner 병목과 분리해야 함
 
 운영 로그에는 스캔이 아닌 reader 요청에서도 긴 지연이 확인됐다. 예를 들어 `/api/reader/image` 요청 하나가 약 18.9초 걸린 사례가 있었다. 해당 DB 행은 archive format의 ZIP이고 파일 크기는 약 385MB였다.

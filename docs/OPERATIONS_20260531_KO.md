@@ -441,11 +441,22 @@ du -sh /mnt/data/rclone/cache/gds-service
 
 `/mnt/data/docker/kavita/report`에 받은 외부 제보의 compose 들여쓰기는 Discord 전달 과정에서 깨졌을 가능성이 큽니다. 따라서 해당 제보의 핵심은 YAML 문법 문제가 아니라, `0.9.0.2-4` 이미지에서 Web UI가 production bundle이 아니라 개발 bundle로 들어가 외부 브라우저가 `localhost:5000/api`를 호출하던 증상입니다.
 
+이후 제보 환경은 Oracle A1이 아니라 Proxmox 위 Ubuntu 환경으로 정정되었습니다. 따라서 이 사례는 ARM64 전용 문제로 보기 어렵고, `0.9.0.2-4` Web UI bundle 문제 또는 기존 DB/config volume 전환 상태를 우선 확인해야 합니다.
+
 현재 정리:
 
 - `0.9.0.2-4` Web UI bundle 문제는 `0.9.0.2-5`에서 수정했습니다.
 - compose 문법 자체가 원인인지 판단하려면 원본 compose 파일이나 `docker compose config` 출력이 필요합니다.
 - 제보에 포함된 UI 증상만 놓고 보면 `localhost:5000` 호출 문제가 우선 원인입니다.
+
+운영 컨테이너 전환 후 확인:
+
+- 실행 이미지: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`
+- 상태: `running healthy`, restart count `0`
+- `/kavita/wwwroot`의 실제 실행 JS/CSS/HTML에서 `localhost:5000`, `:5000/api`, Angular development mode 문자열: `0`건
+- startup manual migration과 EF migration은 정상 완료
+- DB `integrity_check`: `ok`
+- DB `foreign_key_check`: 위반 없음
 
 ## 승인 후 운영 전환 절차
 
@@ -502,6 +513,67 @@ pct exec 101 -- docker inspect kavita --format '{{.Config.Image}} {{.State.Statu
 ```
 
 DB backup은 자동으로 되돌리지 않습니다. startup 직후 DB integrity/FK가 깨졌거나 migration 중단이 확인될 때만, 컨테이너를 멈춘 뒤 어떤 backup으로 되돌릴지 별도 판단합니다.
+
+## 19:29 운영 전환 및 작은 라이브러리 검증
+
+승인 후 운영 컨테이너를 `0.9.0.2-5`로 전환했습니다.
+
+전환 전 백업:
+
+- compose backup: `/opt/compose/kavita/docker-compose.yml.bak-20260531-192819`
+- DB backup: `/mnt/data/docker/kavita/config/kavita.db.pre-0902-5-20260531-192819.bak`
+- appsettings backup: `/mnt/data/docker/kavita/config/appsettings.json.pre-0902-5-20260531-192819.bak`
+
+전환 결과:
+
+- compose image: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`
+- container image: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`
+- 상태: `running healthy`, restart count `0`
+- LXC 내부 `/api/health`: `Ok`
+- startup manual migration/EF migration: 정상 완료
+- SQLite integrity/FK: `ok`, 위반 없음
+
+전환 직후 postflight:
+
+- `Pages=0`: 49개로 증가 없음
+- 복구 가능 archive `Pages=0`: 39개로 증가 없음
+- same-series duplicate cleanup 후보: 26개로 전환 직후에는 변화 없음
+- cross-series duplicate: 153개로 증가 없음
+- MediaError: 637개로 증가 없음
+- GDS config cover references: `4,423 -> 4,423`, 감소 없음
+- TXT config cover series: `3,650 -> 3,650`, 감소 없음
+
+작은 라이브러리 일반 스캔:
+
+- 첫 일반 스캔은 기존 DB에 없던 실제 폴더 1개를 발견해 `1 Series / 4 files`를 처리했습니다.
+- 같은 라이브러리를 다시 일반 스캔하자 `Found 0 Series`, `0 files`, 전체 약 `70 ms`로 끝났습니다.
+- 이 결과는 변경 없음 최적화가 운영 이미지에서 정상 동작한다는 증거입니다.
+
+작은 라이브러리 force scan:
+
+- `Found 69 Series that need processing in 90,796 ms`
+- 전체 결과: `134 files / 69 series / 92,147 ms`
+- 대부분의 series update는 ms 단위였고, 총 시간 대부분은 `Found ...` 전 file discovery/YAML/rclone read 단계였습니다.
+- force scan 중 rclone RC에서 여러 `kavita.yaml` 읽기와 VFS cache 증가가 관찰됐습니다.
+- rclone `core/stats`: `errors 0`, `deletes 0`, `renames 0`, `serverSideMoves 0`
+
+force scan 후 postflight:
+
+- same-series duplicate cleanup 후보: `26 -> 13`
+- 해당 작은 라이브러리의 duplicate file path: `13 groups / 45 row refs -> 0`
+- cross-series duplicate: `153 -> 153`, 증가 없음
+- MediaError: `637 -> 637`, 증가 없음
+- GDS config cover references: `4,423 -> 4,424`, 감소 없음
+- TXT config cover series: `3,650 -> 3,650`, 감소 없음
+- DB integrity/FK: `ok`, 위반 없음
+
+운영 해석:
+
+- `0.9.0.2-5`는 운영 DB에서 startup FK 문제 없이 기동했습니다.
+- 일반 재스캔의 변경 없음 최적화는 실제 운영에서 sub-second로 확인됐습니다.
+- same-series duplicate cleanup은 작은 force scan에서 실제로 동작했습니다.
+- 다만 force scan의 병목은 scanner update 단계가 아니라 file discovery와 YAML/rclone read 단계입니다.
+- 남은 same-series duplicate는 아직 force scan이 닿지 않은 라이브러리의 scan debt이며, 작은 범위부터 순차적으로 처리하는 편이 안전합니다.
 
 ## 운영 체크리스트
 
