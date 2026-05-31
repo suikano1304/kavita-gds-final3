@@ -329,10 +329,44 @@ python3 scripts/diagnose_kavita_gds.py \
 - 런타임 스모크 검증: 제목 기반 PNG 생성 성공, Nanum Gothic 사용 시 한글 제목 렌더링 확인.
 - 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
 
+## 원인 7: `Pages=0` 잔여 행은 일반 스캔에서 복구되지 않을 수 있음
+
+파일:
+
+- `Kavita.Services/Scanner/ParseScannedFiles.cs`
+- `Kavita.Services/Scanner/ProcessSeries.cs`
+- `Kavita.Database/Repositories/SeriesRepository.cs`
+
+현재 구조:
+
+- GDS 일반 library scan은 폴더 mtime이 기존 `LastScanned`보다 오래되면 실제 파일 목록을 다시 읽지 않고, 기존 series 정보를 기반으로 fake `ParserInfo`만 만든다.
+- 이 최적화는 정상 상태에서는 빠른 재스캔에 필요하지만, DB에 이미 `Pages=0` 같은 scan debt가 남아 있으면 해당 파일을 다시 열 기회도 같이 사라진다.
+- 운영 DB 기준 `Pages=0` archive는 두 라이브러리에만 남아 있다.
+
+운영 DB 기준:
+
+| LibraryId | Library | Ext | Pages=0 files | Archive readable | Direct images | Nested archives |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| <redacted> | production-library-a | cbz | 10 | 10 | 0 | 84 |
+| <redacted> | production-library-d | zip | 39 | 39 | 13,301 | 0 |
+
+해석:
+
+- Library 4의 잔여 CBZ는 직접 이미지가 아니라 nested archive 중심이라 Kavita의 archive page counter 기준으로 `Pages=0`이 자연스러운 케이스다.
+- Library 9의 잔여 ZIP은 archive 자체가 읽히고 직접 이미지도 있으므로 파일 손상보다는 기존 DB row가 최적화 때문에 재분석되지 않은 상태로 보는 것이 맞다.
+- 전체 `Pages=0` 중 duplicate path와 직접 겹치는 것은 3 row뿐이라, 모든 `Pages=0`을 중복 row 문제로 단정하면 안 된다.
+
+적용한 보정:
+
+- source branch에서 `SeriesModified`에 `HasZeroPageFiles`를 추가했다.
+- GDS series에 `Pages=0` 파일이 하나라도 있으면 `HasSeriesFolderNotChangedSinceLastScan()`이 변경 없음으로 처리하지 않고 실제 scan path를 타도록 했다.
+- C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
+- 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
+
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.
-2. GDS archive 페이지 수가 0으로 남지 않게 고친다. 완료. 기존 DB 잔여 행은 별도 회복 필요.
+2. GDS archive 페이지 수가 0으로 남지 않게 고친다. 신규/변경 파일 보정 완료, 기존 DB scan debt 재분석 트리거는 source patch 완료, rebuild 필요.
 3. 운영 source, release source, GitHub 배포 source를 같은 기준으로 맞춘다. 완료.
 4. 기존 DB의 `Pages=0`, duplicate file path, media error를 읽기 전용 검증 쿼리로 분류한다. 1차 완료.
 5. GDS UI 제목 표시 누락과 cover cache 삭제 방어를 다음 release에 포함한다. source patch 완료, rebuild 필요.

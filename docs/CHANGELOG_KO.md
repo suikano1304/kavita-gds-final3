@@ -13,6 +13,7 @@
 - GDS TXT에서 `cover: TEXT`를 이미지 base64로 오인하지 않도록 보정했습니다.
 - 원본 커버와 YAML 이미지가 모두 없는 GDS TXT 시리즈는 제목 기반 cover를 Kavita config `covers` 디렉터리에 자동 생성하도록 했습니다.
 - 제목 기반 cover의 한글 렌더링을 위해 Docker image에 Nanum Gothic 폰트를 포함했습니다.
+- GDS 시리즈에 `Pages=0` 파일이 남아 있으면 폴더 변경 없음 최적화를 건너뛰고 실제 파일 목록을 다시 파싱하도록 했습니다.
 - C# backend build 검증은 통과했습니다. UI TypeScript 빌드는 로컬 `node_modules`가 없어 별도 release rebuild 단계에서 검증해야 합니다.
 
 ## 2026-05-31: GDS 증분 스캔 안정화 추가
