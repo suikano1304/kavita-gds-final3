@@ -220,8 +220,15 @@ scripts/collect_gds_preflight.sh \
   --host-root /mnt/data/rclone/gds \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
-  --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json
+  --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --postflight-gates
 ```
+
+postflight gate는 다음 기준으로 봅니다.
+
+- `FAIL`: SQLite integrity/FK 위반, `Pages=0` 증가, same-series duplicate 증가, cross-series duplicate 증가, MediaError 증가
+- `WARN`: `Pages=0` 또는 same-series duplicate가 줄지 않고 그대로 남음
+- `PASS`: 정합성 위반이 없고, 회복 대상이 줄었거나 최소한 증가하지 않음
 
 ## 운영 체크리스트
 

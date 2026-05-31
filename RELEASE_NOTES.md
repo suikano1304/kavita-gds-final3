@@ -31,6 +31,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Same-volume duplicate file path cleanup now preserves the chapter selected by the current scan instead of retaining an arbitrary earlier duplicate.
 - The read-only diagnostic script now prints SQLite foreign-key violations and classifies duplicate file path groups into cleanup-safe and cross-series cases.
 - The preflight collector records host architecture and Docker engine details, which helps separate Oracle A1 environment reports from generic image architecture issues.
+- Postflight comparison can now print explicit `PASS`, `WARN`, and `FAIL` gates for integrity, foreign keys, `Pages=0`, duplicate file paths, and media errors.
 - Built and packaged as `0.9.0.2-3` for `linux/amd64` and `linux/arm64`.
 
 ### 2026-05-31 GDS TXT fallback cover and scan debt recovery

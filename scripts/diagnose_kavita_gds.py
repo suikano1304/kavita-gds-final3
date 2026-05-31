@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 import zipfile
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".avif"}
@@ -432,6 +433,113 @@ def print_json_comparison(before_path: str, after: dict[str, object]) -> None:
     )
 
 
+def sum_count(rows: list[dict[str, object]], field: str, kind: str | None = None) -> int:
+    total = 0
+    for row in rows:
+        if kind is not None and row.get("Kind") != kind:
+            continue
+        total += int(row.get(field) or 0)
+    return total
+
+
+def gate_line(status: str, name: str, details: dict[str, object]) -> None:
+    print({
+        "status": status,
+        "gate": name,
+        **details,
+    })
+
+
+def print_postflight_gates(before_path: str, after: dict[str, object]) -> bool:
+    with open(before_path, "r", encoding="utf-8") as handle:
+        before = json.load(handle)
+
+    print("\n## postflight gates")
+    failed = False
+
+    integrity_after = after.get("integrity_check")
+    if integrity_after == "ok":
+        gate_line("PASS", "sqlite integrity", {"after": integrity_after})
+    else:
+        gate_line("FAIL", "sqlite integrity", {"after": integrity_after})
+        failed = True
+
+    fk_before = len(before.get("foreign_key_check", []))
+    fk_after = len(after.get("foreign_key_check", []))
+    if fk_after == 0:
+        gate_line("PASS", "foreign keys", {"before": fk_before, "after": fk_after})
+    else:
+        gate_line("FAIL", "foreign keys", {"before": fk_before, "after": fk_after})
+        failed = True
+
+    pages0_before = sum_count(before.get("pages0_by_library_ext", []), "Count")
+    pages0_after = sum_count(after.get("pages0_by_library_ext", []), "Count")
+    if pages0_after < pages0_before:
+        gate_line("PASS", "Pages=0 debt decreased", {"before": pages0_before, "after": pages0_after})
+    elif pages0_after == pages0_before:
+        gate_line("WARN", "Pages=0 debt unchanged", {"before": pages0_before, "after": pages0_after})
+    else:
+        gate_line("FAIL", "Pages=0 debt increased", {"before": pages0_before, "after": pages0_after})
+        failed = True
+
+    same_dup_before = sum_count(
+        before.get("duplicate_cleanup_candidates", []),
+        "Groups",
+        "same_series_same_volume",
+    )
+    same_dup_after = sum_count(
+        after.get("duplicate_cleanup_candidates", []),
+        "Groups",
+        "same_series_same_volume",
+    )
+    if same_dup_after < same_dup_before:
+        gate_line("PASS", "same-series duplicate groups decreased", {
+            "before": same_dup_before,
+            "after": same_dup_after,
+        })
+    elif same_dup_after == same_dup_before:
+        gate_line("WARN", "same-series duplicate groups unchanged", {
+            "before": same_dup_before,
+            "after": same_dup_after,
+        })
+    else:
+        gate_line("FAIL", "same-series duplicate groups increased", {
+            "before": same_dup_before,
+            "after": same_dup_after,
+        })
+        failed = True
+
+    cross_dup_before = sum_count(before.get("duplicate_cleanup_candidates", []), "Groups", "cross_series")
+    cross_dup_after = sum_count(after.get("duplicate_cleanup_candidates", []), "Groups", "cross_series")
+    if cross_dup_after <= cross_dup_before:
+        gate_line("PASS", "cross-series duplicate groups did not increase", {
+            "before": cross_dup_before,
+            "after": cross_dup_after,
+        })
+    else:
+        gate_line("FAIL", "cross-series duplicate groups increased", {
+            "before": cross_dup_before,
+            "after": cross_dup_after,
+        })
+        failed = True
+
+    media_errors_before = sum_count(before.get("media_errors_by_ext_comment", []), "Count")
+    media_errors_after = sum_count(after.get("media_errors_by_ext_comment", []), "Count")
+    if media_errors_after <= media_errors_before:
+        gate_line("PASS", "media errors did not increase", {
+            "before": media_errors_before,
+            "after": media_errors_after,
+        })
+    else:
+        gate_line("FAIL", "media errors increased", {
+            "before": media_errors_before,
+            "after": media_errors_after,
+        })
+        failed = True
+
+    return failed
+
+
 def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
     rows = list(con.execute("""
         select l.Id as LibraryId, lower(coalesce(mf.Extension, '')) as Ext, mf.FilePath
@@ -593,7 +701,13 @@ def main() -> None:
     parser.add_argument("--check-covers", action="store_true", help="Check source cover files vs expected cache names")
     parser.add_argument("--json-output", help="Write machine-readable baseline summary to this JSON file")
     parser.add_argument("--compare-json", help="Compare current summary with a previous --json-output file")
+    parser.add_argument("--postflight-gates", action="store_true", help="Print PASS/WARN/FAIL gates for a --compare-json run")
+    parser.add_argument("--fail-on-gate-failure", action="store_true", help="Exit non-zero if any --postflight-gates check fails")
     args = parser.parse_args()
+    if args.postflight_gates and not args.compare_json:
+        parser.error("--postflight-gates requires --compare-json")
+    if args.fail_on_gate_failure and not args.postflight_gates:
+        parser.error("--fail-on-gate-failure requires --postflight-gates")
 
     con = connect_readonly(args.db)
     json_summary = build_json_summary(con) if args.json_output or args.compare_json else None
@@ -614,6 +728,10 @@ def main() -> None:
         print(f"\nWrote JSON summary: {args.json_output}")
     if args.compare_json:
         print_json_comparison(args.compare_json, json_summary)
+    if args.postflight_gates:
+        failed = print_postflight_gates(args.compare_json, json_summary)
+        if failed and args.fail_on_gate_failure:
+            sys.exit(1)
 
 
 if __name__ == "__main__":
