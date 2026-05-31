@@ -11,8 +11,25 @@
 - 원인 후보는 대부분 분리됐다.
 - 진단 도구와 postflight gate는 준비됐다.
 - `0.9.0.2-5` 후보는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋까지 포함해 빌드됐다.
-- `0.9.0.2-5` 후보의 `linux/amd64` startup smoke test와 `linux/arm64` manifest 확인은 완료됐다.
+- `0.9.0.2-5` 공개 GHCR image의 `linux/amd64` startup smoke test와 `linux/arm64` manifest 확인은 완료됐다.
 - 운영 컨테이너는 아직 `local/kavita-gds:0.9.0.2-1`이므로, 운영 DB에서 최신 release/source의 회복/cleanup 효과는 아직 검증되지 않았다.
+
+## 2026-05-31 17:55 공개 GHCR image smoke
+
+운영 컨테이너는 변경하지 않고, 공개 이미지 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`를 운영 DB 사본으로 별도 포트에서 검증했다.
+
+- Pull digest: `sha256:e2e0c7c591b52a7b7c07f789326855ac92e7d003b90b6e5028e0285a6b8ad1ca`
+- Runtime image id: `sha256:852e407d868b0283fde994996b41bc69cd0d7fefb74165c1e27c5490cc28c723`
+- Test container: `kavita-gds-ghcr-0902-5-smoke`, port `5016:5000`
+- `/api/health`: `Ok`
+- `/api/admin/exists`: `true`
+- Container state: `running healthy`, restart count `0`
+- Startup logs: manual migrations and migrations completed, `BaseUrl=/`, `Kavita - v0.9.0.2`
+- Startup 후 DB copy: `integrity_check ok`, `foreign_key_check` 위반 없음
+- Web UI bundle: `/kavita/wwwroot`에서 `localhost:5000`, `:5000/api`, Angular development mode 문자열 없음
+- Production env chunk: document base URL 기반 `apiUrl: ${base}api/`, `hubUrl: ${base}hubs/`
+
+테스트 컨테이너와 임시 DB 사본은 검증 후 삭제했다.
 
 ## 2026-05-31 17:45 운영 baseline
 
