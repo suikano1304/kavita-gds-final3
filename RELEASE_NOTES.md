@@ -2,7 +2,7 @@
 
 This release provides the GDS scanfix build as a multi-platform OCI image archive.
 
-Version: `0.9.0.2-7`
+Version: `0.9.0.2-8`
 
 ## Included Platforms
 
@@ -21,11 +21,21 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
 - `linux/amd64` image startup was smoke-tested locally.
 - `linux/arm64` image build path and manifest were verified; native ARM validation should still be done on the target server.
-- `linux/amd64` container startup smoke test passed for `0.9.0.2-7`.
+- `linux/amd64` container startup smoke test passed for `0.9.0.2-8`.
 - The OCI manifest list was verified to contain both `linux/amd64` and `linux/arm64`.
 - The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 `0.9.0.2-8` default series sort hotfix
+
+- Fixed the default series sort so empty/new filter state uses last modified descending instead of sort-name ascending.
+- Fixed the Web UI filter state handling that converted an explicit descending value (`false`) back to ascending.
+- Updated backend null-sort fallbacks for series and bookmarks to last modified descending.
+- Verified the production API returns the same first page as `Series.LastModified desc` when no sort option is supplied.
+- Rebuilt `linux/amd64` and `linux/arm64` self-contained runtime packages.
+- Built a new multi-platform OCI archive with both `linux/amd64` and `linux/arm64`.
+- Passed a local `linux/amd64` startup smoke test for `0.9.0.2-8`.
 
 ### 2026-05-31 `0.9.0.2-7` GDS archive cover fallback hotfix
 

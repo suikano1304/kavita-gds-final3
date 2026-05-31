@@ -2,9 +2,20 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-0.9.0.2-7`
+현재 공개 릴리즈: `kavita-gds-0.9.0.2-8`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-05-31: `0.9.0.2-8` 기본 시리즈 정렬 hotfix
+
+아래 변경은 `0.9.0.2-8` 배포 후보에 포함했습니다.
+
+- 새 필터/정렬 조건 없음 상태에서 시리즈 기본 정렬이 제목 오름차순으로 돌아가던 문제를 수정했습니다.
+- Web UI의 기본 시리즈 정렬을 `최근 수정`으로 바꾸고, 기본 방향을 내림차순으로 지정했습니다.
+- 명시적인 내림차순 값(`false`)이 `|| true` 처리로 다시 오름차순이 되던 필터 상태 복원 버그를 수정했습니다.
+- 백엔드의 정렬 옵션 null fallback도 `LastModifiedDate desc`로 맞춰 API 호출자가 정렬 옵션을 보내지 않아도 같은 기준을 사용합니다.
+- 운영 API에서 정렬 옵션 없이 조회했을 때 DB의 `Series.LastModified desc` 순서와 일치하는 것을 확인했습니다.
+- `linux/amd64`, `linux/arm64` self-contained publish, multi-arch OCI build, `linux/amd64` startup smoke를 통과했습니다.
 
 ## 2026-05-31: `0.9.0.2-7` GDS archive 커버 fallback hotfix
 

@@ -632,6 +632,18 @@ python3 scripts/analyze_kavita_reader_latency.py \
 - source `cover.*`가 없는 series라도 기존 config cover cache를 삭제하지 않는다.
 - TXT series는 source cover가 없어도 스캔 오류로 남기지 않고, YAML/base64 또는 fallback cover 정책으로 일관되게 표시한다.
 
+## `0.9.0.2-8` 반영 상태
+
+`0.9.0.2-7` 운영 적용 뒤 scanner와 별개로 기본 시리즈 정렬이 제목 오름차순으로 돌아가는 문제가 확인됐다. UI 기본값과 백엔드 null sort fallback이 서로 `최근 수정 내림차순` 기준을 강제하지 못했고, UI 필터 상태 복원에서 명시적 `false` 값이 오름차순으로 바뀌는 문제가 있었다.
+
+`0.9.0.2-8`에는 다음 보정이 포함됐다.
+
+- UI 기본 series sort field를 `LastModified`로 변경했다.
+- series 기본 정렬 방향을 내림차순으로 지정했다.
+- 명시적 내림차순 값이 보존되도록 필터 상태 복원 로직을 보정했다.
+- 백엔드 series/bookmark null sort fallback을 `LastModifiedDate desc`로 맞췄다.
+- 운영 API에서 sort option 없이 조회했을 때 `Series.LastModified desc`와 일치함을 확인했다.
+
 ## `0.9.0.2-7` 반영 상태
 
 `0.9.0.2-6` 운영 적용 뒤 신규 GDS archive 시리즈 일부에서 파일과 page count는 정상인데 cover reference가 비어 있는 문제가 확인됐다. scanner가 파일을 놓친 것이 아니라, `MetadataService`의 GDS 커버 분기가 YAML/base64 커버나 TXT 제목 커버가 없을 때 일반 archive cover extraction으로 fallback하지 않고 종료한 것이 원인이었다.

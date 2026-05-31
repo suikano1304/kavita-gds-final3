@@ -610,6 +610,20 @@ force scan 후 postflight:
 - GitHub Release: `v0.9.0.2-7`
 - GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-7`, `latest`
 
+`0.9.0.2-7` 운영 적용 뒤 기본 시리즈 정렬이 다시 제목 오름차순으로 보이는 문제가 확인됐습니다.
+
+원인은 두 군데였습니다. Web UI의 기본 series sort field가 아직 `SortName`으로 남아 있었고, 필터 상태 복원 코드가 명시적인 내림차순 값(`false`)을 `|| true`로 다시 오름차순 처리했습니다. 백엔드의 null sort fallback도 `SortName asc`로 남아 있어 API 호출자가 sort option을 보내지 않으면 같은 문제가 재현될 수 있었습니다.
+
+`0.9.0.2-8`에서 이 부분을 수정했습니다.
+
+- Web UI 기본 series sort field를 `LastModified`로 변경했습니다.
+- series 기본 정렬 방향을 내림차순으로 변경했습니다.
+- 필터 상태 복원에서 `false` 값이 유지되도록 nullish coalescing을 사용했습니다.
+- 백엔드 series/bookmark null sort fallback도 `LastModifiedDate desc`로 맞췄습니다.
+- 운영 API에서 sort option 없이 조회했을 때 DB의 `Series.LastModified desc`와 같은 순서가 나오는 것을 확인했습니다.
+- GitHub Release: `v0.9.0.2-8`
+- GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-8`, `latest`
+
 재배포 전:
 
 ```bash
