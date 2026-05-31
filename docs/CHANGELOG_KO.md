@@ -2,9 +2,20 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-0.9.0.2-3`
+현재 공개 릴리즈: `kavita-gds-0.9.0.2-4`
 
-참고: source branch에는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋이 1개 더 있습니다. 다음 운영 검증 release를 만들 때 이 커밋까지 포함해야 source/release/운영 기준이 다시 일치합니다.
+참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-05-31: `0.9.0.2-4` source/release 정렬
+
+아래 변경은 `0.9.0.2-4` 배포 후보에 포함했습니다.
+
+- GDS 이어보기/볼륨 화면의 chapter title 처리에서 `LibraryType.GDS`를 chapter 계열 라이브러리로 처리하도록 보강했습니다.
+- 오래된 DB가 file type migration을 다시 탈 때 GDS 라이브러리에 `Archive`, `EPub`, `Pdf`, `Images`, `Text` 파일 그룹이 모두 포함되도록 보강했습니다.
+- `linux/amd64` 컨테이너 startup smoke test를 통과했습니다.
+- `linux/amd64`, `linux/arm64`를 포함한 OCI manifest를 생성하고 내부 platform 항목을 확인했습니다.
+- Oracle A1 startup FK 제보는 x86/NAS 공통 재현 문제가 아니라 arm64 서버의 기존 DB/migration/volume 상태를 비교해야 하는 환경별 사례로 분리했습니다.
+- 운영 컨테이너는 별도 승인 전까지 기존 태그를 유지하며, 운영 DB postflight는 아직 완료 판정에 포함하지 않았습니다.
 
 ## 2026-05-31: startup FK 진단 및 duplicate cleanup
 
@@ -24,7 +35,7 @@
 - scan log timing 요약 도구를 추가해 library scan 시간, file discovery 시간, series update 시간, 느린 reader HTTP 요청을 기본적으로 library/series 이름 노출 없이 분석할 수 있게 했습니다.
 - reader latency 상관분석 도구를 추가해 느린 reader 요청이 DB 파일 크기, format, page 수, cache folder 상태와 어떻게 연결되는지 경로/제목 노출 없이 확인할 수 있게 했습니다.
 - C# backend build, UI production build, multi-arch OCI build, `linux/amd64` startup smoke test를 통과했습니다.
-- `linux/arm64` 이미지는 QEMU 환경에서 entrypoint smoke test를 완료했습니다. x86/NAS에서 정상인데 Oracle A1에서만 startup FK 오류가 나면 이미지 아키텍처보다 기존 DB, 컨테이너 전환 상태, compose volume 연결을 먼저 확인하는 쪽으로 정리했습니다.
+- `linux/arm64` 이미지는 build/manifest 경로를 검증했습니다. x86/NAS에서 정상인데 Oracle A1에서만 startup FK 오류가 나면 이미지 아키텍처보다 기존 DB, 컨테이너 전환 상태, compose volume 연결을 먼저 확인하는 쪽으로 정리했습니다.
 
 ## 2026-05-31: GDS TXT fallback cover 및 scan debt 회복
 

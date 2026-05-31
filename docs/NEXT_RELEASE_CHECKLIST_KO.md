@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-현재 공개 릴리즈는 `0.9.0.2-3`이다. 이후 source branch에는 GDS 타입 처리 보강 커밋이 추가되어 있으므로, 운영 검증을 계속하려면 새 릴리즈 후보를 같은 source 기준으로 다시 만들어야 한다.
+현재 빌드 후보는 `0.9.0.2-4`이다. `0.9.0.2-3` 이후 source branch에 있던 GDS 타입 처리 보강 커밋까지 포함해 source snapshot, runtime tarball, multi-arch OCI archive를 다시 만들었다.
 
 ## 목적
 
@@ -17,7 +17,29 @@
 
 ## 권장 버전
 
-다음 후보는 `0.9.0.2-4`로 둔다.
+현재 후보는 `0.9.0.2-4`로 둔다.
+
+## 빌드 산출물
+
+- Source snapshot: `/tmp/kavita-gds-0.9.0.2-4-source.tar.gz`
+- OCI archive: `/tmp/kavita-gds-0.9.0.2-4.oci.tar`
+- Runtime tarball x64: `/tmp/kavita-linux-x64-0.9.0.2-4.tar.gz`
+- Runtime tarball arm64: `/tmp/kavita-linux-arm64-0.9.0.2-4.tar.gz`
+
+## 산출물 SHA256
+
+```text
+03f7e14899683d6ca632f88f8f83d52494ae9e2f62ba8c2f81ee61ce2761814e  kavita-gds-0.9.0.2-4.oci.tar
+a8812cbd7e992d7dd37c89768dce964651f7e99cae05a5127c5ed0e35689ede1  kavita-gds-0.9.0.2-4-source.tar.gz
+83b80653e203bbf7daf63febed647206b500d4eaab6fd85a3b7e048c218bad69  kavita-linux-x64-0.9.0.2-4.tar.gz
+6a07c72e6399ba82aad35798b0458c27a130b21e255d4f0e6d0f80821c677370  kavita-linux-arm64-0.9.0.2-4.tar.gz
+```
+
+## 완료한 검증
+
+- `linux/amd64` startup smoke test: `Ok`
+- OCI index 내부 manifest list: `linux/amd64`, `linux/arm64` 확인
+- 운영 컨테이너는 변경하지 않음
 
 ## 빌드 전 확인
 
@@ -34,7 +56,7 @@ git -C /root/Kavita-GDS status --short
 3. `linux/amd64` startup smoke test 통과
 4. `linux/arm64` manifest 포함 확인
 5. 가능하면 QEMU entrypoint smoke test 통과
-6. 운영 DB 사본으로 startup smoke test 통과
+6. 운영 DB 사본 또는 Oracle A1 제보 DB로 startup smoke test 통과
 7. public release asset과 GHCR image가 같은 source snapshot에서 생성됐는지 확인
 
 ## 운영 적용 전 baseline

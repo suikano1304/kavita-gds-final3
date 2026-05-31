@@ -109,11 +109,11 @@ https://github.com/suikano1304/Kavita-GDS
 현재 repo의 공개 배포 기준:
 
 - 이미지 이름: `ghcr.io/suikano1304/kavita-gds`
-- 권장 태그: `0.9.0.2-3`
+- 권장 태그: `0.9.0.2-4`
 - latest 태그도 publish workflow에서 같이 갱신합니다.
 - release asset 이름은 `kavita-gds.tar.gz`로 정리했습니다.
 
-현재 문서와 배포 후보는 `0.9.0.2-3` 기준입니다. 운영 컨테이너 적용 여부는 compose의 `image:`와 실행 중인 컨테이너 이미지를 별도로 확인해야 합니다.
+현재 문서와 배포 후보는 `0.9.0.2-4` 기준입니다. 운영 컨테이너 적용 여부는 compose의 `image:`와 실행 중인 컨테이너 이미지를 별도로 확인해야 합니다.
 
 배포 확인:
 
@@ -158,13 +158,13 @@ https://github.com/suikano1304/Kavita-GDS
 
 운영 적용 전 남은 확인:
 
-- `0.9.0.2-3`을 운영 컨테이너에 적용한 뒤 작은 라이브러리부터 재스캔합니다.
+- `0.9.0.2-4`를 운영 컨테이너에 적용한 뒤 작은 라이브러리부터 재스캔합니다.
 - same-series/same-volume duplicate file path group이 감소하는지 확인합니다.
 - `Pages=0` 잔여 ZIP/CBZ 중 실제로 복구 가능한 파일과 nested archive 구조를 분리합니다.
 
 ## 운영 적용 전 baseline
 
-`0.9.0.2-3` 운영 적용 전, 현재 운영 컨테이너와 DB 상태를 다시 확인했습니다.
+`0.9.0.2-4` 운영 적용 전, 현재 운영 컨테이너와 DB 상태를 다시 확인했습니다.
 
 운영 상태:
 
@@ -193,7 +193,7 @@ https://github.com/suikano1304/Kavita-GDS
 
 해석:
 
-- `0.9.0.2-3` 적용 후 우선 확인할 자동 cleanup 대상은 same-series/same-volume duplicate입니다.
+- `0.9.0.2-4` 적용 후 우선 확인할 자동 cleanup 대상은 same-series/same-volume duplicate입니다.
 - cross-series duplicate는 자료 구조나 분류 의도일 수 있으므로 자동 삭제 검증 대상으로 보지 않습니다.
 - `Pages=0` 중 nested archive 중심 CBZ는 파일 구조 문제일 가능성이 크고, 직접 이미지가 있는 ZIP 잔여는 재스캔으로 회복 가능한지 확인해야 합니다.
 

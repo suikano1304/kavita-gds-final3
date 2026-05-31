@@ -10,8 +10,8 @@
 
 - 원인 후보는 대부분 분리됐다.
 - 진단 도구와 postflight gate는 준비됐다.
-- 공개 release `0.9.0.2-3`에는 주요 scanner 보정이 포함됐다.
-- source branch에는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋이 1개 더 있다.
+- `0.9.0.2-4` 후보는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋까지 포함해 빌드됐다.
+- `0.9.0.2-4` 후보의 `linux/amd64` startup smoke test와 `linux/arm64` manifest 확인은 완료됐다.
 - 운영 컨테이너는 아직 `local/kavita-gds:0.9.0.2-1`이므로, 운영 DB에서 최신 release/source의 회복/cleanup 효과는 아직 검증되지 않았다.
 
 ## 완료 조건
@@ -22,20 +22,20 @@
 | archive `Pages=0` 회복 | 직접 이미지가 있는 `Pages=0` ZIP이 운영 재스캔 후 감소 | 현재 39개 ZIP은 내부 이미지 13,301개가 있어 복구 가능 debt로 분류됨 | 미검증 |
 | nested archive 한계 분리 | nested archive CBZ를 자동 회복 대상에서 제외하고 자료 구조 문제로 분류 | 10개 CBZ가 내부 ZIP 84개 구조로 분류됨 | 완료 |
 | `kavita.yaml` 우선 메타데이터 | `EnableMetadata=false`에서도 YAML 안전 필드가 반영되고 `meta.Name`이 회차명을 덮지 않음 | 표본 검증과 source 보정 완료 | 부분 완료 |
-| GDS reader/title routing | GDS mixed-format에서 chapter-info/title rendering 예외가 사라짐 | `0.9.0.2-3`에 주요 보정 포함. source branch에는 이어보기/볼륨 표시와 오래된 file type migration 보강이 추가됨 | 미검증 |
+| GDS reader/title routing | GDS mixed-format에서 chapter-info/title rendering 예외가 사라짐 | `0.9.0.2-4` 후보에 이어보기/볼륨 표시와 오래된 file type migration 보강 포함. 운영 적용 전 | 부분 완료 |
 | cover cache 보존 | source `cover.*`가 없어도 기존 config cover cache가 불필요하게 삭제되지 않음 | cover risk 분류와 postflight cover gate 준비, 보정 포함 | 미검증 |
 | TXT fallback cover | 원본 cover 없는 TXT가 오류가 아니라 config cover fallback으로 처리됨 | TXT cover state JSON/gate 준비, fallback 보정 포함 | 미검증 |
-| duplicate cleanup | same-series/same-volume duplicate group이 운영 재스캔 후 감소 | 현재 same-series/same-volume group이 남아 있음. cleanup patch는 `0.9.0.2-3` 포함 | 미검증 |
+| duplicate cleanup | same-series/same-volume duplicate group이 운영 재스캔 후 감소 | 현재 same-series/same-volume group이 남아 있음. cleanup patch는 `0.9.0.2-4` 포함 | 미검증 |
 | cross-series duplicate 정책 | 자동 삭제하지 않고 수동 판단 대상으로 분리 | cross-series group 153개가 자동 cleanup 제외 대상으로 문서화됨 | 완료 |
-| startup FK 제보 분리 | x86/NAS 정상, Oracle A1 사례는 DB/migration/volume 상태 확인 대상으로 분리 | 운영 DB 사본 startup smoke test 통과, FK 위반 없음 | 부분 완료 |
+| startup FK 제보 분리 | x86/NAS 정상, Oracle A1 사례는 DB/migration/volume 상태 확인 대상으로 분리 | `0.9.0.2-4` 빈 config startup 통과. 제보는 Oracle A1 환경별 DB/migration/volume 비교 대상으로 분리 | 부분 완료 |
 | scan timing 병목 분리 | file discovery, series update, total time을 별도 지표로 수집 | scan log summary 도구와 실제 로그 분석 완료 | 완료 |
 | reader latency 분리 | scanner 병목과 reader cache/rclone 지연을 별도 지표로 수집 | slow reader request 8개 중 7개 ZIP, cache/file size 상관분석 완료 | 완료 |
 | MediaError 원인 분류 | scanner bug, EPUB 구조 문제, PDF 문제, archive 문제를 분리 | MediaError classification 도구와 운영 DB 분류 완료 | 완료 |
-| source/release/운영 일치 | 운영 이미지가 공개 release와 같은 source 기준으로 실행됨 | source branch가 `0.9.0.2-3`보다 1개 커밋 앞섬. 운영은 아직 `0.9.0.2-1` | 미검증 |
+| source/release/운영 일치 | 운영 이미지가 공개 release와 같은 source 기준으로 실행됨 | `0.9.0.2-4` 후보 빌드 완료. 운영은 아직 `0.9.0.2-1` | 미검증 |
 
 ## Postflight 기준
 
-운영에 최신 source가 반영된 release를 적용한 뒤 아래가 확인되어야 최종 완료로 볼 수 있다. 현재 기준으로는 `0.9.0.2-3` 이후 source 보강이 있으므로, 다음 운영 검증 대상은 새 release 후보가 되어야 한다.
+운영에 최신 source가 반영된 release를 적용한 뒤 아래가 확인되어야 최종 완료로 볼 수 있다. 현재 운영 검증 대상은 `0.9.0.2-4` 후보이다.
 
 1. `PRAGMA integrity_check`가 `ok`다.
 2. `PRAGMA foreign_key_check` 결과가 비어 있다.

@@ -3,9 +3,9 @@ set -euo pipefail
 
 REPO_NAME="${REPO_NAME:-Kavita-GDS}"
 VISIBILITY="${VISIBILITY:-public}"
-TAG="${TAG:-v0.9.0.2-3}"
+TAG="${TAG:-v0.9.0.2-4}"
 TITLE="${TITLE:-Kavita GDS}"
-ASSET="${ASSET:-/mnt/data/docker/kavita/release/kavita-gds.tar.gz}"
+ASSET="${ASSET:-/tmp/kavita-gds-0.9.0.2-4.tar.gz}"
 NOTES_FILE="${NOTES_FILE:-RELEASE_NOTES.md}"
 
 if [[ -z "${GITHUB_TOKEN:-}" ]]; then

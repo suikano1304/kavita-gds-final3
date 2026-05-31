@@ -2,6 +2,8 @@
 
 This release provides the GDS scanfix build as a multi-platform OCI image archive.
 
+Version: `0.9.0.2-4`
+
 ## Included Platforms
 
 - `linux/amd64`
@@ -18,10 +20,21 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Built from the GDS scanfix source snapshot.
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
 - `linux/amd64` image startup was smoke-tested locally.
-- `linux/arm64` image entrypoint was smoke-tested under QEMU; native ARM validation should still be done on the target server.
+- `linux/arm64` image build path and manifest were verified; native ARM validation should still be done on the target server.
+- `linux/amd64` container startup smoke test passed for `0.9.0.2-4`.
+- The OCI manifest list was verified to contain both `linux/amd64` and `linux/arm64`.
 - The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 `0.9.0.2-4` source/release alignment
+
+- Added GDS handling to chapter-title routing in continue-reading and volume-detail views.
+- Added GDS handling to the old file-type migration so legacy databases include Archive, EPub, Pdf, Images, and Text groups for GDS libraries.
+- Built `linux/amd64` and `linux/arm64` runtime tarballs from the same source snapshot.
+- Built a multi-platform OCI archive containing both `linux/amd64` and `linux/arm64`.
+- Passed a local `linux/amd64` startup smoke test.
+- Separated the Oracle A1 startup FK report from generic x86/NAS behavior. If the same database or image starts on x86/NAS but fails on Oracle A1, compare the existing DB migration state, volume mapping, previous shutdown state, and foreign-key diagnostics first.
 
 ### 2026-05-31 startup FK diagnostics and duplicate cleanup
 
@@ -37,7 +50,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Archive validation can be written into the JSON baseline, so postflight gates can separate recoverable direct-image `Pages=0` archives from nested archive structures.
 - Added a read-only scan-log timing summarizer that reports library scan, file discovery, series update timings, and slow reader HTTP requests without exposing library or series names by default.
 - Added a read-only reader latency correlator that maps slow reader requests to DB file size, format, page count, and cache-folder state without exposing titles or paths by default.
-- Built and packaged as `0.9.0.2-3` for `linux/amd64` and `linux/arm64`.
+- Built and packaged as `0.9.0.2-4` for `linux/amd64` and `linux/arm64`.
 
 ### 2026-05-31 GDS TXT fallback cover and scan debt recovery
 
@@ -104,8 +117,8 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
-- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3`.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-4`.
 
 ## Caveat
 
-This host is `amd64`, so `arm64` was build/manifest verified and entrypoint-tested under QEMU, but not fully runtime-tested on native ARM hardware.
+This host is `amd64`, so `arm64` was build/manifest verified, but not fully runtime-tested on native ARM hardware.

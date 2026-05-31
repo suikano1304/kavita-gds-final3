@@ -4,6 +4,8 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix를 포함하며, `linux/amd64`와 `linux/arm64`를 지원합니다.
 
+현재 배포 기준은 `0.9.0.2-4`입니다. `0.9.0.2-3` 이후 GDS 화면 표시와 오래된 DB의 file type migration 보강까지 포함했습니다.
+
 2026-05-31 운영 서버에는 `kavita.yaml` 메타데이터 반영과 회차 제목 보정 패치를 추가 검증했습니다. 해당 운영 기록은 [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md)에 정리했습니다.
 
 추가로 GDS/rclone 재스캔 병목, 혼합 폴더 스캔 문제, TXT 커버 부재 문제를 확인했습니다. 일반 재스캔은 빠르게 유지하고, 누락 복구가 필요한 경우만 실제 파일 목록을 다시 읽도록 정리했습니다. 커버가 없는 GDS TXT 시리즈는 외부 API 없이 제목 기반 커버를 Kavita config에 생성합니다.
@@ -11,7 +13,7 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 ## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-4
 ```
 
 최신 태그도 제공합니다.
@@ -20,14 +22,14 @@ docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
 docker pull ghcr.io/suikano1304/kavita-gds:latest
 ```
 
-운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-3` 사용을 권장합니다.
+운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-4` 사용을 권장합니다.
 
 ## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
+    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-4
     container_name: kavita
     restart: always
     ports:
@@ -50,7 +52,7 @@ services:
 
 Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-3>
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-4>
 - File: `kavita-gds.tar.gz`
 - SHA256: GitHub Release의 `SHA256SUMS` 또는 저장소 루트 [SHA256SUMS](SHA256SUMS)를 확인하세요.
 
@@ -75,6 +77,8 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - 원본 커버가 없는 GDS TXT 시리즈에 제목 기반 fallback cover 생성
 - startup migration/BaseUrl 저장 단계의 SQLite FK 오류 진단 로그 보강
 - same-volume duplicate file path cleanup 보강
+- GDS 이어보기/볼륨 화면에서 `LibraryType.GDS`를 chapter 계열로 처리
+- 오래된 DB의 file type migration에서 GDS 기본 파일 그룹 보강
 - 읽기 전용 GDS 진단 스크립트 추가
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
@@ -100,4 +104,4 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 이 이미지는 공식 Kavita 이미지가 아닙니다. 개인 GDS/rclone 읽기 전용 마운트 환경에서 스캔 안정성을 확인하기 위해 만든 비공식 빌드입니다.
 
-`arm64` 이미지는 build/manifest 검증과 QEMU 기반 entrypoint smoke test를 완료했습니다. 현재 startup SQLite FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 arm64 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 DB 또는 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 난다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 `0.9.0.2-3`은 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.
+`arm64` 이미지는 build/manifest 검증까지 완료했습니다. 현재 startup SQLite FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 arm64 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 DB 또는 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 난다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 `0.9.0.2-4`는 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.

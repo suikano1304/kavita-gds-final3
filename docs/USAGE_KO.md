@@ -15,13 +15,13 @@
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-4
 ```
 
 Compose에서는 아래 이미지를 사용하면 됩니다.
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-4
 ```
 
 아래 수동 다운로드 방식은 GHCR을 쓰지 않는 환경을 위한 대체 방법입니다.
@@ -36,7 +36,7 @@ kavita-gds.tar.gz
 
 ```bash
 curl -L -o kavita-gds.tar.gz \
-  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-3/kavita-gds.tar.gz
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-4/kavita-gds.tar.gz
 ```
 
 체크섬 확인:
@@ -74,7 +74,7 @@ Docker daemon으로 가져오기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker-daemon:local/kavita-gds:0.9.0.2-3
+  docker-daemon:local/kavita-gds:0.9.0.2-4
 ```
 
 registry로 밀어 넣기:
@@ -82,7 +82,7 @@ registry로 밀어 넣기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-3
+  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-4
 ```
 
 registry에 올린 뒤 compose의 `image:` 값을 해당 registry 주소로 바꾸면 됩니다.
@@ -108,7 +108,7 @@ compose/docker-compose.production.yml
 기본 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-4
 ```
 
 반드시 자신의 환경에 맞게 아래 경로를 수정하세요.
@@ -273,7 +273,7 @@ TXT 파일은 파일 내부에서 추출할 표지가 없으므로 원본 `cover
 
 - 공식 Kavita 이미지가 아닙니다.
 - 기존 Kavita DB를 연결하기 전에는 백업을 권장합니다.
-- `arm64` 이미지는 빌드/manifest 검증과 QEMU entrypoint smoke test를 완료했습니다. 현재 startup FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 native ARM 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 나면 이미지 아키텍처보다 해당 서버의 DB/migration 상태, 기존 컨테이너 종료 상태, compose volume 연결을 먼저 확인하세요.
+- `arm64` 이미지는 빌드/manifest 검증까지 완료했습니다. 현재 startup FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 native ARM 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 나면 이미지 아키텍처보다 해당 서버의 DB/migration 상태, 기존 컨테이너 종료 상태, compose volume 연결을 먼저 확인하세요.
 - 이 repo에는 큰 binary 파일을 직접 commit하지 않습니다. 큰 파일은 Release asset으로만 배포합니다.
 
 ## Oracle A1 startup FK 오류 확인
@@ -293,7 +293,7 @@ sqlite3 /path/to/kavita.db 'PRAGMA integrity_check;'
 sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
 ```
 
-`0.9.0.2-3` 이후 이미지는 BaseUrl 저장 단계에서 FK 오류가 발생하면 `PRAGMA foreign_key_check` 결과 일부를 로그에 남깁니다. x86에서는 정상이고 Oracle 쪽에서만 실패한다면, 우선 새/이전 컨테이너가 같은 DB를 동시에 잡지 않았는지, compose의 `/kavita/config` volume이 의도한 DB를 가리키는지, 이전 이미지에서 일부 migration만 반영된 DB인지 확인하는 것이 좋습니다.
+`0.9.0.2-4` 이후 이미지는 BaseUrl 저장 단계에서 FK 오류가 발생하면 `PRAGMA foreign_key_check` 결과 일부를 로그에 남깁니다. x86에서는 정상이고 Oracle 쪽에서만 실패한다면, 우선 새/이전 컨테이너가 같은 DB를 동시에 잡지 않았는지, compose의 `/kavita/config` volume이 의도한 DB를 가리키는지, 이전 이미지에서 일부 migration만 반영된 DB인지 확인하는 것이 좋습니다.
 
 `diagnose_kavita_gds.py` 출력의 `startup/migration state` 섹션에서 다음 값을 비교하세요.
 
