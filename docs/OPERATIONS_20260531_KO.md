@@ -378,6 +378,31 @@ Warning! production-library-e has metadata turned off
 - 운영 전환 후 검증은 전체/대형 force scan부터 시작하지 말고, 작은 라이브러리나 특정 series scan부터 진행해야 합니다.
 - scanner 성능 판정은 `file discovery`와 `series update`를 분리해서 봐야 합니다.
 
+## 19:12 file discovery 직접 측정
+
+Kavita를 거치지 않고 PVE host의 rclone mount에서 텍스트 라이브러리 경로를 직접 순회했습니다. 새 도구는 기본적으로 경로명을 안정 해시로 숨기고, top-level child별 traversal 시간을 JSON line으로 출력합니다.
+
+명령:
+
+```bash
+scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path> \
+  --time-limit 120
+```
+
+확인 결과:
+
+- `--max-depth 1`로 얕게 보면 12개 top-level, 579개 하위 directory가 약 6.5ms에 끝났습니다.
+- 전체 깊이에서는 첫 번째 top-level child가 약 13ms에 끝났습니다.
+- 두 번째 top-level child는 120초 time limit에 걸렸고, 그동안 `dirs 452`, `files 641`, `scandir_calls 247`까지만 처리했습니다.
+- 해당 child를 다시 root로 잡아 측정하니, 내부 child 중 하나는 약 24초, 다른 하나는 약 96초 이상을 소비하며 다시 120초 time limit에 걸렸습니다.
+
+운영 해석:
+
+- 텍스트 라이브러리 force scan이 느린 핵심은 root listing이 아니라 특정 깊은 하위 트리의 반복 `scandir/stat`입니다.
+- 많은 작은 TXT/YAML 파일과 하위 directory가 rclone/FUSE 왕복을 크게 만들고 있습니다.
+- `0.9.0.2-5`의 scanner update 최적화는 series update 비용을 줄일 수 있지만, 대형 force scan의 rclone file discovery 비용 자체를 없애지는 못합니다.
+- 운영 전환 후 검증 순서는 작은 범위 scan, 특정 series scan, no-change scan, 필요한 경우 작은 library force scan 순서가 안전합니다.
+
 ## 승인 후 운영 전환 절차
 
 현재 운영 compose는 LXC 101의 `/opt/compose/kavita/docker-compose.yml`이고, 실행 중인 이미지는 `local/kavita-gds:0.9.0.2-1`입니다. 전환 대상 이미지는 LXC 101에 이미 받아져 있는 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`입니다. 아래 절차는 운영 컨테이너를 재시작하므로 명시적으로 승인한 뒤에만 실행합니다.

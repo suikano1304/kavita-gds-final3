@@ -475,6 +475,36 @@ python3 scripts/summarize_kavita_scan_logs.py \
 - 같은 라이브러리라도 패치 전후 또는 force 여부에 따라 병목 위치가 달라지므로, 단순 총 시간만 보면 원인을 잘못 짚을 수 있다.
 - postflight에서는 DB gate와 별도로 scan log summary의 `found_ms`, `series_update_ms_sum`, `processed_series`, `processed_files`를 같이 비교해야 한다.
 
+### 2026-05-31 file discovery 직접 측정
+
+Kavita 로그만으로는 `Found N Series that need processing in X ms` 전의 시간이 실제 어디서 쓰이는지 알기 어렵다. 그래서 read-only 파일 트리 프로파일러를 추가했다.
+
+```bash
+scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path> \
+  --time-limit 120
+```
+
+도구 특징:
+
+- DB나 Kavita API를 사용하지 않고 `os.scandir` 기반으로 media tree만 읽는다.
+- 기본 출력은 경로명을 안정 해시로 숨긴다.
+- `--show-names`를 넣은 경우에만 실제 경로명을 출력한다.
+- top-level child별 elapsed time, file/dir count, extension count, slowest scandir path를 JSON line으로 출력한다.
+
+측정 결과:
+
+- 같은 경로의 `--max-depth 1` 측정은 12개 top-level, 579개 하위 directory를 약 6.5ms에 끝냈다.
+- 전체 깊이 측정은 첫 번째 top-level child를 약 13ms에 끝냈지만, 두 번째 top-level child에서 120초 time limit에 도달했다.
+- 느린 child는 120초 동안 `dirs 452`, `files 641`, `scandir_calls 247`만 처리했고, slowest single scandir는 약 1.2초였다.
+- 느린 child를 다시 root로 삼아 측정하니, 그 내부에서 한 child는 약 24초, 다른 child는 약 96초 이상을 소비하며 120초 time limit에 도달했다.
+
+해석:
+
+- 루트 또는 1-depth directory listing 자체가 느린 것이 아니다.
+- 특정 깊은 하위 트리에서 많은 작은 TXT/YAML 파일과 directory stat/listing이 rclone/FUSE 왕복으로 누적된다.
+- 최신 이미지 `0.9.0.2-5`의 별도 scan smoke에서 텍스트 중심 라이브러리 force scan이 file scan 시작 후 멈춘 현상은 이 직접 측정과 같은 계열이다.
+- 따라서 대형 텍스트 라이브러리 force scan은 Kavita scanner update 최적화만으로 해결할 수 없고, file discovery 범위 축소, 변경 후보 제한, rclone directory cache 예열/TTL, 특정 subtree 분할 검증이 필요하다.
+
 ## 원인 11: reader 지연은 scanner 병목과 분리해야 함
 
 운영 로그에는 스캔이 아닌 reader 요청에서도 긴 지연이 확인됐다. 예를 들어 `/api/reader/image` 요청 하나가 약 18.9초 걸린 사례가 있었다. 해당 DB 행은 archive format의 ZIP이고 파일 크기는 약 385MB였다.
