@@ -11,20 +11,26 @@ This release provides the GDS scanfix build as a multi-platform OCI image archiv
 
 `kavita-gds.tar.gz`
 
-SHA256:
-
-```text
-715964fcaea4bcd5c80892234b6114b6e2fcc43a38b96a5dbc81b00c966478fb
-```
+Use the repository `SHA256SUMS` file or the release checksum note to verify the downloaded asset.
 
 ## Verification
 
-- Built from the scanfix source snapshot.
+- Built from the GDS scanfix source snapshot.
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
-- The package does not include the intermediate `folderpath` image.
-- The package does not include the later webtoon patch tree.
+- `linux/amd64` image startup was smoke-tested locally.
+- The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 GDS TXT fallback cover and scan debt recovery
+
+- Added a local title-cover generator for GDS TXT series that have no folder cover and no YAML base64 cover.
+- Treated `cover: TEXT` and external cover URLs as non-image hints, so the scanner does not mistake them for embedded cover data.
+- Generated fallback covers are written only to Kavita config cover storage, never to the GDS/rclone media mount.
+- Bundled Nanum Gothic in the Docker image so generated Korean title covers render correctly.
+- Preserved existing config cover cache when the GDS source folder has no `cover.*` file.
+- Forced a real rescan for GDS series that still have `Pages=0` files, allowing stale scan debt to recover on the next library scan.
+- Verified backend build, UI production build, generated-cover smoke test, `linux/amd64` container startup, and multi-arch OCI manifest contents.
 
 ### 2026-05-31 GDS incremental scan stabilization
 
@@ -81,7 +87,7 @@ SHA256:
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
-- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1`.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2`.
 
 ## Caveat
 

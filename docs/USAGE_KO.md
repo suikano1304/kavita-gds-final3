@@ -15,13 +15,13 @@
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
 ```
 
 Compose에서는 아래 이미지를 사용하면 됩니다.
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
 ```
 
 아래 수동 다운로드 방식은 GHCR을 쓰지 않는 환경을 위한 대체 방법입니다.
@@ -36,7 +36,7 @@ kavita-gds.tar.gz
 
 ```bash
 curl -L -o kavita-gds.tar.gz \
-  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-1/kavita-gds.tar.gz
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-2/kavita-gds.tar.gz
 ```
 
 체크섬 확인:
@@ -45,11 +45,7 @@ curl -L -o kavita-gds.tar.gz \
 sha256sum kavita-gds.tar.gz
 ```
 
-기대값:
-
-```text
-c9ed793dc3c91ce341ea3cbfa5974d79544509353c0c17ca0f5a0a368433e08c
-```
+기대값은 GitHub Release의 `SHA256SUMS` 또는 저장소 루트 `SHA256SUMS`를 기준으로 확인하세요.
 
 ## 압축 해제
 
@@ -78,7 +74,7 @@ Docker daemon으로 가져오기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker-daemon:local/kavita-gds:0.9.0.2-1
+  docker-daemon:local/kavita-gds:0.9.0.2-2
 ```
 
 registry로 밀어 넣기:
@@ -86,7 +82,7 @@ registry로 밀어 넣기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-1
+  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-2
 ```
 
 registry에 올린 뒤 compose의 `image:` 값을 해당 registry 주소로 바꾸면 됩니다.
@@ -112,7 +108,7 @@ compose/docker-compose.production.yml
 기본 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
 ```
 
 반드시 자신의 환경에 맞게 아래 경로를 수정하세요.
@@ -173,6 +169,14 @@ python3 scripts/diagnose_kavita_gds.py \
 - MediaError 분포
 - `Pages=0` ZIP/CBZ의 내부 이미지 또는 nested archive 여부
 - 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
+
+## TXT 커버 정책
+
+TXT 파일은 파일 내부에서 추출할 표지가 없으므로 원본 `cover.jpg`, `cover.png`, `cover.webp` 또는 `kavita.yaml`의 base64 cover가 우선입니다.
+
+위 커버가 모두 없고 GDS TXT 시리즈로 판정되면, 이 빌드는 외부 API나 외부 이미지 다운로드 없이 제목 기반 fallback cover를 Kavita config `covers` 디렉터리에 생성합니다. GDS/rclone 원본 마운트에는 쓰지 않습니다.
+
+`kavita.yaml`의 `cover: TEXT`는 이미지가 아니라 텍스트 자료 표식으로 취급합니다.
 
 ## 어떤 경우에 쓰는가
 

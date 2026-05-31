@@ -150,8 +150,8 @@ python3 scripts/diagnose_kavita_gds.py \
 
 - 운영 이미지: `local/kavita-gds:0.9.0.2-1`
 - source branch: `codex/gds-light-novel-scan-fixes`
-- release source tarball: 핵심 scanner 파일 SHA256이 source branch와 일치
-- public GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-1`, `latest`
+- release candidate: `0.9.0.2-2`
+- public GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-1`, `latest` 기준에서 갱신 예정
 
 남은 운영 원칙:
 
@@ -177,7 +177,7 @@ python3 scripts/diagnose_kavita_gds.py \
 
 - source branch에서 `LibraryType.GDS`를 Manga 제목 렌더링 경로로 태우도록 패치했다.
 - source commit: `7e0279e fix: render GDS entity titles`
-- 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다. 다음 release rebuild 때 source tarball, 운영 이미지, GHCR 이미지를 같이 갱신해야 한다.
+- 이 패치는 `0.9.0.2-2` 배포 후보 이미지와 source tarball에 포함했다.
 
 ## 원인 5: 회차 제목과 파일명 제목이 Kavita 내부에서 다른 필드로 분리됨
 
@@ -277,7 +277,7 @@ python3 scripts/diagnose_kavita_gds.py \
 - source branch에서 source `cover.*`가 없을 때 기존 config cache 파일을 삭제하지 않도록 패치했다.
 - source commit: `77fa01f fix: preserve GDS cover cache fallback`
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 480 warnings, 0 errors.
-- 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
+- 이 패치는 `0.9.0.2-2` 배포 후보 이미지와 source tarball에 포함했다.
 
 ## 원인 6-1: TXT 파일은 자체 cover extraction 대상이 아님
 
@@ -327,7 +327,7 @@ python3 scripts/diagnose_kavita_gds.py \
 - Dockerfile에 Nanum Gothic 폰트를 포함해 한글 제목이 네모 박스로 렌더링되지 않도록 했다.
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
 - 런타임 스모크 검증: 제목 기반 PNG 생성 성공, Nanum Gothic 사용 시 한글 제목 렌더링 확인.
-- 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
+- 이 패치는 `0.9.0.2-2` 배포 후보 이미지와 source tarball에 포함했다.
 
 ## 원인 7: `Pages=0` 잔여 행은 일반 스캔에서 복구되지 않을 수 있음
 
@@ -361,16 +361,16 @@ python3 scripts/diagnose_kavita_gds.py \
 - source branch에서 `SeriesModified`에 `HasZeroPageFiles`를 추가했다.
 - GDS series에 `Pages=0` 파일이 하나라도 있으면 `HasSeriesFolderNotChangedSinceLastScan()`이 변경 없음으로 처리하지 않고 실제 scan path를 타도록 했다.
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
-- 이 패치는 아직 `0.9.0.2-1` 운영 이미지와 public release에는 포함되지 않았다.
+- 이 패치는 `0.9.0.2-2` 배포 후보 이미지와 source tarball에 포함했다.
 
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.
-2. GDS archive 페이지 수가 0으로 남지 않게 고친다. 신규/변경 파일 보정 완료, 기존 DB scan debt 재분석 트리거는 source patch 완료, rebuild 필요.
+2. GDS archive 페이지 수가 0으로 남지 않게 고친다. 신규/변경 파일 보정 완료, 기존 DB scan debt 재분석 트리거는 `0.9.0.2-2` 배포 후보에 포함.
 3. 운영 source, release source, GitHub 배포 source를 같은 기준으로 맞춘다. 완료.
 4. 기존 DB의 `Pages=0`, duplicate file path, media error를 읽기 전용 검증 쿼리로 분류한다. 1차 완료.
-5. GDS UI 제목 표시 누락과 cover cache 삭제 방어를 다음 release에 포함한다. source patch 완료, rebuild 필요.
-6. TXT no-cover는 오류로 처리하지 않고, YAML/base64 cover 반영 누락과 실제 no-cover fallback을 분리한다.
+5. GDS UI 제목 표시 누락과 cover cache 삭제 방어를 `0.9.0.2-2` 배포 후보에 포함한다. 완료.
+6. TXT no-cover는 오류로 처리하지 않고, YAML/base64 cover 반영 누락과 실제 no-cover fallback을 분리한다. 완료.
 7. same series/same volume/same range duplicate 26개 group은 repair 후보로 분리한다.
 8. cross-series duplicate 153개 group과 nested archive는 자동 수정하지 말고 자료 구조/분류 의도를 먼저 확인한다.
 

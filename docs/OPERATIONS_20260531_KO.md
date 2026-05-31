@@ -109,16 +109,16 @@ https://github.com/suikano1304/Kavita-GDS
 현재 repo의 공개 배포 기준:
 
 - 이미지 이름: `ghcr.io/suikano1304/kavita-gds`
-- 권장 태그: `0.9.0.2-1`
+- 권장 태그: `0.9.0.2-2`
 - latest 태그도 publish workflow에서 같이 갱신합니다.
 - release asset 이름은 `kavita-gds.tar.gz`로 정리했습니다.
 
-현재 운영 서버와 공개 배포는 `0.9.0.2-1` 기준으로 맞췄습니다.
+현재 문서와 배포 후보는 `0.9.0.2-2` 기준입니다. 운영 컨테이너 적용 여부는 compose의 `image:`와 실행 중인 컨테이너 이미지를 별도로 확인해야 합니다.
 
 배포 확인:
 
 - Release asset: `kavita-gds.tar.gz`
-- Release asset SHA256: `715964fcaea4bcd5c80892234b6114b6e2fcc43a38b96a5dbc81b00c966478fb`
+- Release asset SHA256: 저장소 루트 `SHA256SUMS` 기준
 - GHCR package visibility: `public`
 - GHCR image index는 `linux/amd64`, `linux/arm64`를 포함합니다.
 
@@ -128,7 +128,7 @@ https://github.com/suikano1304/Kavita-GDS
 2. release asset `kavita-gds.tar.gz`와 `SHA256SUMS`를 갱신합니다.
 3. `.github/workflows/publish-ghcr.yml`의 `RELEASE_ASSET_SHA256` 값을 갱신합니다.
 4. GitHub Release asset을 올립니다.
-5. GitHub Actions `Publish GHCR image` workflow를 실행해 GHCR의 `0.9.0.2-1` 또는 이후 새 버전 태그와 `latest`를 갱신합니다.
+5. GitHub Actions `Publish GHCR image` workflow를 실행해 GHCR의 새 버전 태그와 `latest`를 갱신합니다.
 
 ## 운영 체크리스트
 

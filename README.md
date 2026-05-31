@@ -6,12 +6,12 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
 2026-05-31 운영 서버에는 `kavita.yaml` 메타데이터 반영과 회차 제목 보정 패치를 추가 검증했습니다. 해당 운영 기록은 [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md)에 정리했습니다.
 
-추가로 GDS/rclone 재스캔 병목과 혼합 폴더 스캔 문제를 확인해, 일반 재스캔은 빠르게 유지하면서 강제 스캔은 누락 파일 복구용 풀스캔으로 동작하도록 정리했습니다. 자세한 내용은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 확인하세요.
+추가로 GDS/rclone 재스캔 병목, 혼합 폴더 스캔 문제, TXT 커버 부재 문제를 확인했습니다. 일반 재스캔은 빠르게 유지하고, 누락 복구가 필요한 경우만 실제 파일 목록을 다시 읽도록 정리했습니다. 커버가 없는 GDS TXT 시리즈는 외부 API 없이 제목 기반 커버를 Kavita config에 생성합니다.
 
 ## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
 ```
 
 최신 태그도 제공합니다.
@@ -20,14 +20,14 @@ docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
 docker pull ghcr.io/suikano1304/kavita-gds:latest
 ```
 
-운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-1` 사용을 권장합니다.
+운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-2` 사용을 권장합니다.
 
 ## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-1
+    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
     container_name: kavita
     restart: always
     ports:
@@ -50,9 +50,9 @@ services:
 
 Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-1>
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-2>
 - File: `kavita-gds.tar.gz`
-- SHA256: `715964fcaea4bcd5c80892234b6114b6e2fcc43a38b96a5dbc81b00c966478fb`
+- SHA256: GitHub Release의 `SHA256SUMS` 또는 저장소 루트 [SHA256SUMS](SHA256SUMS)를 확인하세요.
 
 압축 안에는 `docker-image/kavita-gds.oci.tar`가 들어 있습니다.
 
@@ -68,9 +68,11 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - YAML `meta.Name`이 회차 제목을 덮어쓰지 않도록 하고 파일명 기반 회차 제목 사용
 - GDS/rclone 반복 스캔에서 변경 없는 파일의 page/hash 재계산과 커버 재분석을 줄여 속도 개선
 - GDS EPUB/PDF/TXT가 `Pages=0`으로 남아 읽기 불가처럼 보이는 문제 완화
+- `Pages=0`으로 남은 기존 GDS 파일이 있으면 변경 없음 최적화를 건너뛰고 다시 파싱해 scan debt를 회복
 - 같은 작품이 `작품명/`과 `작품명 -/`처럼 나뉜 production-library-d 폴더에서도 기존 GDS 볼륨을 보존
 - GDS 증분 스캔에서 포맷 하위 폴더와 정규화명이 같은 형제 폴더를 기존 시리즈로 매칭해 반복 재처리 감소
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
+- 원본 커버가 없는 GDS TXT 시리즈에 제목 기반 fallback cover 생성
 - 읽기 전용 GDS 진단 스크립트 추가
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
