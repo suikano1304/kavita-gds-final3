@@ -7,6 +7,8 @@ the failure modes that matter most for GDS scans:
 - Pages=0 media rows
 - duplicate MangaFile.FilePath rows
 - MediaError distribution
+- SQLite foreign key violations
+- duplicate cleanup candidate classification
 - optional archive validation for Pages=0 archives
 - optional source-cover/config-cache risk classification
 - optional TXT source-cover/config-cache classification
@@ -140,6 +142,24 @@ def print_rows(title: str, rows: list[sqlite3.Row]) -> None:
         print(dict(row))
 
 
+def summarize_foreign_keys(con: sqlite3.Connection) -> None:
+    print("\n## foreign_key_check")
+    try:
+        rows = list(con.execute("pragma foreign_key_check"))
+    except sqlite3.DatabaseError as exc:
+        print(f"error: {exc}")
+        return
+
+    if not rows:
+        print("(none)")
+        return
+
+    for row in rows[:40]:
+        print(dict(row))
+    if len(rows) > 40:
+        print(f"... {len(rows) - 40} more")
+
+
 def summarize_db(con: sqlite3.Connection) -> None:
     print_rows("libraries", list(con.execute("""
         select l.Id, l.Name, l.Type, l.EnableMetadata, l.AllowMetadataMatching, l.FolderWatching,
@@ -239,6 +259,48 @@ def summarize_duplicate_structure(con: sqlite3.Connection) -> None:
         return
     for key, count in sorted(summary.items()):
         print(f"{key} -> {count}")
+
+
+def summarize_duplicate_cleanup_candidates(con: sqlite3.Connection) -> None:
+    rows = list(con.execute("""
+        with dup as (
+            select mf.FilePath, count(*) rowrefs,
+                   count(distinct s.Id) series_count,
+                   count(distinct v.Id) volume_count,
+                   count(distinct c.Id) chapter_count,
+                   count(distinct coalesce(c.Range, '')) range_count,
+                   count(distinct c.Pages) chapter_page_values,
+                   min(l.Id) library_id,
+                   min(l.Name) library_name,
+                   lower(coalesce(mf.Extension, '')) ext
+            from MangaFile mf
+            join Chapter c on c.Id = mf.ChapterId
+            join Volume v on v.Id = c.VolumeId
+            join Series s on s.Id = v.SeriesId
+            join Library l on l.Id = s.LibraryId
+            where mf.FilePath is not null and mf.FilePath <> ''
+            group by mf.FilePath
+            having count(*) > 1
+        ), classified as (
+            select *,
+                   case
+                       when series_count = 1 and volume_count = 1 then 'same_series_same_volume'
+                       when series_count = 1 then 'same_series_multi_volume'
+                       else 'cross_series'
+                   end as kind
+            from dup
+        )
+        select library_id as LibraryId, library_name as LibraryName, ext as Ext, kind as Kind,
+               count(*) as Groups,
+               sum(rowrefs) as RowRefs,
+               sum(case when chapter_page_values = 1 then 1 else 0 end) as SamePageGroups,
+               sum(case when range_count = 1 then 1 else 0 end) as SameRangeGroups
+        from classified
+        group by library_id, library_name, ext, kind
+        order by library_id, ext, kind
+    """))
+
+    print_rows("duplicate cleanup candidates", rows)
 
 
 def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
@@ -404,8 +466,10 @@ def main() -> None:
 
     con = connect_readonly(args.db)
     print("integrity_check", con.execute("pragma integrity_check").fetchone()[0])
+    summarize_foreign_keys(con)
     summarize_db(con)
     summarize_duplicate_structure(con)
+    summarize_duplicate_cleanup_candidates(con)
     if args.check_archives:
         summarize_pages0_archives(con, args.container_root, args.host_root)
     if args.check_covers:
