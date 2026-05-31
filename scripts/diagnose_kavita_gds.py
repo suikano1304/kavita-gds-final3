@@ -328,16 +328,19 @@ def duplicate_file_path_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
     """))
 
 
-def media_error_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
-    return list(con.execute("""
+def media_error_rows(con: sqlite3.Connection, limit: int | None = None) -> list[sqlite3.Row]:
+    query = """
         select lower(coalesce(Extension, '')) as Ext,
                substr(coalesce(Comment, ''), 1, 100) as Comment,
                count(*) as Count
         from MediaError
         group by Ext, Comment
         order by Count desc
-        limit 40
-    """))
+    """
+    if limit is not None:
+        query += "\nlimit ?"
+        return list(con.execute(query, (limit,)))
+    return list(con.execute(query))
 
 
 def classify_media_error(ext: str, comment: str, details: str) -> str:
@@ -477,7 +480,7 @@ def summarize_db(con: sqlite3.Connection) -> None:
     print_rows("libraries", library_rows(con))
     print_rows("pages0 by library/ext", pages0_rows(con))
     print_rows("duplicate file paths by library/ext", duplicate_file_path_rows(con))
-    print_rows("media errors by ext/comment", media_error_rows(con))
+    print_rows("media errors by ext/comment", media_error_rows(con, limit=40))
     print("\n## media error classification")
     rows = media_error_classification_rows(con)
     if not rows:
