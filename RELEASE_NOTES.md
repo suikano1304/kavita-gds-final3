@@ -30,6 +30,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - If BaseUrl persistence fails with a database update exception, Kavita logs `PRAGMA foreign_key_check` output to make existing DB damage or migration-state issues visible.
 - Same-volume duplicate file path cleanup now preserves the chapter selected by the current scan instead of retaining an arbitrary earlier duplicate.
 - The read-only diagnostic script now prints SQLite foreign-key violations and classifies duplicate file path groups into cleanup-safe and cross-series cases.
+- The read-only diagnostic script now includes EF migration history, manual migration history, selected server settings, and core table row counts to compare x86/NAS and Oracle A1 startup reports.
 - The read-only diagnostic script now classifies MediaError rows into EPUB structure, PDF metadata/encryption, archive support, and scanner-unrecognized buckets.
 - The preflight collector records host architecture and Docker engine details, which helps separate Oracle A1-only startup reports from generic x86 or image architecture issues.
 - Postflight comparison can now print explicit `PASS`, `WARN`, and `FAIL` gates for integrity, foreign keys, `Pages=0`, duplicate file paths, and media errors.

@@ -138,7 +138,7 @@ docker logs -f kavita
 
 ## 읽기 전용 진단
 
-운영 DB를 수정하지 않고 GDS 스캔 상태를 집계하려면 `scripts/diagnose_kavita_gds.py`를 사용할 수 있습니다.
+운영 DB를 수정하지 않고 GDS 스캔 상태를 집계하려면 `scripts/diagnose_kavita_gds.py`를 사용할 수 있습니다. 이 도구는 FK/integrity, 라이브러리별 `Pages=0`, 중복 파일 경로, MediaError뿐 아니라 startup 문제 분석에 필요한 EF migration history, manual migration history, 핵심 server setting, 주요 테이블 row count도 함께 출력합니다.
 
 PVE host에서 실행하는 예:
 
@@ -294,3 +294,10 @@ sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
 ```
 
 `0.9.0.2-3` 이후 이미지는 BaseUrl 저장 단계에서 FK 오류가 발생하면 `PRAGMA foreign_key_check` 결과 일부를 로그에 남깁니다. x86에서는 정상이고 Oracle 쪽에서만 실패한다면, 우선 새/이전 컨테이너가 같은 DB를 동시에 잡지 않았는지, compose의 `/kavita/config` volume이 의도한 DB를 가리키는지, 이전 이미지에서 일부 migration만 반영된 DB인지 확인하는 것이 좋습니다.
+
+`diagnose_kavita_gds.py` 출력의 `startup/migration state` 섹션에서 다음 값을 비교하세요.
+
+- `ef_migration_summary.latest`: EF schema migration이 어디까지 적용되었는지
+- `manual_migration_summary.latest_rows`: startup manual migration이 어디서 멈췄는지
+- `server_settings`의 `InstallVersion`, `FirstInstallVersion`, `BaseUrl`: 이전 이미지와 현재 이미지 전환 상태
+- `core_table_counts`: 같은 DB를 보고 있는지 확인할 수 있는 핵심 테이블 row count

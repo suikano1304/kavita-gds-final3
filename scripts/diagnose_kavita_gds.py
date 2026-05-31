@@ -30,6 +30,37 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".avif"}
 ARCHIVE_EXTENSIONS = {".zip", ".cbz", ".rar", ".cbr", ".7z", ".7zip", ".cb7", ".tar.gz", ".cbt"}
 COVER_FILE_NAMES = ("cover.jpg", "cover.jpeg", "cover.png", "cover.webp")
 METADATA_FILE_NAMES = ("kavita.yaml", "kavita.yml")
+SERVER_SETTING_KEYS = {
+    1: "CacheDirectory",
+    3: "LoggingLevel",
+    4: "Port",
+    5: "BackupDirectory",
+    9: "BaseUrl",
+    11: "InstallVersion",
+    12: "BookmarkDirectory",
+    17: "EnableFolderWatching",
+    18: "TotalLogs",
+    21: "IpAddresses",
+    22: "EncodeMediaAs",
+    24: "CacheSize",
+    27: "CoverImageSize",
+    38: "FirstInstallDate",
+    39: "FirstInstallVersion",
+    41: "PdfRenderResolution",
+}
+CORE_TABLES = (
+    "Library",
+    "LibraryFileTypeGroup",
+    "FolderPath",
+    "Series",
+    "Volume",
+    "Chapter",
+    "MangaFile",
+    "MediaError",
+    "ServerSetting",
+    "ManualMigrationHistory",
+    "__EFMigrationsHistory",
+)
 
 
 def connect_readonly(db_path: str) -> sqlite3.Connection:
@@ -147,6 +178,98 @@ def print_rows(title: str, rows: list[sqlite3.Row]) -> None:
 
 def rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict[str, object]]:
     return [dict(row) for row in rows]
+
+
+def table_exists(con: sqlite3.Connection, table_name: str) -> bool:
+    return con.execute(
+        "select 1 from sqlite_master where type = 'table' and name = ?",
+        (table_name,),
+    ).fetchone() is not None
+
+
+def core_table_count_rows(con: sqlite3.Connection) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for table_name in CORE_TABLES:
+        if not table_exists(con, table_name):
+            rows.append({"Table": table_name, "Exists": False, "Rows": None})
+            continue
+        quoted = table_name.replace('"', '""')
+        count = con.execute(f'select count(*) from "{quoted}"').fetchone()[0]
+        rows.append({"Table": table_name, "Exists": True, "Rows": count})
+    return rows
+
+
+def ef_migration_history_rows(con: sqlite3.Connection) -> list[dict[str, object]]:
+    if not table_exists(con, "__EFMigrationsHistory"):
+        return []
+    return rows_to_dicts(list(con.execute("""
+        select MigrationId, ProductVersion
+        from __EFMigrationsHistory
+        order by MigrationId desc
+        limit 12
+    """)))
+
+
+def ef_migration_summary(con: sqlite3.Connection) -> dict[str, object]:
+    if not table_exists(con, "__EFMigrationsHistory"):
+        return {"exists": False, "count": 0, "latest": None, "earliest": None}
+    row = con.execute("""
+        select count(*) as Count, min(MigrationId) as Earliest, max(MigrationId) as Latest
+        from __EFMigrationsHistory
+    """).fetchone()
+    return {
+        "exists": True,
+        "count": row["Count"],
+        "earliest": row["Earliest"],
+        "latest": row["Latest"],
+        "latest_rows": ef_migration_history_rows(con),
+    }
+
+
+def manual_migration_history_rows(con: sqlite3.Connection) -> list[dict[str, object]]:
+    if not table_exists(con, "ManualMigrationHistory"):
+        return []
+    return rows_to_dicts(list(con.execute("""
+        select Id, ProductVersion, Name, RanAt
+        from ManualMigrationHistory
+        order by Id desc
+        limit 20
+    """)))
+
+
+def manual_migration_summary(con: sqlite3.Connection) -> dict[str, object]:
+    if not table_exists(con, "ManualMigrationHistory"):
+        return {"exists": False, "count": 0, "latest": None, "latest_rows": []}
+    row = con.execute("""
+        select count(*) as Count, max(Id) as Latest
+        from ManualMigrationHistory
+    """).fetchone()
+    return {
+        "exists": True,
+        "count": row["Count"],
+        "latest": row["Latest"],
+        "latest_rows": manual_migration_history_rows(con),
+    }
+
+
+def server_setting_rows(con: sqlite3.Connection) -> list[dict[str, object]]:
+    if not table_exists(con, "ServerSetting"):
+        return []
+    placeholders = ",".join("?" for _ in SERVER_SETTING_KEYS)
+    rows = list(con.execute(f"""
+        select Key, Value
+        from ServerSetting
+        where Key in ({placeholders})
+        order by Key
+    """, tuple(SERVER_SETTING_KEYS)))
+    return [
+        {
+            "Key": row["Key"],
+            "Name": SERVER_SETTING_KEYS.get(int(row["Key"]), str(row["Key"])),
+            "Value": row["Value"],
+        }
+        for row in rows
+    ]
 
 
 def foreign_key_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
@@ -333,6 +456,23 @@ def summarize_foreign_keys(con: sqlite3.Connection) -> None:
         print(f"... {len(rows) - 40} more")
 
 
+def summarize_startup_state(con: sqlite3.Connection) -> None:
+    print("\n## startup/migration state")
+    print("core_table_counts")
+    for row in core_table_count_rows(con):
+        print(row)
+
+    print("ef_migration_summary", ef_migration_summary(con))
+    print("manual_migration_summary", manual_migration_summary(con))
+
+    settings = server_setting_rows(con)
+    print("server_settings")
+    if not settings:
+        print("(none)")
+    for row in settings:
+        print(row)
+
+
 def summarize_db(con: sqlite3.Connection) -> None:
     print_rows("libraries", library_rows(con))
     print_rows("pages0 by library/ext", pages0_rows(con))
@@ -420,6 +560,10 @@ def build_json_summary(
     summary: dict[str, object] = {
         "integrity_check": integrity_check,
         "foreign_key_check": rows_to_dicts(foreign_key_rows(con)),
+        "core_table_counts": core_table_count_rows(con),
+        "ef_migration_summary": ef_migration_summary(con),
+        "manual_migration_summary": manual_migration_summary(con),
+        "server_settings": server_setting_rows(con),
         "libraries": rows_to_dicts(library_rows(con)),
         "pages0_by_library_ext": rows_to_dicts(pages0_rows(con)),
         "duplicate_file_paths_by_library_ext": rows_to_dicts(duplicate_file_path_rows(con)),
@@ -482,6 +626,10 @@ def print_json_comparison(before_path: str, after: dict[str, object]) -> None:
         "integrity_check_after": after.get("integrity_check"),
         "foreign_key_violations_before": len(before.get("foreign_key_check", [])),
         "foreign_key_violations_after": len(after.get("foreign_key_check", [])),
+        "ef_migration_latest_before": before.get("ef_migration_summary", {}).get("latest"),
+        "ef_migration_latest_after": after.get("ef_migration_summary", {}).get("latest"),
+        "manual_migration_count_before": before.get("manual_migration_summary", {}).get("count"),
+        "manual_migration_count_after": after.get("manual_migration_summary", {}).get("count"),
     })
 
     print_count_delta(
@@ -863,6 +1011,7 @@ def main() -> None:
     ) if args.json_output or args.compare_json else None
     print("integrity_check", con.execute("pragma integrity_check").fetchone()[0])
     summarize_foreign_keys(con)
+    summarize_startup_state(con)
     summarize_db(con)
     summarize_duplicate_structure(con)
     summarize_duplicate_cleanup_candidates(con)

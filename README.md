@@ -90,7 +90,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md): 커버 복구와 YAML 적용 검증 운영 기록
 - [docs/SCANNER_ROOT_CAUSE_KO.md](docs/SCANNER_ROOT_CAUSE_KO.md): GDS 스캐너 병목/오동작 근본 원인 분석
 - [docs/VERIFICATION_MATRIX_KO.md](docs/VERIFICATION_MATRIX_KO.md): 목표 완료 판단용 검증 매트릭스
-- [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔 상태 진단 도구
+- [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔/startup migration 상태 진단 도구
 - [scripts/summarize_kavita_scan_logs.py](scripts/summarize_kavita_scan_logs.py): 읽기 전용 scan log 및 slow reader request timing 요약 도구
 - [scripts/analyze_kavita_reader_latency.py](scripts/analyze_kavita_reader_latency.py): 느린 reader 요청과 DB/cache 상태 상관분석 도구
 - [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리스 노트
@@ -99,4 +99,4 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 이 이미지는 공식 Kavita 이미지가 아닙니다. 개인 GDS/rclone 읽기 전용 마운트 환경에서 스캔 안정성을 확인하기 위해 만든 비공식 빌드입니다.
 
-`arm64` 이미지는 build/manifest 검증과 QEMU 기반 entrypoint smoke test를 완료했습니다. 현재 startup SQLite FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 arm64 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 DB 또는 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 난다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 `0.9.0.2-3`은 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다.
+`arm64` 이미지는 build/manifest 검증과 QEMU 기반 entrypoint smoke test를 완료했습니다. 현재 startup SQLite FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 arm64 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 DB 또는 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 난다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 `0.9.0.2-3`은 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.
