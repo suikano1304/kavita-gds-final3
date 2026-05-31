@@ -32,25 +32,34 @@
 
 테스트 컨테이너와 임시 DB 사본은 검증 후 삭제했다.
 
-## 2026-05-31 17:45 운영 baseline
+## 2026-05-31 18:36 운영 baseline
 
-운영 컨테이너를 변경하지 않고 read-only preflight를 다시 수집했다.
+운영 컨테이너를 변경하지 않고 최신 postflight 도구 기준으로 read-only preflight를 다시 수집했다. 기존 17:45 baseline은 MediaError 출력 상위 40개 제한이 JSON에도 들어가 있었으므로 after 비교 기준으로 쓰지 않는다.
 
-- DB-only report: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-db-only-diagnostics.json`
-- Archive report: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-archives-diagnostics.json`
-- Scan log summary: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-db-only-scan-log-summary.txt`
-- Reader latency summary: `/tmp/kavita-gds-preflight-20260531-goal/current-prod-db-only-reader-latency-summary.txt`
+- Diagnostics: `/tmp/kavita-gds-preflight/before-diagnostics.json`
+- DB snapshot: `/tmp/kavita-gds-preflight/before-kavita.db`
+- Scan log summary: `/tmp/kavita-gds-preflight/before-scan-log-summary.json`
+- Reader latency summary: `/tmp/kavita-gds-preflight/before-reader-latency-summary.json`
+- Manifest: `/tmp/kavita-gds-preflight/before-manifest.txt`
 
 확인 결과:
 
 - `integrity_check`: `ok`
 - `foreign_key_check`: 위반 없음
 - 운영 DB row count: `Series 23856`, `MangaFile 136427`, `MediaError 637`
+- `media_errors_by_ext_comment` JSON sum: `637`
+- `media_error_classification` JSON sum: `637`
 - `Pages=0`: 49개, 세부는 CBZ 10개와 ZIP 39개
 - Archive validation: CBZ 10개는 nested archive 84개 구조, ZIP 39개는 내부 이미지 13,301개가 있어 회복 가능 debt
 - same-series/same-volume duplicate cleanup 후보: 26개 group
 - cross-series duplicate: 153개 group, 자동 삭제 제외 대상
+- scan log baseline: 52 scan rows, finished 34, non-forced processed series 272
 - slow reader request: 8개 중 7개가 ZIP이고, 가장 느린 `/api/reader/image`는 약 24.3초
+
+self-check:
+
+- DB postflight self-check: `FAIL` 없음. `Pages=0`, recoverable archive, same-series duplicate는 같은 baseline 비교이므로 `WARN`으로 남음
+- scan postflight self-check: `FAIL` 없음. non-forced processed series와 churn scan count는 같은 baseline 비교이므로 `WARN`으로 남음
 
 `--check-covers`를 archive 검사와 함께 한 번에 실행하면 rclone source cover probe가 길어질 수 있어, 최신 baseline에서는 DB-only와 archive validation을 분리했다. cover gate는 운영 적용 전후에 별도 단계로 실행한다.
 
