@@ -403,6 +403,29 @@ scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path> \
 - `0.9.0.2-5`의 scanner update 최적화는 series update 비용을 줄일 수 있지만, 대형 force scan의 rclone file discovery 비용 자체를 없애지는 못합니다.
 - 운영 전환 후 검증 순서는 작은 범위 scan, 특정 series scan, no-change scan, 필요한 경우 작은 library force scan 순서가 안전합니다.
 
+rclone 상태 확인:
+
+```bash
+systemctl cat rclone-gds.service
+rclone rc core/stats --url http://127.0.0.1:5275
+rclone rc vfs/stats --url http://127.0.0.1:5275
+du -sh /mnt/data/rclone/cache/gds-service
+```
+
+확인 결과:
+
+- mount 옵션은 `--read-only`, `--dir-cache-time=1000h`, `--poll-interval=0`, `--vfs-cache-mode=full`입니다.
+- RC `core/stats`: `listed 180,305`, `errors 0`, `deletes 0`, `renames 0`, `serverSideMoves 0`
+- RC `vfs/stats`: metadata cache `dirs 40,708`, `files 117,162`
+- VFS disk cache: 581 files, 약 4.7GB
+- host cache directory: 약 4.3GB
+
+해석:
+
+- GDS 원본 쓰기나 rename/delete 위험은 현재 관찰되지 않았습니다.
+- dir cache TTL이 짧아서 반복 listing이 발생하는 구조도 아닙니다.
+- 문제는 깊은 하위 tree를 처음 강제 순회할 때 많은 작은 file/directory metadata를 rclone/FUSE가 채워야 하는 비용입니다.
+
 ## 승인 후 운영 전환 절차
 
 현재 운영 compose는 LXC 101의 `/opt/compose/kavita/docker-compose.yml`이고, 실행 중인 이미지는 `local/kavita-gds:0.9.0.2-1`입니다. 전환 대상 이미지는 LXC 101에 이미 받아져 있는 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`입니다. 아래 절차는 운영 컨테이너를 재시작하므로 명시적으로 승인한 뒤에만 실행합니다.

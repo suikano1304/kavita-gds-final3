@@ -505,6 +505,14 @@ scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path> \
 - 최신 이미지 `0.9.0.2-5`의 별도 scan smoke에서 텍스트 중심 라이브러리 force scan이 file scan 시작 후 멈춘 현상은 이 직접 측정과 같은 계열이다.
 - 따라서 대형 텍스트 라이브러리 force scan은 Kavita scanner update 최적화만으로 해결할 수 없고, file discovery 범위 축소, 변경 후보 제한, rclone directory cache 예열/TTL, 특정 subtree 분할 검증이 필요하다.
 
+rclone 상태:
+
+- mount 옵션은 이미 `--read-only`, `--dir-cache-time=1000h`, `--poll-interval=0`, `--vfs-cache-mode=full`이다.
+- 따라서 원본 쓰기 문제나 짧은 dir cache TTL 문제가 아니라, 아직 cache가 채워지지 않은 깊은 하위 tree를 처음 재귀 순회할 때 발생하는 비용으로 보는 편이 맞다.
+- RC `core/stats` 기준 `listed`는 180,305까지 증가했고, delete/rename/server-side move는 0이었다.
+- RC `vfs/stats` 기준 metadata cache는 `dirs 40,708`, `files 117,162`, disk cache는 약 581 files / 4.7GB였다.
+- 이 수치는 분석/reader/scan 과정에서 이미 많은 directory metadata와 file cache가 쌓였음을 보여주지만, 특정 subtree의 cold traversal은 여전히 길게 걸릴 수 있다.
+
 ## 원인 11: reader 지연은 scanner 병목과 분리해야 함
 
 운영 로그에는 스캔이 아닌 reader 요청에서도 긴 지연이 확인됐다. 예를 들어 `/api/reader/image` 요청 하나가 약 18.9초 걸린 사례가 있었다. 해당 DB 행은 archive format의 ZIP이고 파일 크기는 약 385MB였다.
