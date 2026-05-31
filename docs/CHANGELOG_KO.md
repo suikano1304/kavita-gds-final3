@@ -2,22 +2,24 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 배포 후보: `kavita-gds-0.9.0.2-2`
+현재 배포 후보: `kavita-gds-0.9.0.2-3`
 
-## 다음 배포 후보: startup FK 진단 및 duplicate cleanup
+## 2026-05-31: startup FK 진단 및 duplicate cleanup
 
-아래 변경은 source branch에는 들어갔지만 아직 `0.9.0.2-2` 공개 release에는 포함하지 않았습니다.
+아래 변경은 `0.9.0.2-3` 배포 후보에 포함했습니다.
 
 - 일부 기존 DB에서 startup migration 실패 뒤 BaseUrl 저장 단계가 `SQLite Error 19: FOREIGN KEY constraint failed`로 보이는 문제를 분석했습니다.
 - BaseUrl 저장은 별도 EF scope에서 수행하도록 분리해, migration 단계의 실패한 tracked change가 startup 후속 저장에 섞이지 않도록 했습니다.
 - startup migration에서 예외가 발생하면 더 이상 삼키고 계속 진행하지 않고, 원래 migration 예외를 그대로 드러내도록 했습니다.
 - BaseUrl 저장에서 `DbUpdateException`이 발생하면 `PRAGMA foreign_key_check` 결과 일부를 로그에 남기도록 했습니다.
-- 같은 volume 안에서 같은 파일 경로가 여러 chapter에 남은 경우, 다음 스캔 cleanup에서 중복 파일 참조가 계속 보존되지 않도록 했습니다.
-- C# backend build 검증은 통과했습니다.
+- 같은 volume 안에서 같은 파일 경로가 여러 chapter에 남은 경우, 이번 스캔에서 선택된 chapter만 보존하도록 cleanup을 보강했습니다.
+- 읽기 전용 진단 스크립트가 `PRAGMA foreign_key_check`와 duplicate file path cleanup 후보 분류를 출력하도록 확장했습니다.
+- C# backend build, UI production build, multi-arch OCI build, `linux/amd64` startup smoke test를 통과했습니다.
+- `linux/arm64` 이미지는 QEMU 환경에서 entrypoint smoke test를 완료했습니다. Native ARM 서버에서는 기존 DB 상태 확인을 함께 권장합니다.
 
 ## 2026-05-31: GDS TXT fallback cover 및 scan debt 회복
 
-아래 변경은 source branch와 `0.9.0.2-2` 배포 후보에 포함했습니다. 운영 컨테이너 적용과 GHCR publish는 별도 배포 절차에서 진행합니다.
+아래 변경은 source branch와 `0.9.0.2-2` 배포 후보에 포함했습니다.
 
 - GDS 라이브러리 타입이 UI entity title 계산에서 빠져 일부 화면의 볼륨/회차명이 빈 문자열로 표시될 수 있던 문제를 보정했습니다.
 - GDS 원본 `cover.*`가 없을 때 기존 Kavita config cover cache 파일을 삭제하지 않도록 보정했습니다.

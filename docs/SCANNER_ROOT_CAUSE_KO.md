@@ -150,8 +150,8 @@ python3 scripts/diagnose_kavita_gds.py \
 
 - 운영 이미지: `local/kavita-gds:0.9.0.2-1`
 - source branch: `codex/gds-light-novel-scan-fixes`
-- release candidate: `0.9.0.2-2`
-- public GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-1`, `latest` 기준에서 갱신 예정
+- release candidate: `0.9.0.2-3`
+- public GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-3`, `latest`
 
 남은 운영 원칙:
 
@@ -387,7 +387,7 @@ Kavita.Server.Startup.Configure(...) Startup.cs:line 289
 - BaseUrl 저장에서 `DbUpdateException`이 발생하면 `PRAGMA foreign_key_check` 일부 결과를 로그에 남기도록 했다.
 - source commit: `6fa0173 fix: stabilize GDS startup and cleanup`
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
-- 이 패치는 아직 `0.9.0.2-2` 공개 release에는 포함되지 않았다.
+- 이 패치는 `0.9.0.2-3` 배포 후보 이미지와 source tarball에 포함했다.
 
 운영자 진단 명령:
 
@@ -405,21 +405,22 @@ sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
 
 적용한 보정:
 
-- 같은 volume cleanup 중 이미 보존한 normalized file path는 다음 chapter에서 다시 보존하지 않도록 했다.
+- 같은 volume cleanup 중 이번 스캔에서 선택된 chapter만 해당 normalized file path를 보존하도록 했다.
 - cross-series duplicate는 자료 구조 의도일 수 있어 자동 정리하지 않는다.
 - source commit: `6fa0173 fix: stabilize GDS startup and cleanup`
+- source commit: `40ec52d fix: prefer scanned GDS duplicate target`
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
-- 이 패치는 아직 `0.9.0.2-2` 공개 release에는 포함되지 않았다.
+- 이 패치는 `0.9.0.2-3` 배포 후보 이미지와 source tarball에 포함했다.
 
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.
-2. GDS archive 페이지 수가 0으로 남지 않게 고친다. 신규/변경 파일 보정 완료, 기존 DB scan debt 재분석 트리거는 `0.9.0.2-2` 배포 후보에 포함.
+2. GDS archive 페이지 수가 0으로 남지 않게 고친다. 신규/변경 파일 보정 완료, 기존 DB scan debt 재분석 트리거는 `0.9.0.2-2` 이후 배포 후보에 포함.
 3. 운영 source, release source, GitHub 배포 source를 같은 기준으로 맞춘다. 완료.
 4. 기존 DB의 `Pages=0`, duplicate file path, media error를 읽기 전용 검증 쿼리로 분류한다. 1차 완료.
 5. GDS UI 제목 표시 누락과 cover cache 삭제 방어를 `0.9.0.2-2` 배포 후보에 포함한다. 완료.
 6. TXT no-cover는 오류로 처리하지 않고, YAML/base64 cover 반영 누락과 실제 no-cover fallback을 분리한다. 완료.
-7. same series/same volume/same range duplicate group은 cleanup patch를 다음 release에 포함하고, 운영 재스캔 후 감소 여부를 확인한다.
+7. same series/same volume/same range duplicate group은 cleanup patch를 `0.9.0.2-3`에 포함했고, 운영 재스캔 후 감소 여부를 확인한다.
 8. cross-series duplicate 153개 group과 nested archive는 자동 수정하지 말고 자료 구조/분류 의도를 먼저 확인한다.
 
 ## 다음 검증 기준

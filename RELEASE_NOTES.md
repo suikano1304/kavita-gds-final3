@@ -18,9 +18,19 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Built from the GDS scanfix source snapshot.
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
 - `linux/amd64` image startup was smoke-tested locally.
+- `linux/arm64` image entrypoint was smoke-tested under QEMU; native ARM validation should still be done on the target server.
 - The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 startup FK diagnostics and duplicate cleanup
+
+- Separated startup migration execution from later BaseUrl setting persistence so a failed migration is not hidden behind a later settings save.
+- Startup migration exceptions are now logged and rethrown instead of being swallowed and surfacing as a misleading later `SaveChanges` failure.
+- If BaseUrl persistence fails with a database update exception, Kavita logs `PRAGMA foreign_key_check` output to make existing DB damage or migration-state issues visible.
+- Same-volume duplicate file path cleanup now preserves the chapter selected by the current scan instead of retaining an arbitrary earlier duplicate.
+- The read-only diagnostic script now prints SQLite foreign-key violations and classifies duplicate file path groups into cleanup-safe and cross-series cases.
+- Built and packaged as `0.9.0.2-3` for `linux/amd64` and `linux/arm64`.
 
 ### 2026-05-31 GDS TXT fallback cover and scan debt recovery
 
@@ -87,8 +97,8 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 
 - Packaged the scanfix build as one OCI archive containing `linux/amd64` and `linux/arm64`.
 - Excluded intermediate test images and the later webtoon patch tree from this public package.
-- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2`.
+- Added a GHCR publishing workflow so users can deploy with `docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3`.
 
 ## Caveat
 
-This host is `amd64`, so `arm64` was build/manifest verified but not runtime-tested on ARM hardware.
+This host is `amd64`, so `arm64` was build/manifest verified and entrypoint-tested under QEMU, but not fully runtime-tested on native ARM hardware.

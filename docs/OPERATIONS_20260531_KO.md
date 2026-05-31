@@ -109,11 +109,11 @@ https://github.com/suikano1304/Kavita-GDS
 현재 repo의 공개 배포 기준:
 
 - 이미지 이름: `ghcr.io/suikano1304/kavita-gds`
-- 권장 태그: `0.9.0.2-2`
+- 권장 태그: `0.9.0.2-3`
 - latest 태그도 publish workflow에서 같이 갱신합니다.
 - release asset 이름은 `kavita-gds.tar.gz`로 정리했습니다.
 
-현재 문서와 배포 후보는 `0.9.0.2-2` 기준입니다. 운영 컨테이너 적용 여부는 compose의 `image:`와 실행 중인 컨테이너 이미지를 별도로 확인해야 합니다.
+현재 문서와 배포 후보는 `0.9.0.2-3` 기준입니다. 운영 컨테이너 적용 여부는 compose의 `image:`와 실행 중인 컨테이너 이미지를 별도로 확인해야 합니다.
 
 배포 확인:
 

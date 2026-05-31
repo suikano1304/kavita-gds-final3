@@ -15,13 +15,13 @@
 GHCR publish가 완료된 뒤에는 tarball을 직접 다운로드하지 않고 Docker/Compose에서 바로 pull할 수 있습니다.
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
 ```
 
 Compose에서는 아래 이미지를 사용하면 됩니다.
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
 ```
 
 아래 수동 다운로드 방식은 GHCR을 쓰지 않는 환경을 위한 대체 방법입니다.
@@ -36,7 +36,7 @@ kavita-gds.tar.gz
 
 ```bash
 curl -L -o kavita-gds.tar.gz \
-  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-2/kavita-gds.tar.gz
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-3/kavita-gds.tar.gz
 ```
 
 체크섬 확인:
@@ -74,7 +74,7 @@ Docker daemon으로 가져오기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker-daemon:local/kavita-gds:0.9.0.2-2
+  docker-daemon:local/kavita-gds:0.9.0.2-3
 ```
 
 registry로 밀어 넣기:
@@ -82,7 +82,7 @@ registry로 밀어 넣기:
 ```bash
 skopeo copy \
   oci-archive:docker-image/kavita-gds.oci.tar \
-  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-2
+  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:0.9.0.2-3
 ```
 
 registry에 올린 뒤 compose의 `image:` 값을 해당 registry 주소로 바꾸면 됩니다.
@@ -108,7 +108,7 @@ compose/docker-compose.production.yml
 기본 이미지 태그:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
+ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
 ```
 
 반드시 자신의 환경에 맞게 아래 경로를 수정하세요.
@@ -169,6 +169,8 @@ python3 scripts/diagnose_kavita_gds.py \
 - MediaError 분포
 - `Pages=0` ZIP/CBZ의 내부 이미지 또는 nested archive 여부
 - 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
+- SQLite foreign key 위반 여부
+- duplicate file path cleanup 후보 분류
 
 ## TXT 커버 정책
 
@@ -194,5 +196,5 @@ TXT 파일은 파일 내부에서 추출할 표지가 없으므로 원본 `cover
 
 - 공식 Kavita 이미지가 아닙니다.
 - 기존 Kavita DB를 연결하기 전에는 백업을 권장합니다.
-- `arm64` 이미지는 빌드/manifest 검증까지 완료됐지만, 실제 ARM 장비에서 런타임 테스트는 별도로 필요합니다.
+- `arm64` 이미지는 빌드/manifest 검증과 QEMU entrypoint smoke test를 완료했습니다. Oracle A1 같은 native ARM 서버에서 기존 DB를 붙여 startup FK 오류가 나면 이미지 아키텍처보다 DB/migration 상태를 먼저 확인하세요.
 - 이 repo에는 큰 binary 파일을 직접 commit하지 않습니다. 큰 파일은 Release asset으로만 배포합니다.

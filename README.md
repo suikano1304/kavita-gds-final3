@@ -11,7 +11,7 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 ## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
 ```
 
 최신 태그도 제공합니다.
@@ -20,14 +20,14 @@ docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
 docker pull ghcr.io/suikano1304/kavita-gds:latest
 ```
 
-운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-2` 사용을 권장합니다.
+운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-3` 사용을 권장합니다.
 
 ## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-2
+    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-3
     container_name: kavita
     restart: always
     ports:
@@ -50,7 +50,7 @@ services:
 
 Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-2>
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-3>
 - File: `kavita-gds.tar.gz`
 - SHA256: GitHub Release의 `SHA256SUMS` 또는 저장소 루트 [SHA256SUMS](SHA256SUMS)를 확인하세요.
 
@@ -73,6 +73,8 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - GDS 증분 스캔에서 포맷 하위 폴더와 정규화명이 같은 형제 폴더를 기존 시리즈로 매칭해 반복 재처리 감소
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
 - 원본 커버가 없는 GDS TXT 시리즈에 제목 기반 fallback cover 생성
+- startup migration/BaseUrl 저장 단계의 SQLite FK 오류 진단 로그 보강
+- same-volume duplicate file path cleanup 보강
 - 읽기 전용 GDS 진단 스크립트 추가
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
@@ -94,4 +96,4 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 이 이미지는 공식 Kavita 이미지가 아닙니다. 개인 GDS/rclone 읽기 전용 마운트 환경에서 스캔 안정성을 확인하기 위해 만든 비공식 빌드입니다.
 
-`arm64` 이미지는 build/manifest 검증을 완료했지만, 실제 ARM 장비에서의 런타임 테스트는 별도로 필요합니다.
+`arm64` 이미지는 build/manifest 검증과 QEMU 기반 entrypoint smoke test를 완료했습니다. 기존 DB를 연결할 때 startup에서 SQLite FK 오류가 나면 이미지 아키텍처보다 DB/migration 상태를 먼저 확인하세요.
