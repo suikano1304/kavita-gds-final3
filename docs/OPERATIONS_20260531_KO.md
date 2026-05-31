@@ -130,6 +130,38 @@ https://github.com/suikano1304/Kavita-GDS
 4. GitHub Release asset을 올립니다.
 5. GitHub Actions `Publish GHCR image` workflow를 실행해 GHCR의 새 버전 태그와 `latest`를 갱신합니다.
 
+## `0.9.0.2-3` 사본 DB startup 검증
+
+운영 컨테이너를 재시작하지 않고, 운영 DB와 appsettings 사본만 사용해 `0.9.0.2-3` 이미지의 startup/migration 동작을 검증했습니다.
+
+검증 방식:
+
+- 운영 config 원본은 그대로 두고 `/tmp/kavita-db-smoke-090203-config`에 `kavita.db`와 `appsettings.json`을 복사했습니다.
+- 테스트 컨테이너는 `local/kavita-gds:0.9.0.2-3` 이미지로 별도 포트 `5013`에서 실행했습니다.
+- GDS media mount는 읽기 전용으로 붙였습니다.
+- 검증 후 테스트 컨테이너는 중지했습니다.
+
+결과:
+
+- startup manual migration 완료
+- startup migration 완료
+- `/api/health` 응답: `Ok`
+- 사본 DB `PRAGMA integrity_check`: `ok`
+- 사본 DB `PRAGMA foreign_key_check`: 위반 없음
+- 운영 컨테이너는 계속 `local/kavita-gds:0.9.0.2-1`로 실행 중이며 healthy 상태를 유지했습니다.
+
+해석:
+
+- 현재 운영 DB 사본에서는 Oracle 제보와 같은 startup FK 오류가 재현되지 않았습니다.
+- 따라서 Oracle 쪽 `SQLite Error 19: FOREIGN KEY constraint failed` 사례는 이미지 아키텍처 자체보다 해당 서버의 기존 DB 상태, 이전 컨테이너와의 전환 상태, 또는 migration history 차이를 우선 확인해야 합니다.
+- `0.9.0.2-3`은 이 경우 실제 FK 위반 여부를 로그와 진단 스크립트로 더 직접 확인할 수 있게 만든 진단 릴리즈입니다.
+
+운영 적용 전 남은 확인:
+
+- `0.9.0.2-3`을 운영 컨테이너에 적용한 뒤 작은 라이브러리부터 재스캔합니다.
+- same-series/same-volume duplicate file path group이 감소하는지 확인합니다.
+- `Pages=0` 잔여 ZIP/CBZ 중 실제로 복구 가능한 파일과 nested archive 구조를 분리합니다.
+
 ## 운영 체크리스트
 
 재배포 전:
