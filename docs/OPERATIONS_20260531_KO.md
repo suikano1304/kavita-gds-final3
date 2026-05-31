@@ -237,6 +237,62 @@ postflight gate는 다음 기준으로 봅니다.
 - `WARN`: `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate가 줄지 않고 그대로 남음
 - `PASS`: 정합성 위반이 없고, 회복 대상이 줄었거나 최소한 증가하지 않음
 
+## 승인 후 운영 전환 절차
+
+현재 운영 compose는 LXC 101의 `/opt/compose/kavita/docker-compose.yml`이고, 실행 중인 이미지는 `local/kavita-gds:0.9.0.2-1`입니다. 전환 대상 이미지는 LXC 101에 이미 받아져 있는 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`입니다. 아래 절차는 운영 컨테이너를 재시작하므로 명시적으로 승인한 뒤에만 실행합니다.
+
+전환 직전 백업:
+
+```bash
+ts=$(date +%Y%m%d-%H%M%S)
+pct exec 101 -- cp /opt/compose/kavita/docker-compose.yml /opt/compose/kavita/docker-compose.yml.bak-$ts
+sqlite3 -readonly /mnt/data/docker/kavita/config/kavita.db ".backup '/mnt/data/docker/kavita/config/kavita.db.pre-0902-5-$ts.bak'"
+```
+
+compose image tag 교체와 기동:
+
+```bash
+pct exec 101 -- sed -i.bak-0902-5 's#image: .*kavita-gds:.*#image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-5#' /opt/compose/kavita/docker-compose.yml
+pct exec 101 -- docker compose -f /opt/compose/kavita/docker-compose.yml up -d
+pct exec 101 -- docker inspect kavita --format '{{.Config.Image}} {{.State.Status}} {{.State.Health.Status}} {{.RestartCount}}'
+curl -fsS http://127.0.0.1:5657/api/health
+```
+
+기동 직후 로그 확인:
+
+```bash
+pct exec 101 -- docker logs --tail 160 kavita
+sqlite3 -readonly /mnt/data/docker/kavita/config/kavita.db 'PRAGMA integrity_check; PRAGMA foreign_key_check;'
+```
+
+전환 후 postflight:
+
+```bash
+scripts/collect_gds_preflight.sh \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --output-dir /tmp/kavita-gds-preflight \
+  --label after \
+  --snapshot-db \
+  --check-archives \
+  --check-covers \
+  --compare-json /tmp/kavita-gds-preflight/before-diagnostics.json \
+  --compare-scan-json /tmp/kavita-gds-preflight/before-scan-log-summary.json \
+  --postflight-gates
+```
+
+롤백:
+
+```bash
+pct exec 101 -- sed -i.rollback-0902-5 's#image: .*kavita-gds:.*#image: local/kavita-gds:0.9.0.2-1#' /opt/compose/kavita/docker-compose.yml
+pct exec 101 -- docker compose -f /opt/compose/kavita/docker-compose.yml up -d
+pct exec 101 -- docker inspect kavita --format '{{.Config.Image}} {{.State.Status}} {{.State.Health.Status}} {{.RestartCount}}'
+```
+
+DB backup은 자동으로 되돌리지 않습니다. startup 직후 DB integrity/FK가 깨졌거나 migration 중단이 확인될 때만, 컨테이너를 멈춘 뒤 어떤 backup으로 되돌릴지 별도 판단합니다.
+
 ## 운영 체크리스트
 
 재배포 전:
