@@ -14,9 +14,9 @@ permissions:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/kavita-gds
-  IMAGE_TAG: 0.9.0.2-3
-  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-3/kavita-gds.tar.gz
-  RELEASE_ASSET_SHA256: 7b06462f6acc18a74616263435abb38b13bf0c3139bbf696e9a76d7152c0b776
+  IMAGE_TAG: 0.9.0.2-4
+  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v0.9.0.2-4/kavita-gds.tar.gz
+  RELEASE_ASSET_SHA256: c1215017e8aaa510f1264569d7303a96cdddc8d6d0bda522bbf4c0121d2b7014
   OCI_ARCHIVE_PATH: kavita-gds/docker-image/kavita-gds.oci.tar
 
 jobs:
