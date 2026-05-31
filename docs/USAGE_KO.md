@@ -162,6 +162,27 @@ python3 scripts/diagnose_kavita_gds.py \
   --check-covers
 ```
 
+재스캔 전후 비교용 JSON baseline을 남기려면 `--json-output`을 추가합니다.
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --json-output /tmp/kavita-gds-before.json
+```
+
+재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --compare-json /tmp/kavita-gds-before.json \
+  --json-output /tmp/kavita-gds-after.json
+```
+
 확인하는 항목:
 
 - 라이브러리별 series/file/Page=0 수
@@ -171,6 +192,7 @@ python3 scripts/diagnose_kavita_gds.py \
 - 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
 - SQLite foreign key 위반 여부
 - duplicate file path cleanup 후보 분류
+- JSON baseline 출력 시 `Pages=0`, duplicate, FK 상태를 재스캔 전후로 기계적으로 비교 가능
 
 ## TXT 커버 정책
 

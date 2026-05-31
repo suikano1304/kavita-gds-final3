@@ -197,6 +197,27 @@ https://github.com/suikano1304/Kavita-GDS
 - cross-series duplicate는 자료 구조나 분류 의도일 수 있으므로 자동 삭제 검증 대상으로 보지 않습니다.
 - `Pages=0` 중 nested archive 중심 CBZ는 파일 구조 문제일 가능성이 크고, 직접 이미지가 있는 ZIP 잔여는 재스캔으로 회복 가능한지 확인해야 합니다.
 
+전후 비교용 JSON baseline:
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --json-output /tmp/kavita-gds-before-090203.json
+```
+
+이 JSON에는 `integrity_check`, `foreign_key_check`, `pages0_by_library_ext`, `duplicate_file_paths_by_library_ext`, `duplicate_cleanup_candidates`가 들어갑니다. 운영 적용 후 같은 명령으로 after 파일을 만든 뒤 `Pages=0`과 same-series/same-volume duplicate가 줄었는지 비교합니다.
+
+```bash
+python3 scripts/diagnose_kavita_gds.py \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --container-root /mnt/gds \
+  --host-root /mnt/data/rclone/gds \
+  --compare-json /tmp/kavita-gds-before-090203.json \
+  --json-output /tmp/kavita-gds-after-090203.json
+```
+
 ## 운영 체크리스트
 
 재배포 전:

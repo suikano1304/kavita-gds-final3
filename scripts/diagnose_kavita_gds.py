@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import json
 import os
 import re
 import sqlite3
@@ -142,26 +143,16 @@ def print_rows(title: str, rows: list[sqlite3.Row]) -> None:
         print(dict(row))
 
 
-def summarize_foreign_keys(con: sqlite3.Connection) -> None:
-    print("\n## foreign_key_check")
-    try:
-        rows = list(con.execute("pragma foreign_key_check"))
-    except sqlite3.DatabaseError as exc:
-        print(f"error: {exc}")
-        return
-
-    if not rows:
-        print("(none)")
-        return
-
-    for row in rows[:40]:
-        print(dict(row))
-    if len(rows) > 40:
-        print(f"... {len(rows) - 40} more")
+def rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict[str, object]]:
+    return [dict(row) for row in rows]
 
 
-def summarize_db(con: sqlite3.Connection) -> None:
-    print_rows("libraries", list(con.execute("""
+def foreign_key_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
+    return list(con.execute("pragma foreign_key_check"))
+
+
+def library_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
+    return list(con.execute("""
         select l.Id, l.Name, l.Type, l.EnableMetadata, l.AllowMetadataMatching, l.FolderWatching,
                count(distinct s.Id) as Series,
                count(distinct mf.Id) as Files,
@@ -173,9 +164,11 @@ def summarize_db(con: sqlite3.Connection) -> None:
         left join MangaFile mf on mf.ChapterId = c.Id
         group by l.Id
         order by l.Id
-    """)))
+    """))
 
-    print_rows("pages0 by library/ext", list(con.execute("""
+
+def pages0_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
+    return list(con.execute("""
         select l.Id as LibraryId, l.Name as LibraryName, lower(coalesce(mf.Extension, '')) as Ext, count(*) as Count
         from MangaFile mf
         join Chapter c on c.Id = mf.ChapterId
@@ -185,9 +178,11 @@ def summarize_db(con: sqlite3.Connection) -> None:
         where mf.Pages = 0
         group by l.Id, Ext
         order by l.Id, Count desc
-    """)))
+    """))
 
-    print_rows("duplicate file paths by library/ext", list(con.execute("""
+
+def duplicate_file_path_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
+    return list(con.execute("""
         with d as (
             select FilePath
             from MangaFile
@@ -205,9 +200,11 @@ def summarize_db(con: sqlite3.Connection) -> None:
         join Library l on l.Id = s.LibraryId
         group by l.Id, Ext
         order by l.Id, RowRefs desc
-    """)))
+    """))
 
-    print_rows("media errors by ext/comment", list(con.execute("""
+
+def media_error_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
+    return list(con.execute("""
         select lower(coalesce(Extension, '')) as Ext,
                substr(coalesce(Comment, ''), 1, 100) as Comment,
                count(*) as Count
@@ -215,54 +212,11 @@ def summarize_db(con: sqlite3.Connection) -> None:
         group by Ext, Comment
         order by Count desc
         limit 40
-    """)))
-
-
-def summarize_duplicate_structure(con: sqlite3.Connection) -> None:
-    rows = list(con.execute("""
-        with d as (
-            select FilePath, count(*) as Cnt
-            from MangaFile
-            group by FilePath
-            having count(*) > 1
-        )
-        select l.Id as LibraryId, mf.FilePath, mf.Pages, s.Id as SeriesId,
-               v.Id as VolumeId, c.Id as ChapterId, c.Range as ChapterRange
-        from d
-        join MangaFile mf on mf.FilePath = d.FilePath
-        join Chapter c on c.Id = mf.ChapterId
-        join Volume v on v.Id = c.VolumeId
-        join Series s on s.Id = v.SeriesId
-        join Library l on l.Id = s.LibraryId
-        order by l.Id, mf.FilePath
     """))
-    by_path: dict[tuple[int, str], list[sqlite3.Row]] = collections.defaultdict(list)
-    for row in rows:
-        by_path[(row["LibraryId"], row["FilePath"])].append(row)
-
-    summary: collections.Counter[tuple[int, int, int, int, int, int, int]] = collections.Counter()
-    for (library_id, _), items in by_path.items():
-        summary[(
-            library_id,
-            len(items),
-            len({item["SeriesId"] for item in items}),
-            len({item["VolumeId"] for item in items}),
-            len({item["ChapterId"] for item in items}),
-            len({item["ChapterRange"] for item in items}),
-            len({item["Pages"] for item in items}),
-        )] += 1
-
-    print("\n## duplicate structure")
-    print("(LibraryId, RowRefs, Series, Volumes, Chapters, Ranges, PageValues) -> Groups")
-    if not summary:
-        print("(none)")
-        return
-    for key, count in sorted(summary.items()):
-        print(f"{key} -> {count}")
 
 
-def summarize_duplicate_cleanup_candidates(con: sqlite3.Connection) -> None:
-    rows = list(con.execute("""
+def duplicate_cleanup_candidate_rows(con: sqlite3.Connection) -> list[sqlite3.Row]:
+    return list(con.execute("""
         with dup as (
             select mf.FilePath, count(*) rowrefs,
                    count(distinct s.Id) series_count,
@@ -300,7 +254,182 @@ def summarize_duplicate_cleanup_candidates(con: sqlite3.Connection) -> None:
         order by library_id, ext, kind
     """))
 
-    print_rows("duplicate cleanup candidates", rows)
+
+def summarize_foreign_keys(con: sqlite3.Connection) -> None:
+    print("\n## foreign_key_check")
+    try:
+        rows = foreign_key_rows(con)
+    except sqlite3.DatabaseError as exc:
+        print(f"error: {exc}")
+        return
+
+    if not rows:
+        print("(none)")
+        return
+
+    for row in rows[:40]:
+        print(dict(row))
+    if len(rows) > 40:
+        print(f"... {len(rows) - 40} more")
+
+
+def summarize_db(con: sqlite3.Connection) -> None:
+    print_rows("libraries", library_rows(con))
+    print_rows("pages0 by library/ext", pages0_rows(con))
+    print_rows("duplicate file paths by library/ext", duplicate_file_path_rows(con))
+    print_rows("media errors by ext/comment", media_error_rows(con))
+
+
+def duplicate_structure_counter(con: sqlite3.Connection) -> collections.Counter[tuple[int, int, int, int, int, int, int]]:
+    rows = list(con.execute("""
+        with d as (
+            select FilePath, count(*) as Cnt
+            from MangaFile
+            group by FilePath
+            having count(*) > 1
+        )
+        select l.Id as LibraryId, mf.FilePath, mf.Pages, s.Id as SeriesId,
+               v.Id as VolumeId, c.Id as ChapterId, c.Range as ChapterRange
+        from d
+        join MangaFile mf on mf.FilePath = d.FilePath
+        join Chapter c on c.Id = mf.ChapterId
+        join Volume v on v.Id = c.VolumeId
+        join Series s on s.Id = v.SeriesId
+        join Library l on l.Id = s.LibraryId
+        order by l.Id, mf.FilePath
+    """))
+    by_path: dict[tuple[int, str], list[sqlite3.Row]] = collections.defaultdict(list)
+    for row in rows:
+        by_path[(row["LibraryId"], row["FilePath"])].append(row)
+
+    summary: collections.Counter[tuple[int, int, int, int, int, int, int]] = collections.Counter()
+    for (library_id, _), items in by_path.items():
+        summary[(
+            library_id,
+            len(items),
+            len({item["SeriesId"] for item in items}),
+            len({item["VolumeId"] for item in items}),
+            len({item["ChapterId"] for item in items}),
+            len({item["ChapterRange"] for item in items}),
+            len({item["Pages"] for item in items}),
+        )] += 1
+    return summary
+
+
+def summarize_duplicate_structure(con: sqlite3.Connection) -> None:
+    summary = duplicate_structure_counter(con)
+    print("\n## duplicate structure")
+    print("(LibraryId, RowRefs, Series, Volumes, Chapters, Ranges, PageValues) -> Groups")
+    if not summary:
+        print("(none)")
+        return
+    for key, count in sorted(summary.items()):
+        print(f"{key} -> {count}")
+
+
+def summarize_duplicate_cleanup_candidates(con: sqlite3.Connection) -> None:
+    print_rows("duplicate cleanup candidates", duplicate_cleanup_candidate_rows(con))
+
+
+def build_json_summary(con: sqlite3.Connection) -> dict[str, object]:
+    integrity_check = con.execute("pragma integrity_check").fetchone()[0]
+    duplicate_structure = [
+        {
+            "LibraryId": key[0],
+            "RowRefs": key[1],
+            "Series": key[2],
+            "Volumes": key[3],
+            "Chapters": key[4],
+            "Ranges": key[5],
+            "PageValues": key[6],
+            "Groups": count,
+        }
+        for key, count in sorted(duplicate_structure_counter(con).items())
+    ]
+    return {
+        "integrity_check": integrity_check,
+        "foreign_key_check": rows_to_dicts(foreign_key_rows(con)),
+        "libraries": rows_to_dicts(library_rows(con)),
+        "pages0_by_library_ext": rows_to_dicts(pages0_rows(con)),
+        "duplicate_file_paths_by_library_ext": rows_to_dicts(duplicate_file_path_rows(con)),
+        "duplicate_structure": duplicate_structure,
+        "duplicate_cleanup_candidates": rows_to_dicts(duplicate_cleanup_candidate_rows(con)),
+        "media_errors_by_ext_comment": rows_to_dicts(media_error_rows(con)),
+    }
+
+
+def row_key(row: dict[str, object], fields: tuple[str, ...]) -> tuple[object, ...]:
+    return tuple(row.get(field) for field in fields)
+
+
+def print_count_delta(
+    title: str,
+    before_rows: list[dict[str, object]],
+    after_rows: list[dict[str, object]],
+    key_fields: tuple[str, ...],
+    count_fields: tuple[str, ...],
+) -> None:
+    before = {row_key(row, key_fields): row for row in before_rows}
+    after = {row_key(row, key_fields): row for row in after_rows}
+    keys = sorted(set(before) | set(after))
+
+    print(f"\n## {title}")
+    changed = False
+    for key in keys:
+        before_row = before.get(key, {})
+        after_row = after.get(key, {})
+        deltas: dict[str, int] = {}
+        for field in count_fields:
+            before_value = int(before_row.get(field) or 0)
+            after_value = int(after_row.get(field) or 0)
+            if after_value != before_value:
+                deltas[field] = after_value - before_value
+        if not deltas:
+            continue
+        changed = True
+        print({
+            "key": dict(zip(key_fields, key)),
+            "before": {field: before_row.get(field, 0) for field in count_fields},
+            "after": {field: after_row.get(field, 0) for field in count_fields},
+            "delta": deltas,
+        })
+    if not changed:
+        print("(no changes)")
+
+
+def print_json_comparison(before_path: str, after: dict[str, object]) -> None:
+    with open(before_path, "r", encoding="utf-8") as handle:
+        before = json.load(handle)
+
+    print("\n## baseline comparison")
+    print({
+        "integrity_check_before": before.get("integrity_check"),
+        "integrity_check_after": after.get("integrity_check"),
+        "foreign_key_violations_before": len(before.get("foreign_key_check", [])),
+        "foreign_key_violations_after": len(after.get("foreign_key_check", [])),
+    })
+
+    print_count_delta(
+        "pages0 delta",
+        before.get("pages0_by_library_ext", []),
+        after.get("pages0_by_library_ext", []),
+        ("LibraryId", "LibraryName", "Ext"),
+        ("Count",),
+    )
+    print_count_delta(
+        "duplicate file path delta",
+        before.get("duplicate_file_paths_by_library_ext", []),
+        after.get("duplicate_file_paths_by_library_ext", []),
+        ("LibraryId", "LibraryName", "Ext"),
+        ("Groups", "RowRefs"),
+    )
+    print_count_delta(
+        "duplicate cleanup candidate delta",
+        before.get("duplicate_cleanup_candidates", []),
+        after.get("duplicate_cleanup_candidates", []),
+        ("LibraryId", "LibraryName", "Ext", "Kind"),
+        ("Groups", "RowRefs", "SamePageGroups", "SameRangeGroups"),
+    )
 
 
 def summarize_pages0_archives(con: sqlite3.Connection, container_root: str, host_root: str) -> None:
@@ -462,9 +591,12 @@ def main() -> None:
     parser.add_argument("--host-root", default="/mnt/gds2", help="Readable media root for this script")
     parser.add_argument("--check-archives", action="store_true", help="Open Pages=0 ZIP/CBZ files and classify contents")
     parser.add_argument("--check-covers", action="store_true", help="Check source cover files vs expected cache names")
+    parser.add_argument("--json-output", help="Write machine-readable baseline summary to this JSON file")
+    parser.add_argument("--compare-json", help="Compare current summary with a previous --json-output file")
     args = parser.parse_args()
 
     con = connect_readonly(args.db)
+    json_summary = build_json_summary(con) if args.json_output or args.compare_json else None
     print("integrity_check", con.execute("pragma integrity_check").fetchone()[0])
     summarize_foreign_keys(con)
     summarize_db(con)
@@ -475,6 +607,13 @@ def main() -> None:
     if args.check_covers:
         summarize_cover_risk(con, args.container_root, args.host_root)
         summarize_text_cover_state(con, args.container_root, args.host_root)
+    if args.json_output:
+        with open(args.json_output, "w", encoding="utf-8") as handle:
+            json.dump(json_summary, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            handle.write("\n")
+        print(f"\nWrote JSON summary: {args.json_output}")
+    if args.compare_json:
+        print_json_comparison(args.compare_json, json_summary)
 
 
 if __name__ == "__main__":
