@@ -4,7 +4,7 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 
 `kavita-gds-0.9.0.2-scan-20260528` 이후의 EPUB/PDF/rclone hang 수정과 GDS scanfix를 포함하며, `linux/amd64`와 `linux/arm64`를 지원합니다.
 
-현재 배포 기준은 `0.9.0.2-6`입니다. `0.9.0.2-5` 운영 검증 뒤 확인된 혼합 포맷 시리즈의 단어 수 분석 오류를 수정했습니다.
+현재 배포 기준은 `0.9.0.2-7`입니다. `0.9.0.2-6` 운영 검증 뒤 확인된 신규 GDS archive 시리즈의 커버 생성 fallback 누락을 수정했습니다.
 
 `0.9.0.2-4` 배포 이미지에서 Web UI가 개발 빌드로 포함되어 `localhost:5000/api`를 호출하던 문제는 `0.9.0.2-5`에서 production UI 번들로 교체해 수정했습니다.
 
@@ -15,7 +15,7 @@ Kavita `0.9.0.2` 기반 비공식 GDS 빌드입니다.
 ## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-6
+docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-7
 ```
 
 최신 태그도 제공합니다.
@@ -24,14 +24,14 @@ docker pull ghcr.io/suikano1304/kavita-gds:0.9.0.2-6
 docker pull ghcr.io/suikano1304/kavita-gds:latest
 ```
 
-운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-6` 사용을 권장합니다.
+운영에는 `latest`보다 고정 버전 태그 `0.9.0.2-7` 사용을 권장합니다.
 
 ## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-6
+    image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-7
     container_name: kavita
     restart: always
     ports:
@@ -54,7 +54,7 @@ services:
 
 Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-6>
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v0.9.0.2-7>
 - File: `kavita-gds.tar.gz`
 - SHA256: GitHub Release의 `SHA256SUMS` 또는 저장소 루트 [SHA256SUMS](SHA256SUMS)를 확인하세요.
 
@@ -83,6 +83,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - 오래된 DB의 file type migration에서 GDS 기본 파일 그룹 보강
 - Web UI production 빌드 적용으로 외부 접속 시 `localhost:5000/api`로 요청이 빠지는 문제 수정
 - 혼합 포맷 시리즈에서 EPUB 단어 수 분석기가 PDF/TXT 같은 비 EPUB 파일을 EPUB로 열어 오류를 내던 문제 수정
+- YAML/base64 커버나 TXT 제목 커버가 없는 GDS archive 시리즈도 ZIP/CBZ 내부 첫 페이지 커버 추출로 fallback되도록 수정
 - 읽기 전용 GDS 진단 스크립트 추가
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정

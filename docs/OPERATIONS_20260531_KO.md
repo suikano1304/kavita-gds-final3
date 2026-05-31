@@ -597,7 +597,18 @@ force scan 후 postflight:
 - GitHub Release: `v0.9.0.2-6`
 - GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-6`, `latest`
 
-현재 운영 컨테이너는 아직 `0.9.0.2-5`로 healthy 상태입니다. `0.9.0.2-6`은 배포 완료 상태이며, 운영 적용은 별도 승인 후 compose image tag를 바꿔 진행합니다.
+`0.9.0.2-6` 운영 적용 뒤 신규 GDS archive 시리즈 일부에서 파일과 페이지 수는 정상 등록됐지만 `Series`, `Volume`, `Chapter` 커버 참조가 모두 비어 있는 사례를 확인했습니다.
+
+원인은 `0.9.0.2-6`의 GDS 커버 생성 분기입니다. YAML/base64 커버 또는 TXT 제목 커버가 없을 때 일반 ZIP/CBZ 첫 페이지 커버 추출 경로로 fallback하지 않고 커버 처리를 종료했습니다.
+
+`0.9.0.2-7`에서 이 부분을 수정했습니다.
+
+- YAML/base64 커버가 있으면 기존처럼 우선 사용합니다.
+- TXT 파일은 기존 제목 기반 fallback cover를 유지합니다.
+- ZIP/CBZ archive는 YAML/TXT 커버가 없으면 기존 Kavita archive cover extractor로 fallback합니다.
+- 회귀 테스트, `linux/amd64`/`linux/arm64` publish, multi-arch OCI build, `linux/amd64` startup smoke를 통과했습니다.
+- GitHub Release: `v0.9.0.2-7`
+- GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-7`, `latest`
 
 재배포 전:
 

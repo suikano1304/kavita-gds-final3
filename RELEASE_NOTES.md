@@ -2,7 +2,7 @@
 
 This release provides the GDS scanfix build as a multi-platform OCI image archive.
 
-Version: `0.9.0.2-6`
+Version: `0.9.0.2-7`
 
 ## Included Platforms
 
@@ -21,11 +21,21 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - OCI index verified to contain both `linux/amd64` and `linux/arm64`.
 - `linux/amd64` image startup was smoke-tested locally.
 - `linux/arm64` image build path and manifest were verified; native ARM validation should still be done on the target server.
-- `linux/amd64` container startup smoke test passed for `0.9.0.2-6`.
+- `linux/amd64` container startup smoke test passed for `0.9.0.2-7`.
 - The OCI manifest list was verified to contain both `linux/amd64` and `linux/arm64`.
 - The package does not include intermediate test images.
 
 ## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+
+### 2026-05-31 `0.9.0.2-7` GDS archive cover fallback hotfix
+
+- Fixed GDS cover generation so archive-based series without a YAML/base64 cover or TXT title cover fall back to the normal ZIP/CBZ first-page cover extraction path.
+- This fixes newly discovered GDS archive series being registered with valid files and page counts but no `Series`, `Volume`, or `Chapter` cover reference.
+- Existing GDS TXT title-cover behavior is preserved.
+- Verified the focused word-count regression test still passes.
+- Rebuilt `linux/amd64` and `linux/arm64` self-contained runtime packages.
+- Built a new multi-platform OCI archive with both `linux/amd64` and `linux/arm64`.
+- Passed a local `linux/amd64` startup smoke test for `0.9.0.2-7`.
 
 ### 2026-05-31 `0.9.0.2-6` mixed-format word-count hotfix
 

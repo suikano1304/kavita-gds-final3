@@ -632,6 +632,17 @@ python3 scripts/analyze_kavita_reader_latency.py \
 - source `cover.*`가 없는 series라도 기존 config cover cache를 삭제하지 않는다.
 - TXT series는 source cover가 없어도 스캔 오류로 남기지 않고, YAML/base64 또는 fallback cover 정책으로 일관되게 표시한다.
 
+## `0.9.0.2-7` 반영 상태
+
+`0.9.0.2-6` 운영 적용 뒤 신규 GDS archive 시리즈 일부에서 파일과 page count는 정상인데 cover reference가 비어 있는 문제가 확인됐다. scanner가 파일을 놓친 것이 아니라, `MetadataService`의 GDS 커버 분기가 YAML/base64 커버나 TXT 제목 커버가 없을 때 일반 archive cover extraction으로 fallback하지 않고 종료한 것이 원인이었다.
+
+`0.9.0.2-7`에는 다음 보정이 포함됐다.
+
+- GDS YAML/base64 커버가 있으면 기존처럼 우선 사용한다.
+- GDS TXT 제목 기반 fallback cover는 유지한다.
+- GDS archive는 YAML/TXT 커버가 없으면 일반 ZIP/CBZ 첫 페이지 커버 추출 경로로 fallback한다.
+- `linux/amd64`, `linux/arm64` self-contained publish와 multi-arch OCI build를 통과했다.
+
 ## `0.9.0.2-6` 반영 상태
 
 운영 재스캔에서 production-library-d 라이브러리의 복구 가능 `Pages=0` archive와 same-series duplicate는 해소됐고, 남은 `Pages=0`/same-series duplicate는 nested archive 구조로 분리됐다. 이 항목은 scanner가 직접 복구할 수 있는 direct-image archive scan debt와 다르게 취급한다.

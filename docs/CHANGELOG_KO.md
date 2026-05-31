@@ -2,9 +2,18 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-0.9.0.2-6`
+현재 공개 릴리즈: `kavita-gds-0.9.0.2-7`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-05-31: `0.9.0.2-7` GDS archive 커버 fallback hotfix
+
+아래 변경은 `0.9.0.2-7` 배포 후보에 포함했습니다.
+
+- GDS 커버 생성에서 YAML/base64 커버나 TXT 제목 커버가 없는 archive 기반 시리즈가 일반 ZIP/CBZ 첫 페이지 커버 추출 경로로 내려가지 못하던 문제를 수정했습니다.
+- 이 문제는 신규 GDS archive 시리즈가 파일과 페이지 수는 정상 등록되지만 `Series`, `Volume`, `Chapter` 커버 참조가 비어 있는 형태로 나타날 수 있었습니다.
+- 기존 GDS TXT 제목 기반 커버 동작은 유지했습니다.
+- focused regression test, `linux/amd64`/`linux/arm64` self-contained publish, multi-arch OCI build, `linux/amd64` startup smoke를 통과했습니다.
 
 ## 2026-05-31: `0.9.0.2-6` 혼합 포맷 단어 수 분석 hotfix
 
