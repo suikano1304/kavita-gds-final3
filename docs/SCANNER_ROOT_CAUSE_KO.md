@@ -616,6 +616,7 @@ python3 scripts/analyze_kavita_reader_latency.py \
 9. scan log summary로 file discovery 병목과 series update 병목을 분리해서 postflight에 같이 남긴다.
 10. reader slow request는 scanner 병목과 분리해 cache miss/큰 archive/rclone read latency 관점으로 집계한다.
 11. MediaError는 원인 범주별로 나눠 scanner 수정 대상과 파일 변환/정리 대상을 분리한다.
+12. 혼합 포맷 시리즈의 EPUB word-count 오류는 scanner가 아니라 `WordCountAnalyzerService`의 파일별 포맷 확인 누락이었다. `0.9.0.2-6`에서 비 EPUB 파일을 EPUB reader에 넘기지 않도록 수정했다.
 
 ## 다음 검증 기준
 
@@ -630,6 +631,20 @@ python3 scripts/analyze_kavita_reader_latency.py \
 - cover cache 재생성은 원본 GDS 경로가 아니라 Kavita config 경로에만 쓰기를 만든다.
 - source `cover.*`가 없는 series라도 기존 config cover cache를 삭제하지 않는다.
 - TXT series는 source cover가 없어도 스캔 오류로 남기지 않고, YAML/base64 또는 fallback cover 정책으로 일관되게 표시한다.
+
+## `0.9.0.2-6` 반영 상태
+
+운영 재스캔에서 production-library-d 라이브러리의 복구 가능 `Pages=0` archive와 same-series duplicate는 해소됐고, 남은 `Pages=0`/same-series duplicate는 nested archive 구조로 분리됐다. 이 항목은 scanner가 직접 복구할 수 있는 direct-image archive scan debt와 다르게 취급한다.
+
+별도로, 대표 포맷이 EPUB인 혼합 포맷 시리즈에서 word-count analyzer가 챕터의 PDF/TXT 파일까지 EPUB로 열어 오류 이벤트를 만들 수 있었다. 이 문제는 scanner 단계의 series/chapter 매칭 문제가 아니라 분석 서비스의 파일별 포맷 검사 누락이다.
+
+`0.9.0.2-6`에는 다음 보정이 포함됐다.
+
+- `WordCountAnalyzerService`가 `MangaFile.Format == Epub`인 파일만 EPUB reader로 연다.
+- 비 EPUB 파일은 word-count 대상에서 제외하고 `LastFileAnalysis`를 갱신한다.
+- 혼합 포맷 회귀 테스트를 추가했다.
+- `linux/amd64`, `linux/arm64` self-contained publish와 multi-arch OCI build를 통과했다.
+- 공개 GHCR manifest는 `linux/amd64`, `linux/arm64`를 포함한다.
 
 운영 baseline 수집도 단계별로 분리한다.
 

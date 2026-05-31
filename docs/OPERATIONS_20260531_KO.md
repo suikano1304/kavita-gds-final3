@@ -577,6 +577,28 @@ force scan 후 postflight:
 
 ## 운영 체크리스트
 
+## 추가 운영 검증: 중간/소형 라이브러리 재스캔과 `0.9.0.2-6`
+
+`0.9.0.2-5` 운영 적용 후 작은 라이브러리부터 순차적으로 재스캔했습니다.
+
+- 텍스트 중심 소형 라이브러리 일반 스캔은 `Found 0 Series`, 약 `91 ms`로 끝났습니다.
+- 중간 규모 번역 라이브러리 일반 스캔은 실제 미등록 폴더를 추가 발견했고, 남은 `Pages=0` 10개와 same-series duplicate 10개는 모두 nested archive 계열로 남았습니다.
+- production-library-d 라이브러리 일반 스캔 후 복구 가능 `Pages=0` archive는 `39 -> 0`, same-series duplicate는 `3 -> 0`으로 감소했습니다.
+- 최종 postflight 기준 DB integrity/FK는 정상, MediaError는 `637 -> 637`, cross-series duplicate는 `153 -> 153`, GDS config cover reference는 `4,424 -> 4,424`로 악화가 없었습니다.
+- rclone RC 기준 `errors 0`, `deletes 0`, `renames 0`, `serverSideMoves 0`입니다.
+
+이 과정에서 scanner가 아니라 word-count analyzer의 별도 문제가 확인됐습니다. 대표 포맷이 EPUB인 혼합 포맷 시리즈에서 PDF/TXT 같은 비 EPUB 파일까지 EPUB 리더로 열어 `There was an issue counting words on an epub` 오류를 낼 수 있었습니다.
+
+`0.9.0.2-6`에서 이 부분을 수정했습니다.
+
+- 비 EPUB 파일은 EPUB word count 대상에서 제외합니다.
+- 제외된 파일도 분석 시각을 갱신해 같은 오류가 반복되지 않게 했습니다.
+- 회귀 테스트, `linux/amd64`/`linux/arm64` publish, multi-arch OCI build, `linux/amd64` startup smoke를 통과했습니다.
+- GitHub Release: `v0.9.0.2-6`
+- GHCR: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-6`, `latest`
+
+현재 운영 컨테이너는 아직 `0.9.0.2-5`로 healthy 상태입니다. `0.9.0.2-6`은 배포 완료 상태이며, 운영 적용은 별도 승인 후 compose image tag를 바꿔 진행합니다.
+
 재배포 전:
 
 ```bash
