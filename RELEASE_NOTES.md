@@ -1,13 +1,12 @@
 # Kavita GDS
 
-This release provides the GDS scanfix build as a multi-platform OCI image archive.
+This release provides the Kavita official `0.9.0.6` based GDS build as a Docker image archive.
 
-Version: `0.9.0.2-8`
+Version: `9.0.6-1`
 
 ## Included Platforms
 
 - `linux/amd64`
-- `linux/arm64`
 
 ## Asset
 
@@ -17,15 +16,30 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 
 ## Verification
 
-- Built from the GDS scanfix source snapshot.
-- OCI index verified to contain both `linux/amd64` and `linux/arm64`.
-- `linux/amd64` image startup was smoke-tested locally.
-- `linux/arm64` image build path and manifest were verified; native ARM validation should still be done on the target server.
-- `linux/amd64` container startup smoke test passed for `0.9.0.2-8`.
-- The OCI manifest list was verified to contain both `linux/amd64` and `linux/arm64`.
+- Built from the official Kavita `0.9.0.6` source with the GDS patch set ported forward.
+- `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
+- Fixture reader validation passed 3 full passes across ZIP/CBZ/EPUB/TXT samples.
+- Production Web UI, NPM proxy access, EPUB reader page rendering, table-of-contents, and duplicate manifest repair were verified.
+- rclone RC remained read-only: `errors=0`, `deletes=0`, `renames=0`, server-side copy/move counters `0`.
 - The package does not include intermediate test images.
 
-## Changes Since `kavita-gds-0.9.0.2-scan-20260528`
+## Changes Since `0.9.0.2-8`
+
+### 2026-06-01 `9.0.6-1` official `0.9.0.6` port
+
+- Ported the maintained GDS/rclone patch set from `0.9.0.2-8` onto official Kavita `0.9.0.6`.
+- Added on-read EPUB page-count repair so GDS EPUBs that scanned as `1/1` update their chapter/file/volume/series page totals when opened.
+- Expanded malformed EPUB manifest repair to duplicate exact items, duplicate ids, and duplicate `href + media-type` entries.
+- Applied the EPUB repair path across `book-info`, `book-page`, table-of-contents, resource, metadata, and word-count paths.
+- Normalized EPUB resource keys so relative `../Images/...` links can resolve correctly.
+- Kept GDS media mounts read-only and avoided scanner-side full EPUB reads against `/mnt/gds`.
+- Fixed GDS archive cover regeneration so later volumes/chapters do not reuse the first volume cover.
+- Fixed Korean TXT title-cover rendering by bundling Nanum Gothic Regular/Bold in the runtime image.
+- Made cache cleanup tolerate concurrent directory deletion.
+- Validated `reported page-count EPUB sample` and `reported duplicate-manifest EPUB sample` production EPUBs after deployment.
+- Built the public package as a `linux/amd64` Docker archive.
+
+## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 
 ### 2026-05-31 `0.9.0.2-8` default series sort hotfix
 

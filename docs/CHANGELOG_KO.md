@@ -2,9 +2,25 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-0.9.0.2-8`
+현재 공개 릴리즈: `kavita-gds-9.0.6-1`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-06-01: `9.0.6-1` official `0.9.0.6` 포팅
+
+아래 변경은 `9.0.6-1` 배포 후보에 포함했습니다.
+
+- official Kavita `0.9.0.6` 코드베이스에 `0.9.0.2-8`까지의 GDS/rclone 수정사항을 포팅했습니다.
+- GDS EPUB이 scanner shortcut 때문에 `1/1`로 남는 문제를 reader `book-info` 진입 시 실제 reading order count로 보정하도록 수정했습니다.
+- EPUB manifest의 duplicate item/id/href를 임시 copy에서 제거하고 spine 참조를 유지되는 item id로 rewrite하도록 보강했습니다.
+- EPUB repair 경로를 `book-info`, `book-page`, TOC, resource, metadata, word-count 경로에 적용했습니다.
+- EPUB 내부 resource 상대경로를 정규화해 `../Images/...` 같은 링크를 더 안정적으로 처리합니다.
+- `/mnt/gds` scanner는 원격 EPUB 전체 읽기를 하지 않도록 유지해 Web UI blocking을 피했습니다.
+- GDS archive 커버 재생성 시 2권 이후 chapter/volume cover가 1권 cover로 고정되는 문제를 수정했습니다.
+- TXT fallback cover 한글 글꼴 깨짐을 막기 위해 runtime image에 Nanum Gothic Regular/Bold를 포함했습니다.
+- cache cleanup과 reader/cache 작업 경합에서 이미 삭제된 directory를 조용히 무시하도록 보강했습니다.
+- `kavita-test` fixture 117개 항목에 대해 reader/API 3회 반복 검증을 통과했습니다.
+- 운영 `kavita`에 적용 후 `reported page-count EPUB sample`, `reported duplicate-manifest EPUB sample` EPUB page count, page render, TOC API, NPM 접근, rclone read-only 상태를 확인했습니다.
 
 ## 2026-05-31: `0.9.0.2-8` 기본 시리즈 정렬 hotfix
 

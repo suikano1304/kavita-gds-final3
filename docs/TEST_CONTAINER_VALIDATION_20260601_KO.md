@@ -1,0 +1,655 @@
+# Kavita-GDS 테스트 컨테이너 검증 기록 - 2026-06-01
+
+## 목적
+
+- 운영 `kavita` 컨테이너는 유지한다.
+- 운영 스캔 완료 후 운영 config를 복제해 `kavita-test`에서 official Kavita `0.9.0.6` nightly 기반 테스트 이미지를 검증한다.
+- GDS 원본은 read-only로 유지하고, 반복 추가/삭제/재스캔 검증은 local fixture에서만 수행한다.
+- 검증 완료 전까지 `git commit`, `git push`, release/package publish는 하지 않는다.
+
+## 경로
+
+- 운영 compose: `/opt/compose/kavita/docker-compose.yml` (lxc1)
+- 테스트 compose: `/opt/compose/kavita-test/docker-compose.yml` (lxc1)
+- 테스트 config: `/mnt/data/docker/kavita-test/config` (lxc1)
+- 테스트 fixture: `/mnt/data/docker/kavita-test/fixtures` (lxc1)
+- 빌드 staging: `/mnt/data/docker/kavita-test/build` (lxc1)
+- 소스 작업 tree: `/root/kavita-gds-lab/port-0906-gds`
+
+## 테스트 이미지
+
+- official baseline: `ghcr.io/kareadita/kavita:nightly-0.9.0.6`
+- official revision: `c7e9555061d970b50cedc695e60124bf8c47084a`
+- 태그: `local/kavita-gds:9.0.6-1-test`
+- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- 빌드 결과: 성공
+- 빌드 경고:
+  - 기존 npm dependency audit 경고
+  - Angular Sass/CommonJS/budget 경고
+  - 기존 .NET nullable/analyzer 및 package advisory 경고
+
+## 테스트 compose
+
+`/opt/compose/kavita-test/docker-compose.yml`:
+
+- 컨테이너명: `kavita-test`
+- 포트: `5658:5000`
+- 이미지: `local/kavita-gds:9.0.6-1-test`
+- config mount: `/mnt/data/docker/kavita-test/config:/kavita/config`
+- GDS mount: `/mnt/gds2:/mnt/gds:ro`
+- fixture mount: `/mnt/data/docker/kavita-test/fixtures:/fixtures:rw`
+- `WAIT_ANCHOR_DIRS`: `<redacted-media-path>`
+
+## NPM
+
+- lxc3 NPM DB backup: `/mnt/data/docker/npm/data/database.sqlite.bak-kavita-test-20260601-0450`
+- Proxy host id: `26`
+- Domain: `tkavita.suikano.net`
+- Forward target: `192.168.10.6:5658`
+- Certificate id: `6`
+- SSL forced: enabled
+- WebSocket upgrade: enabled
+- HSTS: enabled
+- HTTP/2: disabled, matching current production Kavita proxy
+- Nginx config: `/mnt/data/docker/npm/data/nginx/proxy_host/26.conf`
+- Verification: `nginx -t` successful, Nginx reloaded
+
+## Fixture 목록
+
+Fixture root: `/mnt/data/docker/kavita-test/fixtures`
+
+Initial fixture size/count:
+
+- `cbz`: `66M`, `26` CBZ files
+- `zip`: `182M`, `10` ZIP files
+- `epub`: `7.9M`, normal EPUB files
+- `epub-problem`: `29M`, known problematic EPUB files
+- `txt`: `605K`, `11` TXT files
+
+Expanded fixture size/count after 2026-06-01 07:00 KST:
+
+- `cbz`: `39` CBZ files
+- `zip`: `26` ZIP files
+- `epub`: `27` normal EPUB files
+- `epub-problem`: `3` known problematic EPUB files
+- `txt`: `22` TXT files
+- total media: `117` files
+
+Expanded source directories:
+
+- CBZ: `<redacted-media-path>`
+- ZIP: `<redacted-media-path>`
+- EPUB: `<redacted-media-path>`
+- EPUB: `<redacted-media-path>`
+- TXT: `<redacted-media-path>`
+- TXT: `<redacted-media-path>`
+
+CBZ samples:
+
+- `cbz-sample-redacted`
+- `cbz-sample-b`
+- `cbz-sample-redacted`
+- `cbz-sample-a`
+- `cbz-sample-redacted`
+
+ZIP samples:
+
+- `zip-sample-redacted`
+- `zip-sample-a`
+- `zip-sample-redacted`
+- `zip-sample-redacted`
+- `zip-sample-redacted`
+
+Normal EPUB samples:
+
+- `epub-sample-redacted`
+- `epub-sample-redacted`
+- `<redacted-marker> epub-sample-a`
+- `epub-sample-redacted`
+
+Problem EPUB samples:
+
+- `problem-epub-sample-c [스스디] [txt].epub`
+- `problem-epub-sample-a [김성열] [txt].epub`
+- `001-263 完.epub`
+
+TXT samples:
+
+- `노게임 노라이프`
+- `드레스 차림의 내가 높으신 분들의 가정교사가 된 사건`
+- `인간 조조`
+- `극지방을 향한 대도전`
+- `비밀의 화원`
+
+Note: TXT는 처음에 디렉터리 단위로 복사했다가 PDF/ZIP이 함께 포함되어 `594M`까지 커졌다. 즉시 해당 partial fixture를 삭제하고 DB에 기록된 `.txt` 파일만 다시 복사했다.
+
+## 운영 스캔 게이트
+
+Status: 진행 중. 운영 반영 대기.
+
+2026-06-01 05:09 KST 기준 운영 DB `Library.LastScanned`:
+
+```text
+<redacted> production-library-a       2026-06-01 02:24:02.4762286
+2 연재중          2026-06-01 03:17:44.992242
+3 성인 만화       2026-06-01 04:21:11.3521712
+<redacted> production-library-a          2026-06-01 04:25:33.3351495
+<redacted> production-library-b            2026-06-01 04:26:14.7380056
+<redacted> production-library-b   2026-06-01 04:26:54.1473306
+<redacted> production-library-e     2026-06-01 04:45:05.2705731
+<redacted> production-library-c    2026-05-27 00:31:39.6602245
+<redacted> production-library-d          2026-05-31 19:59:51.9126311
+```
+
+운영 로그:
+
+- `2026-06-01 04:45:06 KST` `production-library-c` scan 시작
+- `2026-06-01 04:49:10 KST` scan already running 메시지 확인
+- `2026-06-01 04:59:10 KST` scan already running 메시지 확인
+- `2026-06-01 05:09:10 KST` scan already running 메시지 확인
+
+추가 관찰:
+
+- `kavita` 컨테이너 health: healthy
+- `kavita` resource usage at 05:09 KST: CPU about `0.58%`, memory about `589MiB`
+- `kavita.db-wal` mtime: `2026-06-01 04:48:02 KST`
+- Kavita process에서 host GDS path open file은 확인되지 않음
+
+운영 config 복제와 `kavita-test` 기동은 이 게이트 완료 후 진행한다.
+
+2026-06-01 07:30 KST 재확인:
+
+- `kavita` production image: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-8`
+- `kavita` health: healthy
+- `kavita-test` image: `local/kavita-gds:9.0.6-1-test`
+- `kavita-test` health: healthy
+- `production-library-c` scan은 아직 진행 중이다.
+- Evidence: `2026-06-01 04:45:06 KST`에 `Beginning file scan on production-library-c`, `2026-06-01 07:30:06 KST`에도 `<redacted-media-path>` 경로 처리 로그가 계속 출력됨.
+- Production DB `Library.LastScanned`: `production-library-c` remains `2026-05-27 00:31:39.6602245`, `production-library-d` remains `2026-05-31 19:59:51.9126311`.
+- Production `docker stats`: `kavita` about `112%` CPU, `860.9MiB`; `kavita-test` about `0.30%` CPU, `348.9MiB`.
+- Conclusion: production image replacement must remain blocked until the production scan finishes and `Library.LastScanned` is updated or the user explicitly decides to stop/override the running scan.
+
+2026-06-01 07:30 KST rclone 재확인:
+
+- `rclone-gds.service`: active
+- RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`
+- RC shows read/list transfer activity only.
+
+2026-06-01 07:31 KST 재확인:
+
+- Production `Library.LastScanned` remains unchanged for `production-library-c` and `production-library-d`.
+- `2026-06-01 07:29:10 KST` production log: `A Scan is already running, rescheduling ScanSeries in 10 minutes`.
+- `2026-06-01 07:30:06 KST` production log still reports `웹소설` paths being inspected.
+- Production SQLite WAL mtime: `2026-06-01 07:30:10 KST`.
+- Production `docker stats`: `kavita` about `1.26%` CPU, `875.9MiB`; `kavita-test` about `0.37%` CPU, `350.1MiB`.
+- rclone RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`.
+- rclone log through `07:31:32 KST`: `to upload 0, uploading 0`.
+- Conclusion remains unchanged: do not replace production image while the production scan is still active.
+
+2026-06-01 07:32 KST 재확인:
+
+- Current host time: `2026-06-01 07:32:42 KST`.
+- Production `Library.LastScanned` still unchanged for `production-library-c` and `production-library-d`.
+- `2026-06-01 07:31:54 KST` production log still reports a `웹소설` path being inspected.
+- Production `docker stats`: `kavita` about `100.74%` CPU, `664.7MiB`; `kavita-test` about `0.36%` CPU, `350.8MiB`.
+- rclone RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`.
+- rclone RC active transfers are reads from `<redacted-media-path>`.
+- rclone log through `07:31:32 KST`: `to upload 0, uploading 0`.
+- Conclusion remains unchanged: production scan is still active; production replacement and GitHub release remain blocked by the agreed gate.
+
+2026-06-01 07:52 KST 재확인 및 Web UI 승인:
+
+- User confirmed `tkavita.suikano.net` Web UI validation is complete.
+- Confirmed by user: EPUB problem samples open, page counts/navigation are acceptable, TXT cover glyphs are acceptable, and multi-volume cover samples are acceptable.
+- Production `Library.LastScanned` still unchanged for `production-library-c` and `production-library-d`.
+- `2026-06-01 07:49:10 KST` production log: `A Scan is already running, rescheduling ScanSeries in 10 minutes`.
+- Production DB/WAL mtime remains active through `2026-06-01 07:52:45 KST`.
+- Production `docker stats`: `kavita` about `9.84%` CPU, `905.3MiB`; `kavita-test` about `0.55%` CPU, `462MiB`.
+- rclone RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`.
+- rclone active transfers are reads from `<redacted-media-path>`.
+- rclone log through `07:51:32 KST`: `to upload 0, uploading 0`.
+- Conclusion: Web UI approval gate is complete. Production scan gate is still open, so production replacement and GitHub release remain blocked until scan completion or explicit user override.
+
+## rclone 확인
+
+- Service: `rclone-gds.service`
+- State: active
+- Mount options include `--read-only`
+- RC: `:5275`
+- Recent VFS cache logs show `to upload 0, uploading 0`
+- RC `core/stats` at 2026-06-01 05:03 KST:
+  - `errors`: `0`
+  - `deletes`: `0`
+  - `renames`: `0`
+  - `serverSideCopies`: `0`
+  - `serverSideMoves`: `0`
+
+## 2026-06-01 06:08 KST 검증 업데이트
+
+- `kavita-test` health: `Ok`
+- 컨테이너 이미지: `local/kavita-gds:0.9.0.6-test-20260601-fontfix-coverfix2`
+- Kavita reported version: `v0.9.0.6`
+- Runtime font check: `fc-match NanumGothic` -> `NanumGothic-Regular.ttf`
+- `LOCAL-FIXTURES` scan: `61 files`, `20 series`, finished `2026-06-01 06:07:25 KST`
+- `refresh-metadata?libraryId=<redacted>&force=true&forceColorscape=true`: completed for `20` series
+- TXT cover sample `series24530.png`: Korean title renders normally, no square-box tofu glyphs
+- CBZ/ZIP multi-volume cover sample hashes after forced cover refresh:
+
+```text
+cbz-sample-a 01  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
+cbz-sample-a 02  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
+cbz-sample-a 03  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
+cbz-sample-b 01  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
+cbz-sample-b 02  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
+zip-sample-a 01  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
+zip-sample-a 02  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+```
+
+확인된 수정 내용:
+
+- 테스트 Dockerfile runtime에 `fontconfig`와 `NanumGothic` TTF를 포함했다.
+- TXT title-cover SVG의 `font-family`를 fontconfig/Pango가 인식하는 unquoted family list로 유지했다.
+- `kavita.yaml`의 `files` 항목에서 대상 파일명에 해당하는 `cover`만 사용하도록 GDS cover parser를 보강했다.
+- 강제 metadata refresh에서 기존 동일 커버가 각 파일별 YAML cover로 정상 교체되는 것을 확인했다.
+
+Resolved after 06:24 KST redeploy:
+
+- 새 이미지 `local/kavita-gds:0.9.0.6-test-20260601-fontfix-coverfix-epubfix` 배포.
+- 중복 manifest EPUB은 원본 파일을 수정하지 않고 `/kavita/config/temp/epub-manifest-repair` 아래 임시 복구본을 만든 뒤 읽는다.
+- 복구 범위는 OPF manifest에서 `id`, `href`, `media-type`가 모두 같은 완전 중복 `item` 제거로 제한한다.
+- 임시 복구 파일은 reader dispose 후 삭제되며, 검증 시 남은 temp file 없음.
+
+Problem EPUB API 검증:
+
+```text
+sample-chapter-redacted book-info HTTP 200  problem-epub-sample-a
+sample-chapter-redacted book-info HTTP 200  problem-epub-sample-b
+sample-chapter-redacted book-info HTTP 200  problem-epub-sample-c
+```
+
+Metadata/word count 검증:
+
+```text
+refresh-metadata libraryId=<redacted> force=true forceColorscape=true -> completed for 20 series
+series/analyze libraryId=<redacted> seriesId=<redacted> forceUpdate=true -> completed
+24535|epub-problem|589835|sample-chapter-redacted|180283
+24535|epub-problem|589835|sample-chapter-redacted|207839
+24535|epub-problem|589835|sample-chapter-redacted|201713
+```
+
+로그에는 원본 `VersOne.Epub.EpubPackageException`이 warning으로 기록된 뒤 `Repaired duplicate EPUB manifest items in a temporary copy`가 남고, 작업은 실패하지 않는다.
+
+## 2026-06-01 06:53 KST EPUB reader/page-count 추가 검증
+
+사용자 Web UI 확인에서 problem EPUB 3개가 열리지만 페이지가 `1/1`로 표시되고 다음/이전 이동이 되지 않는 증상이 보고됨.
+
+원인:
+
+- GDS scan 최적화 경로가 EPUB/PDF/TXT page count를 실제로 읽지 않고 `1`로 저장했다.
+- 이 로직이 `/mnt/gds` 원격 GDS 파일뿐 아니라 local fixture `/fixtures`에도 적용되어 `Chapter.Pages`와 `MangaFile.Pages`가 모두 `1`이 됐다.
+
+수정:
+
+- `ProcessSeries.GetGdsPageCount`에서 `/mnt/gds` mount path만 기존 shortcut을 유지한다.
+- `/fixtures` 같은 local file은 EPUB/PDF/TXT도 기존 Kavita page-count 계산을 사용한다.
+- 기존 `Pages=1` row도 force scan 시 다시 계산되도록 local path에서는 `existingPages`를 그대로 재사용하지 않는다.
+
+배포/재스캔:
+
+- 새 이미지: `local/kavita-gds:9.0.6-1-test`
+- Image ID: `c5368ead72cbdc7bc8caa71662aeb0782d2ed114d99349c5097d740923a0b2ba`
+- `kavita-test` container image hash matches the tag hash.
+- `LOCAL-FIXTURES` force scan: `61 files`, `20 series`, completed at `2026-06-01 06:53:02 KST`.
+
+Problem EPUB page-count 결과:
+
+```text
+sample-chapter-redacted Chapter.Pages=34  MangaFile.Pages=34  WordCount=180283
+sample-chapter-redacted Chapter.Pages=49  MangaFile.Pages=49  WordCount=207839
+sample-chapter-redacted Chapter.Pages=42  MangaFile.Pages=42  WordCount=201713
+```
+
+Reader API 결과:
+
+```text
+sample-chapter-redacted book-info pages=34, reader/chapter-info pages=34
+sample-chapter-redacted book-info pages=49, reader/chapter-info pages=49
+sample-chapter-redacted book-info pages=42, reader/chapter-info pages=42
+seriesTotalPages=125
+```
+
+`book-page` 실제 page 응답:
+
+```text
+sample-chapter-redacted page 0/1/33 HTTP 200
+sample-chapter-redacted page 0/1/48 HTTP 200
+sample-chapter-redacted page 0/1/41 HTTP 200
+```
+
+EPUB resource 검증:
+
+```text
+sample-chapter-redacted first 3 font resources HTTP 200
+sample-chapter-redacted first 3 font resources HTTP 200
+sample-chapter-redacted first 3 font resources HTTP 200
+```
+
+이전 빌드에서 `OEBPS/Styles/../Fonts/...` 또는 정규화된 `OEBPS/Fonts/...` 리소스가 400을 반환하던 문제는 `BookService`에서 content key 정규화와 manifest/file-path fallback을 추가해 해결했다.
+
+Next/previous chapter API:
+
+```text
+sample-chapter-redacted next=sample-chapter-redacted prev=-1
+sample-chapter-redacted next=sample-chapter-redacted prev=sample-chapter-redacted
+sample-chapter-redacted next=-1 prev=sample-chapter-redacted
+```
+
+정렬은 현재 fixture filename/sort order 기준이며, API는 edge를 제외하고 유효한 chapter id를 반환한다.
+
+## 2026-06-01 06:55 KST 권별 커버 중복 재검증
+
+사용자가 "1권 이후 커버들이 전부 1권과 동일한 커버로 생성"되는 의심 증상을 추가 보고함.
+
+최신 `9.0.6-1-test` 이미지와 force metadata/scan 이후 DB 및 cover file hash를 확인했다.
+
+결과:
+
+- EPUB/CBZ/ZIP multi-file samples have distinct `Chapter.CoverImage` names.
+- Hashes are also distinct per chapter/volume.
+- TXT samples intentionally share generated series title covers.
+
+대표 hash:
+
+```text
+epub-problem sample-chapter-redacted ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
+epub-problem sample-chapter-redacted da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
+epub-problem sample-chapter-redacted e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
+epub-sample-a 01 a498bd2e231dbd4307cd5a248f411ec949202d9796659c6523986194de34fb4e
+epub-sample-a 02 75dd57eef22cbb186bd4080400ba0fbf3e7c2cac1459e1054113c787a245bd9f
+epub-sample-a 03 119e17f803886334cf3b1ce5608541c3a11720fd4bab8bd800588a31b305e5b1
+zip-sample-a 01 4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
+zip-sample-a 02 6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+```
+
+현재 테스트 이미지에서는 "2권 이후가 1권 커버와 동일"한 증상이 재현되지 않는다.
+
+## 2026-06-01 07:00 KST 3회 반복 검증
+
+`LOCAL-FIXTURES` 대상으로 force scan과 핵심 reader/cover checks를 3회 반복했다.
+
+```text
+pass 1: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page sample-chapter-redacted page 48 HTTP 200
+pass 2: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page sample-chapter-redacted page 48 HTTP 200
+pass 3: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page sample-chapter-redacted page 48 HTTP 200
+```
+
+Scan durations:
+
+```text
+pass 1: 4003 ms
+pass 2: 3690 ms
+pass 3: 3718 ms
+```
+
+External access:
+
+- `tkavita.suikano.net/api/health` via lxc3 NPM local resolve: `Ok`
+- `kavita-test`: healthy
+
+Host rclone gate:
+
+- `rclone-gds.service`: active
+- RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`
+- Recent `/var/log/rclone.gds.log`: repeated `to upload 0, uploading 0`
+
+Note:
+
+- RC stats still shows read/download transfer activity from the read-only mount cache path, but no delete/rename/upload/write activity.
+
+## 2026-06-01 07:26 KST 확장 fixture 최종 검증
+
+최종 테스트 이미지:
+
+- image: `local/kavita-gds:9.0.6-1-test`
+- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- container: `kavita-test`, health `healthy`
+- `/api/health`: `Ok`
+
+확장 scan 결과:
+
+```text
+LOCAL-FIXTURES force scan: 117 files, 26 series, 11037 ms
+DB summary: 117 chapters, 26 series, zero pages 0, missing chapter covers 0
+Archive: 65 files, 12 series, zero pages 0, missing covers 0
+EPUB:    30 files, 7 series,  zero pages 0, missing covers 0
+TXT:     22 files, 7 series,  zero pages 0, missing covers 0
+```
+
+3-pass full reader validation:
+
+```text
+pass=1 total=117 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0
+pass=2 total=117 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0
+pass=3 total=117 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0
+```
+
+각 pass는 모든 `LOCAL-FIXTURES` chapter에 대해 다음을 확인했다.
+
+- `reader/chapter-info` HTTP 200 and DB page count match
+- `reader/next-chapter`, `reader/prev-chapter` HTTP 200 and integer response
+- Archive first/middle/last page image HTTP 200 and non-zero bytes
+- EPUB/TXT first/middle/last `book-page` HTTP 200 and non-zero bytes
+
+Problem EPUB next/previous chapter API:
+
+```text
+chapter=sample-chapter-redacted next=sample-chapter-redacted prev=sample-chapter-redacted
+chapter=sample-chapter-redacted next=sample-chapter-redacted prev=-1
+chapter=sample-chapter-redacted next=-1 prev=sample-chapter-redacted
+```
+
+사용자가 보고한 "열리지만 1/1로 보이고 다음/이전 이동이 안 됨" 증상은 `Pages=1` scan shortcut이 local fixture EPUB에도 적용된 것이 원인이었다. 최종 빌드에서는 problem EPUB page count가 `34/49/42`로 유지되고, next/previous chapter API도 edge를 제외하고 유효한 chapter id를 반환한다.
+
+로그 검증:
+
+- 3-pass full reader validation since `2026-06-01 07:25:50 KST`: no `[Error]`, no exception, no failed Hangfire job, no `DirectoryNotFound`.
+- Force scan since `2026-06-01 07:26:32 KST`: no `[Error]`, no exception, no failed Hangfire job, no `DirectoryNotFound`.
+- EPUB duplicate manifest repair success path now logs without exception stack.
+- `/kavita/config/temp/epub-manifest-repair` remaining temp files: `0`.
+
+External/rclone final check:
+
+- `tkavita.suikano.net/api/health` via lxc3 NPM local resolve: `Ok`.
+- `rclone-gds.service`: `active`.
+- rclone RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`.
+- rclone RC still shows read transfer activity from `<redacted-media-path>`, with no write/delete/rename activity.
+
+추가 수정:
+
+- `DirectoryService.ClearDirectory` now ignores directories already removed by concurrent cleanup/cache operations. This prevents scan/reader cache overlap from producing `DirectoryNotFoundException` cleanup noise.
+
+## 2026-06-01 06:20 KST 삭제/재추가 재스캔 검증
+
+- `<redacted-fixture-path> 02권 (완결) (예스)#146.zip`을 library root 밖 `/tmp/kavita-fixture-removed`로 이동.
+- scan 후 `LOCAL-FIXTURES`: `60 files`, `20 series`; `zip-sample-a` DB 파일 수 `1`.
+- 같은 파일을 원래 위치로 복구.
+- scan 후 `LOCAL-FIXTURES`: `61 files`, `20 series`; `zip-sample-a` DB 파일 수 `2`.
+- 재추가된 2권은 새 cover filename `<redacted-cover-file>`로 생성됨.
+- 1권/2권 hash:
+
+```text
+<redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
+<redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+```
+
+## 남은 검증 항목
+
+- 운영 강제 스캔 완료 최종 재확인
+- 운영 스캔 완료 후 rclone RC `core/stats` 최종 확인
+- 운영 스캔 완료 후 오류 로그 최종 확인
+
+## 2026-06-01 07:55-08:00 KST 운영 반영
+
+사용자 지시:
+
+- 기존 운영 스캔은 중단하고 운영에 반영한다.
+- 운영 반영이 모두 끝난 뒤 강제 스캔을 돌린다.
+
+운영 반영 전 백업:
+
+- backup dir: `/root/kavita-prod-backups/20260601-075551`
+- compose backup: `/root/kavita-prod-backups/20260601-075551/docker-compose.yml.pre-0906-1`
+- DB backup: `/root/kavita-prod-backups/20260601-075551/kavita.db.pre-0906-1.backup`
+- appsettings backup: `/root/kavita-prod-backups/20260601-075551/appsettings.json.pre-0906-1`
+- DB backup verification: `PRAGMA integrity_check = ok`, `Library count = 9`
+
+운영 compose 변경:
+
+```diff
+- image: ghcr.io/suikano1304/kavita-gds:0.9.0.2-8
++ image: local/kavita-gds:9.0.6-1
+```
+
+운영 이미지:
+
+- image: `local/kavita-gds:9.0.6-1`
+- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- 같은 Image ID가 test image `local/kavita-gds:9.0.6-1-test`에도 붙어 있음을 확인했다.
+
+운영 재기동 및 마이그레이션:
+
+- command: `docker compose -f /opt/compose/kavita/docker-compose.yml up -d`
+- container: `kavita`, health `healthy`
+- `/api/health`: `Ok`
+- startup log:
+  - `Database backed up to /kavita/config/temp/migration/0.9.0.2`
+  - `Running Manual Migrations - complete`
+  - `Running Migrations - complete`
+  - `Kavita - v0.9.0.6`
+
+마운트 확인:
+
+```text
+/mnt/data/docker/kavita/config -> /kavita/config RW=true
+/mnt/gds2 -> /mnt/gds RW=false
+```
+
+운영 전체 강제 스캔:
+
+- endpoint: `POST /api/library/scan-all?force=true`
+- auth: 운영 `AppUserAuthKey` 관리자 키를 shell 변수로만 읽어 사용했고 키는 출력하지 않았다.
+- first HTTP result: `200`
+- scan start log:
+
+```text
+[ScannerService] Starting Scan of All Libraries, Forced: true
+[ScannerService] Beginning file scan on production-library-a
+```
+
+운영 재시작 및 강제 스캔 재요청:
+
+- first scan request 후 UI/API 요청에서 SQLite `disk I/O error` 500이 반복 발생했다.
+- host storage check: `/mnt/data` and `/mnt/data/docker` space OK, `zpool status -x` = `all pools are healthy`.
+- DB check via immutable SQLite URI: `PRAGMA integrity_check = ok`, `Library count = 9`.
+- container 내부 `/kavita/config` write test OK.
+- 조치: `docker restart kavita`
+- 재시작 후:
+  - container health `healthy`
+  - `/api/library/libraries` HTTP `200`
+  - `disk I/O` 로그 중단
+- 강제 스캔 재요청:
+  - endpoint: `POST /api/library/scan-all?force=true`
+  - HTTP result: `200`
+  - retry scan start log:
+
+```text
+[ScannerService] Starting Scan of All Libraries, Forced: true
+[ScannerService] Beginning file scan on production-library-a
+```
+
+rclone read-only 확인:
+
+- `rclone-gds.service`: `active`
+- rclone RC `core/stats`: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`
+- `/var/log/rclone.gds.log`: `to upload 0`, `uploading 0`
+- retry scan 중 rclone RC도 동일하게 write/delete/rename/server-side move/copy 모두 `0`.
+
+운영 Web/API spot check:
+
+- 운영 Web UI/API 요청은 200 응답.
+- duplicate manifest EPUB를 운영에서 열 때 repair warning이 발생했고, exception stack 없이 temporary copy repair path로 처리됨.
+- `book-info`, `book-page`, next/previous chapter API가 200으로 응답했다.
+- 재시작 이후 남은 `[Error]` 로그는 publisher image fetch 실패(`CoverDbService`, e.g. `LIMITBOOK`)로, DB I/O error와 별개다.
+
+## 2026-06-01 08:31 KST Production EPUB Hotfix
+
+사용자 Web UI 확인 중 운영에서 `reported page-count EPUB sample` EPUB가 `1/1`로 표시되고, `reported duplicate-manifest EPUB sample`가 `Incorrect EPUB manifest: item with href = "image-0001.jpg" is not unique.` 오류를 내는 문제가 확인됐다. test fixture는 `/fixtures` 경로라 page count가 실제 값으로 재계산됐지만, 운영 `/mnt/gds` 경로는 scanner shortcut 때문에 EPUB page count가 계속 `1`로 유지되는 차이가 있었다.
+
+조치:
+
+- scanner에서는 `/mnt/gds` EPUB/PDF/TXT에 대해 원격 파일 전체 읽기를 하지 않고 기존 shortcut을 유지했다.
+- 대신 EPUB `book-info` 요청 시 실제 reading order count가 `1`보다 크고 DB page count가 `1` 이하이면 `Chapter.Pages`, `MangaFile.Pages`, `Volume.Pages`, `Series.Pages`를 즉시 갱신하도록 했다.
+- duplicate manifest repair를 `BookService`의 EPUB open 경로 전체에 적용해 `book-info`, `book-page`, `chapters`, resource fetch, metadata/word-count 경로가 같은 보정 로직을 사용하게 했다.
+- 운영 image tag `local/kavita-gds:9.0.6-1`을 새 Image ID `4e37e0f29e5410e67480345a2d0f456bfab1900b7653eebb0859d73051a264fa`로 교체하고 `kavita` 컨테이너를 재생성했다.
+
+검증:
+
+```text
+production kavita health: healthy
+internal root: HTTP 200, 30467 bytes
+internal main-MWPUWZBY.js: HTTP 200, 108811 bytes
+external kavita.suikano.net via NPM: HTTP 200, 30467 bytes
+
+sample-chapter-redacted reported page-count EPUB sample 1권 book-info: HTTP 200, pages=15
+sample-chapter-redacted reported page-count EPUB sample 2권 book-info: HTTP 200, pages=12
+sample-chapter-redacted reported duplicate-manifest EPUB sample 1권 book-info: HTTP 200, pages=13
+sample-chapter-redacted reported duplicate-manifest EPUB sample 2권 book-info: HTTP 200, pages=12
+
+sample-chapter-redacted book-page page=2: HTTP 200, 1393 bytes
+sample-chapter-redacted book-page page=2: HTTP 200, 3739 bytes
+sample-chapter-redacted book-page page=2: HTTP 200, 44497 bytes
+sample-chapter-redacted chapters: HTTP 200, 1017 bytes
+sample-chapter-redacted chapters: HTTP 200, 977 bytes
+
+DB after on-read repair:
+sample-chapter-redacted Chapter.Pages=15 MangaFile.Pages=15
+sample-chapter-redacted Chapter.Pages=12 MangaFile.Pages=12
+sample-chapter-redacted Chapter.Pages=13 MangaFile.Pages=13
+sample-chapter-redacted Chapter.Pages=12 MangaFile.Pages=12
+```
+
+rclone RC after verification:
+
+```text
+errors=0
+deletes=0
+renames=0
+serverSideCopies=0
+serverSideMoves=0
+```
+
+Recent production logs show duplicate manifest repair warnings for `reported duplicate-manifest EPUB sample` 1/2권, and no `responded 500` or `disk I/O` failures during this validation. External publisher image fetch errors may still appear and are unrelated to the EPUB reader fix.
+
+운영 최종 강제 스캔:
+
+- endpoint: `POST /api/library/scan-all?force=true`
+- HTTP result: `200`
+- start log:
+
+```text
+[ScannerService] Starting Scan of All Libraries, Forced: true
+[ScannerService] Beginning file scan on production-library-a
+```
+
+- scan start 이후 Web UI root request: `HTTP 200`, `30467 bytes`
+- rclone RC after scan start: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`
+
+GitHub release package 준비:
+
+- package: `/root/Kavita-GDS/kavita-gds.tar.gz`
+- package SHA256: `0605e92b5af4984d96aa41babb1af2368f5edc35ae848a085c97e25277b34517`
+- inner Docker archive: `docker-image/kavita-gds.docker.tar`
+- inner Docker archive SHA256: `1f29634c96d7d12650389794c17039ba514f4340d1fd42f9675c3cfa0dd147ab`
+- archive tags verified with skopeo:
+  - `local/kavita-gds:9.0.6-1`
+  - `local/kavita-gds:latest`
