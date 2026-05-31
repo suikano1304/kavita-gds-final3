@@ -2,7 +2,9 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 배포 후보: `kavita-gds-0.9.0.2-3`
+현재 공개 릴리즈: `kavita-gds-0.9.0.2-3`
+
+참고: source branch에는 `0.9.0.2-3` 이후 GDS 타입 처리 보강 커밋이 1개 더 있습니다. 다음 운영 검증 release를 만들 때 이 커밋까지 포함해야 source/release/운영 기준이 다시 일치합니다.
 
 ## 2026-05-31: startup FK 진단 및 duplicate cleanup
 
