@@ -18,6 +18,7 @@
 - postflight 비교에 `--postflight-gates` 옵션을 추가해 integrity/FK/`Pages=0`/duplicate/MediaError 상태를 `PASS`, `WARN`, `FAIL`로 판정할 수 있게 했습니다.
 - `--check-archives` 결과를 JSON에도 기록해 직접 이미지가 있는 복구 가능 `Pages=0` archive와 nested archive를 postflight gate에서 분리할 수 있게 했습니다.
 - scan log timing 요약 도구를 추가해 library scan 시간, file discovery 시간, series update 시간, 느린 reader HTTP 요청을 기본적으로 library/series 이름 노출 없이 분석할 수 있게 했습니다.
+- reader latency 상관분석 도구를 추가해 느린 reader 요청이 DB 파일 크기, format, page 수, cache folder 상태와 어떻게 연결되는지 경로/제목 노출 없이 확인할 수 있게 했습니다.
 - C# backend build, UI production build, multi-arch OCI build, `linux/amd64` startup smoke test를 통과했습니다.
 - `linux/arm64` 이미지는 QEMU 환경에서 entrypoint smoke test를 완료했습니다. x86/NAS에서 정상인데 Oracle A1에서만 startup FK 오류가 나면 이미지 아키텍처보다 기존 DB, 컨테이너 전환 상태, compose volume 연결을 먼저 확인하는 쪽으로 정리했습니다.
 

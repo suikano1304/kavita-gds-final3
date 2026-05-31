@@ -496,6 +496,18 @@ python3 scripts/summarize_kavita_scan_logs.py \
 
 이 출력은 기본적으로 endpoint, status, ms, page, `chapter_key`만 보여준다. raw chapter id가 필요할 때만 `--show-request-ids`를 붙인다.
 
+DB/cache 상관분석:
+
+```bash
+python3 scripts/analyze_kavita_reader_latency.py \
+  /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --cache-dir /mnt/data/docker/kavita/config/cache \
+  --slow-request-ms 3000
+```
+
+2026-05-31 운영 로그 기준으로는 3초 이상 느린 reader 요청 8개 중 7개가 ZIP archive였고, 가장 느린 `reader/image` 요청들은 120-367MB archive 및 150-377MB cache folder와 연결됐다. 현재 cache가 남아 있는 항목은 사후 상태라 “요청 당시 이미 cache hit였다”는 뜻은 아니다. `CacheService.Ensure()`가 요청 처리 안에서 cache miss를 채운 뒤 같은 요청을 완료할 수 있기 때문이다.
+
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.

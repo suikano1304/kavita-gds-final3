@@ -194,6 +194,7 @@ scripts/collect_gds_preflight.sh \
 - `before-docker-compose.yml`: 지정한 compose 파일 사본
 - `before-scan-log-summary.txt/json`: `--scan-log`를 지정한 경우 scan timing 요약
 - `before-request-log-summary.json`: `--scan-log`를 지정한 경우 slow reader request 요약
+- `before-reader-latency-summary.txt/json`: `--scan-log`를 지정한 경우 slow reader request와 DB/cache 상태 상관분석
 
 재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
 
@@ -218,6 +219,7 @@ scripts/collect_gds_preflight.sh \
 - MediaError 분포
 - 로그 기준 library scan 시간, file discovery 시간, 처리된 series/file 수
 - 로그 기준 slow reader request 수와 endpoint 분포
+- 느린 reader request의 file size, format, page count, cache 존재 여부
 - `Pages=0` ZIP/CBZ의 내부 이미지 또는 nested archive 여부
 - 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
 - SQLite foreign key 위반 여부
@@ -234,6 +236,16 @@ python3 scripts/summarize_kavita_scan_logs.py \
 
 로컬에서 이름까지 확인해야 할 때만 `--show-library-names` 또는 `--show-series-names`를 추가합니다.
 느린 reader request 기준값은 기본 `1000ms`입니다. 기준을 바꾸려면 `--slow-request-ms 3000`처럼 지정합니다. raw chapter id가 필요할 때만 `--show-request-ids`를 붙입니다.
+
+느린 reader request가 실제 파일 크기나 cache miss와 연결되는지 확인하려면 DB와 cache 경로를 같이 지정합니다. 기본 출력은 title/path/raw id를 숨깁니다.
+
+```bash
+python3 scripts/analyze_kavita_reader_latency.py \
+  /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --db /mnt/data/docker/kavita/config/kavita.db \
+  --cache-dir /mnt/data/docker/kavita/config/cache \
+  --slow-request-ms 3000
+```
 
 ## TXT 커버 정책
 

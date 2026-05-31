@@ -17,6 +17,8 @@ Options:
   --compose-file PATH   Copy a docker-compose.yml into the report directory
   --label TEXT          Prefix output filenames with this label (default: before)
   --scan-log PATH       Include a Kavita log file in scan timing summary. Repeatable
+  --cache-dir PATH      Kavita cache directory for reader latency correlation
+                       (default: DB directory/cache)
   --check-archives      Ask diagnose_kavita_gds.py to inspect Pages=0 ZIP/CBZ files
   --check-covers        Ask diagnose_kavita_gds.py to inspect cover state
   --compare-json PATH   Compare this run with a previous diagnostics JSON
@@ -37,6 +39,7 @@ container_root="/mnt/gds"
 host_root="/mnt/gds2"
 compose_file=""
 scan_logs=()
+cache_dir=""
 label="before"
 check_archives=false
 check_covers=false
@@ -69,6 +72,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --scan-log)
       scan_logs+=("${2:-}")
+      shift 2
+      ;;
+    --cache-dir)
+      cache_dir="${2:-}"
       shift 2
       ;;
     --label)
@@ -139,6 +146,13 @@ for scan_log in "${scan_logs[@]}"; do
     exit 1
   fi
 done
+if [[ -z "$cache_dir" ]]; then
+  cache_dir="$(dirname "$db")/cache"
+fi
+if [[ ! -d "$cache_dir" ]]; then
+  echo "Cache directory not found: $cache_dir" >&2
+  exit 1
+fi
 
 mkdir -p "$output_dir"
 
@@ -148,6 +162,8 @@ manifest_file="$output_dir/${label}-manifest.txt"
 scan_log_text_file="$output_dir/${label}-scan-log-summary.txt"
 scan_log_json_file="$output_dir/${label}-scan-log-summary.json"
 request_log_json_file="$output_dir/${label}-request-log-summary.json"
+reader_latency_text_file="$output_dir/${label}-reader-latency-summary.txt"
+reader_latency_json_file="$output_dir/${label}-reader-latency-summary.json"
 
 diagnose_args=(
   --db "$db"
@@ -185,7 +201,10 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
     echo "scan_log_json=$scan_log_json_file"
     echo "scan_log_text=$scan_log_text_file"
     echo "request_log_json=$request_log_json_file"
+    echo "reader_latency_json=$reader_latency_json_file"
+    echo "reader_latency_text=$reader_latency_text_file"
   fi
+  echo "cache_dir=$cache_dir"
   echo "host_uname=$(uname -a)"
   echo "host_arch=$(uname -m)"
   if command -v docker >/dev/null 2>&1; then
@@ -226,6 +245,12 @@ if [[ ${#scan_logs[@]} -gt 0 ]]; then
     --json-output "$scan_log_json_file" \
     --request-json-output "$request_log_json_file" \
     > "$scan_log_text_file"
+  python3 -B "$script_dir/analyze_kavita_reader_latency.py" \
+    "${scan_logs[@]}" \
+    --db "$db" \
+    --cache-dir "$cache_dir" \
+    --json-output "$reader_latency_json_file" \
+    > "$reader_latency_text_file"
   echo "scan_logs=${scan_logs[*]}" >> "$manifest_file"
 fi
 

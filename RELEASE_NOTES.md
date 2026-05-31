@@ -34,6 +34,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Postflight comparison can now print explicit `PASS`, `WARN`, and `FAIL` gates for integrity, foreign keys, `Pages=0`, duplicate file paths, and media errors.
 - Archive validation can be written into the JSON baseline, so postflight gates can separate recoverable direct-image `Pages=0` archives from nested archive structures.
 - Added a read-only scan-log timing summarizer that reports library scan, file discovery, series update timings, and slow reader HTTP requests without exposing library or series names by default.
+- Added a read-only reader latency correlator that maps slow reader requests to DB file size, format, page count, and cache-folder state without exposing titles or paths by default.
 - Built and packaged as `0.9.0.2-3` for `linux/amd64` and `linux/arm64`.
 
 ### 2026-05-31 GDS TXT fallback cover and scan debt recovery
