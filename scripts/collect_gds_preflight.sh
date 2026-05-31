@@ -16,6 +16,7 @@ Options:
   --host-root DIR       Media root readable from this shell (default: /mnt/gds2)
   --compose-file PATH   Copy a docker-compose.yml into the report directory
   --label TEXT          Prefix output filenames with this label (default: before)
+  --scan-log PATH       Include a Kavita log file in scan timing summary. Repeatable
   --check-archives      Ask diagnose_kavita_gds.py to inspect Pages=0 ZIP/CBZ files
   --check-covers        Ask diagnose_kavita_gds.py to inspect cover state
   --compare-json PATH   Compare this run with a previous diagnostics JSON
@@ -35,6 +36,7 @@ output_dir=""
 container_root="/mnt/gds"
 host_root="/mnt/gds2"
 compose_file=""
+scan_logs=()
 label="before"
 check_archives=false
 check_covers=false
@@ -63,6 +65,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --compose-file)
       compose_file="${2:-}"
+      shift 2
+      ;;
+    --scan-log)
+      scan_logs+=("${2:-}")
       shift 2
       ;;
     --label)
@@ -127,12 +133,20 @@ if [[ "$fail_on_gate_failure" == true && "$postflight_gates" != true ]]; then
   echo "--fail-on-gate-failure requires --postflight-gates" >&2
   exit 2
 fi
+for scan_log in "${scan_logs[@]}"; do
+  if [[ ! -f "$scan_log" ]]; then
+    echo "Scan log not found: $scan_log" >&2
+    exit 1
+  fi
+done
 
 mkdir -p "$output_dir"
 
 json_file="$output_dir/${label}-diagnostics.json"
 text_file="$output_dir/${label}-diagnostics.txt"
 manifest_file="$output_dir/${label}-manifest.txt"
+scan_log_text_file="$output_dir/${label}-scan-log-summary.txt"
+scan_log_json_file="$output_dir/${label}-scan-log-summary.json"
 
 diagnose_args=(
   --db "$db"
@@ -166,6 +180,10 @@ python3 -B "$script_dir/diagnose_kavita_gds.py" "${diagnose_args[@]}" | tee "$te
   echo "host_root=$host_root"
   echo "json=$json_file"
   echo "text=$text_file"
+  if [[ ${#scan_logs[@]} -gt 0 ]]; then
+    echo "scan_log_json=$scan_log_json_file"
+    echo "scan_log_text=$scan_log_text_file"
+  fi
   echo "host_uname=$(uname -a)"
   echo "host_arch=$(uname -m)"
   if command -v docker >/dev/null 2>&1; then
@@ -198,6 +216,14 @@ if [[ -n "$compose_file" ]]; then
   fi
   cp "$compose_file" "$output_dir/${label}-docker-compose.yml"
   echo "compose_copy=$output_dir/${label}-docker-compose.yml" >> "$manifest_file"
+fi
+
+if [[ ${#scan_logs[@]} -gt 0 ]]; then
+  python3 -B "$script_dir/summarize_kavita_scan_logs.py" \
+    "${scan_logs[@]}" \
+    --json-output "$scan_log_json_file" \
+    > "$scan_log_text_file"
+  echo "scan_logs=${scan_logs[*]}" >> "$manifest_file"
 fi
 
 echo

@@ -180,6 +180,7 @@ scripts/collect_gds_preflight.sh \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
   --compose-file compose/docker-compose.production.yml \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
   --check-archives
@@ -191,6 +192,7 @@ scripts/collect_gds_preflight.sh \
 - `before-diagnostics.json`: 재스캔 전후 비교용 JSON baseline
 - `before-manifest.txt`: DB 경로, 크기, mtime, 생성 시각
 - `before-docker-compose.yml`: 지정한 compose 파일 사본
+- `before-scan-log-summary.txt/json`: `--scan-log`를 지정한 경우 scan timing 요약
 
 재스캔 후에는 같은 DB를 현재값으로 읽고 이전 JSON과 비교합니다.
 
@@ -213,12 +215,22 @@ scripts/collect_gds_preflight.sh \
 - 라이브러리별 series/file/Page=0 수
 - duplicate file path 구조
 - MediaError 분포
+- 로그 기준 library scan 시간, file discovery 시간, 처리된 series/file 수
 - `Pages=0` ZIP/CBZ의 내부 이미지 또는 nested archive 여부
 - 원본 `cover.*`와 Kavita config cover cache의 불일치 위험
 - SQLite foreign key 위반 여부
 - duplicate file path cleanup 후보 분류
 - JSON baseline 출력 시 `Pages=0`, duplicate, FK 상태를 재스캔 전후로 기계적으로 비교 가능
 - postflight gate 출력 시 SQLite integrity/FK, `Pages=0`, 복구 가능 `Pages=0` archive, same-series duplicate, cross-series duplicate, MediaError 증가 여부를 명시적으로 판정
+
+스캔 로그만 따로 분석하려면 다음처럼 실행합니다. 기본 출력은 library/series 이름을 노출하지 않고 `library_key`, `series_key` 해시만 보여줍니다.
+
+```bash
+python3 scripts/summarize_kavita_scan_logs.py \
+  /mnt/data/docker/kavita/config/logs/kavita20260531.log
+```
+
+로컬에서 이름까지 확인해야 할 때만 `--show-library-names` 또는 `--show-series-names`를 추가합니다.
 
 ## TXT 커버 정책
 
@@ -244,7 +256,7 @@ TXT 파일은 파일 내부에서 추출할 표지가 없으므로 원본 `cover
 
 - 공식 Kavita 이미지가 아닙니다.
 - 기존 Kavita DB를 연결하기 전에는 백업을 권장합니다.
-- `arm64` 이미지는 빌드/manifest 검증과 QEMU entrypoint smoke test를 완료했습니다. 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1 같은 native ARM 서버에서만 startup FK 오류가 나면 이미지 아키텍처보다 해당 서버의 DB/migration 상태, 기존 컨테이너 종료 상태, compose volume 연결을 먼저 확인하세요.
+- `arm64` 이미지는 빌드/manifest 검증과 QEMU entrypoint smoke test를 완료했습니다. 현재 startup FK 제보는 일반 x86 환경의 공통 재현 문제로 보지 않고, Oracle A1 같은 native ARM 서버에서만 발생한 환경별 사례로 분리해 보고 있습니다. 같은 이미지가 x86/NAS 환경에서 정상 기동되는데 Oracle A1에서만 오류가 나면 이미지 아키텍처보다 해당 서버의 DB/migration 상태, 기존 컨테이너 종료 상태, compose volume 연결을 먼저 확인하세요.
 - 이 repo에는 큰 binary 파일을 직접 commit하지 않습니다. 큰 파일은 Release asset으로만 배포합니다.
 
 ## Oracle A1 startup FK 오류 확인

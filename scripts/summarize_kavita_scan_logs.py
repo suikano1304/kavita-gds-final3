@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+"""Summarize Kavita scanner timing from log files without exposing titles.
+
+This is a read-only log parser. By default it redacts series names and prints
+stable hashes for slow series so reports can be shared without leaking library
+contents.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from statistics import median
+
+
+BEGIN_LIBRARY_RE = re.compile(r"Beginning file scan on (?P<library>.+)$")
+EMPTY_RE = re.compile(r" is empty or has no matching file types$")
+FINISHED_LIBRARY_RE = re.compile(
+    r"Finished library scan of (?:(?P<files>\d+) files and )?"
+    r"(?P<series>\d+) series in (?P<ms>\d+) milliseconds for "
+    r"(?P<library>.+?)(?:\. There were no changes)?$"
+)
+FINISHED_SCAN_RE = re.compile(r"Finished scan in (?P<ms>\d+) milliseconds\.")
+FINISHED_SERIES_RE = re.compile(r"Finished series update on (?P<series>.+) in (?P<ms>\d+) ms$")
+FOUND_RE = re.compile(r"Found (?P<series>\d+) Series that need processing in (?P<ms>\d+) ms$")
+PROCESSING_RE = re.compile(r"Processing series (?P<series>.+) with (?P<files>\d+) files$")
+START_ALL_RE = re.compile(r"Starting Scan of All Libraries, Forced: (?P<forced>true|false)", re.IGNORECASE)
+TIMESTAMP_RE = re.compile(r"^\[Kavita\] \[(?P<timestamp>\d{4}-\d{2}-\d{2} [^\]]+)\]")
+
+
+@dataclass
+class SeriesUpdate:
+    name: str
+    ms: int
+    files: int | None = None
+
+
+@dataclass
+class LibraryScan:
+    library: str
+    start: str | None = None
+    forced: bool | None = None
+    found_series: int | None = None
+    found_ms: int | None = None
+    scan_ms: int | None = None
+    total_ms: int | None = None
+    finished_files: int | None = None
+    finished_series: int | None = None
+    no_changes: bool = False
+    empty_folder_logs: int = 0
+    updates: list[SeriesUpdate] = field(default_factory=list)
+
+
+def timestamp_from_line(line: str) -> str | None:
+    match = TIMESTAMP_RE.search(line)
+    if match:
+        return match.group("timestamp")
+    return None
+
+
+def anonymize(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
+
+
+def percentile(values: list[int], percent: float) -> int | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = round((len(ordered) - 1) * percent)
+    return ordered[index]
+
+
+def parse_logs(paths: list[Path]) -> list[LibraryScan]:
+    scans: list[LibraryScan] = []
+    current: LibraryScan | None = None
+    forced: bool | None = None
+    pending_files_by_series: dict[str, int] = {}
+
+    for path in paths:
+        with path.open("r", encoding="utf-8", errors="ignore") as handle:
+            for line in handle:
+                line = line.rstrip("\n")
+
+                start_all = START_ALL_RE.search(line)
+                if start_all:
+                    forced = start_all.group("forced").lower() == "true"
+
+                begin = BEGIN_LIBRARY_RE.search(line)
+                if begin:
+                    current = LibraryScan(
+                        library=begin.group("library"),
+                        start=timestamp_from_line(line),
+                        forced=forced,
+                    )
+                    scans.append(current)
+                    pending_files_by_series = {}
+                    continue
+
+                if current is None:
+                    continue
+
+                if EMPTY_RE.search(line):
+                    current.empty_folder_logs += 1
+                    continue
+
+                found = FOUND_RE.search(line)
+                if found:
+                    current.found_series = int(found.group("series"))
+                    current.found_ms = int(found.group("ms"))
+                    continue
+
+                processing = PROCESSING_RE.search(line)
+                if processing:
+                    pending_files_by_series[processing.group("series")] = int(processing.group("files"))
+                    continue
+
+                finished_series = FINISHED_SERIES_RE.search(line)
+                if finished_series:
+                    name = finished_series.group("series")
+                    current.updates.append(
+                        SeriesUpdate(
+                            name=name,
+                            ms=int(finished_series.group("ms")),
+                            files=pending_files_by_series.get(name),
+                        )
+                    )
+                    continue
+
+                finished_scan = FINISHED_SCAN_RE.search(line)
+                if finished_scan:
+                    current.scan_ms = int(finished_scan.group("ms"))
+                    continue
+
+                finished_library = FINISHED_LIBRARY_RE.search(line)
+                if finished_library:
+                    current.total_ms = int(finished_library.group("ms"))
+                    current.finished_files = (
+                        int(finished_library.group("files"))
+                        if finished_library.group("files") is not None
+                        else None
+                    )
+                    current.finished_series = int(finished_library.group("series"))
+                    current.no_changes = "There were no changes" in line
+                    current.library = finished_library.group("library")
+                    current = None
+                    pending_files_by_series = {}
+
+    return scans
+
+
+def scan_to_dict(
+    scan: LibraryScan,
+    show_library_names: bool,
+    show_series_names: bool,
+    slow_limit: int,
+) -> dict[str, object]:
+    update_ms = [update.ms for update in scan.updates]
+    slow_updates = sorted(scan.updates, key=lambda update: update.ms, reverse=True)[:slow_limit]
+    processed_files = sum(update.files or 0 for update in scan.updates)
+    result: dict[str, object] = {
+        "start": scan.start,
+        "library_key": anonymize(scan.library),
+        "forced": scan.forced,
+        "found_series": scan.found_series,
+        "found_ms": scan.found_ms,
+        "processed_series": len(scan.updates),
+        "processed_files": processed_files,
+        "series_update_ms_sum": sum(update_ms),
+        "series_update_ms_p50": int(median(update_ms)) if update_ms else None,
+        "series_update_ms_p95": percentile(update_ms, 0.95),
+        "series_update_ms_max": max(update_ms) if update_ms else None,
+        "scan_ms": scan.scan_ms,
+        "total_ms": scan.total_ms,
+        "finished_files": scan.finished_files,
+        "finished_series": scan.finished_series,
+        "no_changes": scan.no_changes,
+        "empty_folder_logs": scan.empty_folder_logs,
+        "slow_series": [],
+    }
+    if show_library_names:
+        result["library"] = scan.library
+    for update in slow_updates:
+        item: dict[str, object] = {
+            "series_key": anonymize(update.name),
+            "ms": update.ms,
+            "files": update.files,
+        }
+        if show_series_names:
+            item["series_name"] = update.name
+        result["slow_series"].append(item)
+    return result
+
+
+def print_table(scans: list[LibraryScan], show_library_names: bool) -> None:
+    library_column = "library" if show_library_names else "library_key"
+    print(f"start\t{library_column}\tforced\tfound\tprocessed\tproc_files\tfound_ms\ttotal_ms\tempty\tno_changes")
+    for scan in scans:
+        print(
+            f"{scan.start or ''}\t"
+            f"{scan.library if show_library_names else anonymize(scan.library)}\t"
+            f"{scan.forced}\t"
+            f"{scan.found_series if scan.found_series is not None else ''}\t"
+            f"{len(scan.updates)}\t"
+            f"{sum(update.files or 0 for update in scan.updates)}\t"
+            f"{scan.found_ms if scan.found_ms is not None else ''}\t"
+            f"{scan.total_ms if scan.total_ms is not None else ''}\t"
+            f"{scan.empty_folder_logs}\t"
+            f"{scan.no_changes}"
+        )
+
+
+def print_summary(
+    scans: list[LibraryScan],
+    show_library_names: bool,
+    show_series_names: bool,
+    slow_limit: int,
+) -> None:
+    print("## scan log summary")
+    print({"library_scan_count": len(scans)})
+
+    finished = [scan for scan in scans if scan.total_ms is not None]
+    slowest = sorted(finished, key=lambda scan: scan.total_ms or 0, reverse=True)[:10]
+    print("\n## slowest library scans")
+    for scan in slowest:
+        print(scan_to_dict(scan, show_library_names, show_series_names, slow_limit))
+
+    by_library: dict[str, list[LibraryScan]] = {}
+    for scan in finished:
+        by_library.setdefault(scan.library, []).append(scan)
+
+    print("\n## aggregate by library")
+    for library in sorted(by_library):
+        items = by_library[library]
+        total_values = [item.total_ms or 0 for item in items]
+        found_values = [item.found_series or 0 for item in items]
+        processed_values = [len(item.updates) for item in items]
+        item = {
+            "library_key": anonymize(library),
+            "scans": len(items),
+            "total_ms_sum": sum(total_values),
+            "total_ms_max": max(total_values) if total_values else 0,
+            "found_series_sum": sum(found_values),
+            "processed_series_sum": sum(processed_values),
+            "empty_folder_logs_sum": sum(item.empty_folder_logs for item in items),
+        }
+        if show_library_names:
+            item["library"] = library
+        print(item)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("logs", nargs="+", type=Path, help="Kavita log file(s)")
+    parser.add_argument("--json-output", help="Write machine-readable summary to this JSON file")
+    parser.add_argument("--table", action="store_true", help="Print a compact tab-separated table")
+    parser.add_argument("--show-library-names", action="store_true", help="Include raw library names in output")
+    parser.add_argument("--show-series-names", action="store_true", help="Include raw series names in slow-series output")
+    parser.add_argument("--slow-limit", type=int, default=5, help="Slow series entries to keep per scan")
+    args = parser.parse_args()
+
+    scans = parse_logs(args.logs)
+    if args.table:
+        print_table(scans, args.show_library_names)
+    else:
+        print_summary(scans, args.show_library_names, args.show_series_names, args.slow_limit)
+
+    if args.json_output:
+        payload = [
+            scan_to_dict(scan, args.show_library_names, args.show_series_names, args.slow_limit)
+            for scan in scans
+        ]
+        with open(args.json_output, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            handle.write("\n")
+        print(f"\nWrote JSON summary: {args.json_output}")
+
+
+if __name__ == "__main__":
+    main()

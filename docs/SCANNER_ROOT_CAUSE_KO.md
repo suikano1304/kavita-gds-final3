@@ -439,6 +439,35 @@ scripts/collect_gds_preflight.sh \
 - C# build 검증: `dotnet build Kavita.Server/Kavita.Server.csproj` 성공, 481 warnings, 0 errors.
 - 이 패치는 `0.9.0.2-3` 배포 후보 이미지와 source tarball에 포함했다.
 
+## 원인 10: 스캔 wall-time은 file discovery와 series update를 나눠 봐야 함
+
+운영 로그에서 같은 “스캔이 느림”이라도 병목 위치가 서로 달랐다.
+
+재현 도구:
+
+```bash
+python3 scripts/summarize_kavita_scan_logs.py \
+  /mnt/data/docker/kavita/config/logs/kavita20260531.log
+```
+
+기본 출력은 `library_key`, `series_key` 해시만 보여주며 실제 library/series 이름은 숨긴다. 로컬에서만 이름 확인이 필요하면 `--show-library-names`, `--show-series-names`를 붙인다.
+
+운영 로그에서 확인한 패턴:
+
+| Case | found series | processed series | processed files | found/file-discovery ms | series update sum ms | total ms | 해석 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| large mixed scan | 297 | 297 | 3004 | 579,414 | 13,289 | 593,313 | 대부분 file discovery/listing 시간이다. series update 자체는 빠르다. |
+| repeated small scan before stabilization | 7 | 7 | 109 | 9,230 | 594,623 | 608,282 | 일부 series update가 매우 길어 archive/page/metadata 처리 병목이 의심된다. |
+| repeated small scan after stabilization | 7 | 7 | 171 | 11,786 | 117 | 11,950 | update 비용은 사라지고 discovery 시간이 주가 됐다. |
+| no-change scan | 0 | 0 | 0 | 522 | 0 | 709 | 변경 없음 최적화가 정상 동작하면 sub-second 수준이다. |
+
+해석:
+
+- 대형 강제 스캔은 `ProcessSeries`보다 폴더 열거와 parser 입력 구성 시간이 대부분이다.
+- 작은 반복 스캔이 수십만 ms까지 느려지는 경우는 file discovery가 아니라 특정 series update 내부 작업이 원인이다.
+- 같은 라이브러리라도 패치 전후 또는 force 여부에 따라 병목 위치가 달라지므로, 단순 총 시간만 보면 원인을 잘못 짚을 수 있다.
+- postflight에서는 DB gate와 별도로 scan log summary의 `found_ms`, `series_update_ms_sum`, `processed_series`, `processed_files`를 같이 비교해야 한다.
+
 ## 우선순위
 
 1. `ParseScannedFiles`의 changed propagation을 시리즈 단위로 고친다. 완료 및 운영 반영.
@@ -449,6 +478,7 @@ scripts/collect_gds_preflight.sh \
 6. TXT no-cover는 오류로 처리하지 않고, YAML/base64 cover 반영 누락과 실제 no-cover fallback을 분리한다. 완료.
 7. same series/same volume/same range duplicate group은 cleanup patch를 `0.9.0.2-3`에 포함했고, 운영 재스캔 후 감소 여부를 확인한다.
 8. cross-series duplicate 153개 group과 nested archive는 자동 수정하지 말고 자료 구조/분류 의도를 먼저 확인한다.
+9. scan log summary로 file discovery 병목과 series update 병목을 분리해서 postflight에 같이 남긴다.
 
 ## 다음 검증 기준
 
