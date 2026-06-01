@@ -866,3 +866,63 @@ multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a8321
 linux/amd64=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
 linux/arm64=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
 ```
+
+## 2026-06-02 Low-Memory GDS Scan Rebuild
+
+운영 `scan-all?force=true`와 `성인 만화` 개별 강제 스캔에서 이전 병렬 post-scan 경로가 OOM으로 종료되는 증상을 확인했다. 원인은 GDS 파일 스캔 뒤 DB 갱신, cover generation, word-count analysis가 동시에 많이 쌓이며 RSS가 16-32GiB까지 상승하는 경로로 판단했다.
+
+Source change:
+
+- source: `/root/kavita-gds-lab/port-0906-gds`
+- source commit: `22c119d fix: process GDS scan work sequentially`
+- file: `Kavita.Services/Scanner/ScannerService.cs`
+- GDS 라이브러리만 `ProcessParserInfoSequential` 경로로 분기한다.
+- 일반 라이브러리의 기존 parallel channel 처리 경로는 유지한다.
+- GDS 경로에서는 series별로 DB update scope를 끝낸 뒤 cover generation과 word-count를 별도 scope에서 실행한다.
+
+Test image:
+
+- image: `local/kavita-gds:9.0.6-1-lowmem-test`
+- Image ID: `sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d`
+- `kavita-test` compose image를 이 태그로 교체했다.
+
+Fixture forced scan:
+
+- library: `LOCAL-FIXTURES` (`LibraryId=10`)
+- API result: HTTP `200`
+- log evidence: `Using low-memory sequential GDS scan path for LOCAL-FIXTURES. Series to process: 27`
+- result: `Finished library scan of 118 files and 27 series in 15947 milliseconds for LOCAL-FIXTURES`
+- `LastScanned`: `2026-06-02 07:58:23.316648`
+- observed memory after completion: about `395MiB`
+
+EPUB repair evidence remained active in the low-memory path:
+
+- duplicate manifest repair logged for existing `epub-problem` samples.
+- missing NAV repair logged for `reported cover-only EPUB sample`.
+
+Production rollout:
+
+- `local/kavita-gds:9.0.6-1` and `local/kavita-gds:latest` were retagged to Image ID `sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d`.
+- production `kavita` was recreated from `/opt/compose/kavita/docker-compose.yml`.
+- health endpoint returned `Ok` after restart.
+- production `성인 만화` forced scan was started through the API at `2026-06-02 08:00:56 KST`.
+- The scan was still in the file enumeration stage when this note was written; no `Found N Series` progress denominator had appeared yet.
+
+GHCR update:
+
+- pushed `ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64`
+- amd64 digest: `sha256:be8ba4848f3fb256ca960b53c081597a1211fc6562b1890c08d2503e844ad030`
+- pushed `ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64`
+- arm64 index digest: `sha256:f827c007dcf5f232a5be30674bf910ca2b9a12d8808774532a3a6a7055e29bb8`
+- arm64 image manifest: `sha256:35b03994b1a25c5ad72e56783f3fed86801178eb913465acb2bd4ab2d899d742`
+- public tags `ghcr.io/suikano1304/kavita-gds:9.0.6-1` and `latest` updated to multi-arch digest `sha256:0aeaef5b75d1c81b24f0b7518400fb37aeb41728b1cad4ac32d90dae57debeb6`
+- final manifest platforms:
+  - `linux/amd64`: `sha256:be8ba4848f3fb256ca960b53c081597a1211fc6562b1890c08d2503e844ad030`
+  - `linux/arm64`: `sha256:35b03994b1a25c5ad72e56783f3fed86801178eb913465acb2bd4ab2d899d742`
+
+Release asset update:
+
+- rebuilt local amd64 Docker archive from `local/kavita-gds:9.0.6-1` and `local/kavita-gds:latest`
+- `kavita-gds.tar.gz`: `7ff66f8327853b6a2c3e5d10d2a969f86a18223c48302501996dbe333927ccc9`
+- `docker-image/kavita-gds.docker.tar`: `fa9773fff71c2ac889ff000a8d1ec341c932f90922fadfbb2f5c999970fa8585`
+- GitHub Release `v9.0.6-1` assets `kavita-gds.tar.gz` and `SHA256SUMS` were replaced with `--clobber`.

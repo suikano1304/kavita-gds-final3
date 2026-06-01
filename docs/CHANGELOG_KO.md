@@ -18,6 +18,7 @@
 - `/mnt/gds` scanner는 원격 EPUB 전체 읽기를 하지 않도록 유지해 Web UI blocking을 피했습니다.
 - GDS archive 커버 재생성 시 2권 이후 chapter/volume cover가 1권 cover로 고정되는 문제를 수정했습니다.
 - TXT fallback cover 한글 글꼴 깨짐을 막기 위해 runtime image에 Nanum Gothic Regular/Bold/ExtraBold를 포함했습니다.
+- 대형 GDS 강제 스캔에서 DB 갱신, 커버 생성, word-count 분석이 동시에 많이 쌓여 OOM으로 이어질 수 있어, GDS 라이브러리만 시리즈 단위 저메모리 직렬 처리 경로를 사용하도록 보강했습니다.
 - 운영 DB/API 확인을 컨테이너 안에서 바로 수행할 수 있도록 runtime image에 `sqlite3`를 포함했습니다.
 - cache cleanup과 reader/cache 작업 경합에서 이미 삭제된 directory를 조용히 무시하도록 보강했습니다.
 - `kavita-test` fixture 117개 항목에 대해 reader/API 3회 반복 검증을 통과했습니다.

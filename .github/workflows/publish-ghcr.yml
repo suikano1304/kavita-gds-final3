@@ -11,7 +11,7 @@ env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/kavita-gds
   IMAGE_TAG: 9.0.6-1
   RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-1/kavita-gds.tar.gz
-  RELEASE_ASSET_SHA256: e5c6aebd17e40945a3ffaea24846710233e8f0a5f4c0499b2b54051ffe5e2362
+  RELEASE_ASSET_SHA256: 7ff66f8327853b6a2c3e5d10d2a969f86a18223c48302501996dbe333927ccc9
   DOCKER_ARCHIVE_PATH: kavita-gds/docker-image/kavita-gds.docker.tar
 
 jobs:
