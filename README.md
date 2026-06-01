@@ -4,7 +4,7 @@ Kavita official `0.9.0.6` 기반 비공식 GDS 빌드입니다.
 
 `0.9.0.2-8`까지의 GDS/rclone scanfix와 이후 운영에서 확인한 EPUB/TXT/커버 수정사항을 `0.9.0.6` 코드베이스에 포팅했습니다.
 
-현재 배포 기준은 `9.0.6-1`입니다. 운영 검증 기준 이미지는 `linux/amd64`이며, GDS/rclone 원본 마운트는 읽기 전용으로 유지하는 구성을 전제로 합니다.
+현재 배포 기준은 `9.0.6-1`입니다. GHCR 이미지는 `linux/amd64`와 `linux/arm64`를 포함하는 multi-arch manifest이며, GDS/rclone 원본 마운트는 읽기 전용으로 유지하는 구성을 전제로 합니다.
 
 `0.9.0.2-4` 배포 이미지에서 Web UI가 개발 빌드로 포함되어 `localhost:5000/api`를 호출하던 문제는 `0.9.0.2-5`에서 production UI 번들로 교체해 수정했습니다.
 
@@ -94,7 +94,7 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - 읽기 전용 GDS 진단 스크립트 추가
 - 반복 스캔 churn 감소
 - stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
-- `linux/amd64` 운영 검증 배포
+- `linux/amd64` 운영 검증 배포 및 `linux/arm64` GHCR 이미지 추가
 
 자세한 내용은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 보세요.
 
@@ -116,4 +116,4 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 이 이미지는 공식 Kavita 이미지가 아닙니다. 개인 GDS/rclone 읽기 전용 마운트 환경에서 스캔 안정성을 확인하기 위해 만든 비공식 빌드입니다.
 
-`9.0.6-1` 공개 패키지는 현재 `linux/amd64` 운영 검증 산출물입니다. startup SQLite FK 제보가 특정 서버에서만 발생한다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.
+`9.0.6-1` 공개 Docker tag는 `linux/amd64`와 `linux/arm64`를 포함합니다. 운영 실서비스 검증은 `linux/amd64`에서 수행했고, `linux/arm64`는 동일 소스와 prebuilt production UI 번들로 빌드해 GHCR manifest에 추가했습니다. startup SQLite FK 제보가 특정 서버에서만 발생한다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.

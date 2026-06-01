@@ -1,12 +1,13 @@
 # Kavita GDS
 
-This release provides the Kavita official `0.9.0.6` based GDS build as a Docker image archive.
+This release provides the Kavita official `0.9.0.6` based GDS build as a Docker image archive and GHCR Docker image.
 
 Version: `9.0.6-1`
 
 ## Included Platforms
 
 - `linux/amd64`
+- `linux/arm64` on GHCR
 
 ## Asset
 
@@ -18,9 +19,10 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 
 - Built from the official Kavita `0.9.0.6` source with the GDS patch set ported forward.
 - `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
+- `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-1` and `latest` multi-arch manifests.
 - Fixture reader validation passed 3 full passes across ZIP/CBZ/EPUB/TXT samples.
 - Production Web UI, NPM proxy access, EPUB reader page rendering, table-of-contents, and duplicate manifest repair were verified.
-- rclone RC remained read-only: `errors=0`, `deletes=0`, `renames=0`, server-side copy/move counters `0`.
+- rclone RC remained read-only: `deletes=0`, `renames=0`, server-side copy/move counters `0`. Later production scan attempts accumulated Google Drive rate-limit errors, not write/delete activity.
 - The package does not include intermediate test images.
 
 ## Changes Since `0.9.0.2-8`
@@ -38,7 +40,18 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Included `sqlite3` in the runtime image for operational DB/API verification inside the container.
 - Made cache cleanup tolerate concurrent directory deletion.
 - Validated `reported page-count EPUB sample` and `reported duplicate-manifest EPUB sample` production EPUBs after deployment.
-- Built the public package as a `linux/amd64` Docker archive.
+- Built the public release package as a `linux/amd64` Docker archive and published GHCR tags as `linux/amd64` + `linux/arm64` multi-arch manifests.
+
+## GHCR
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-1
+ghcr.io/suikano1304/kavita-gds:latest
+multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a83212aa8df8e
+
+linux/amd64=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+linux/arm64=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 

@@ -736,3 +736,133 @@ rclone:
 ```text
 errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
 ```
+
+## 2026-06-02 운영 커버 재생성 및 강제 스캔 후속
+
+운영 metadata cover refresh 완료 후, 1권 이후 커버가 없거나 1권과 같은 generated cover hash를 가진 항목을 대상으로 강제 재생성을 수행했다.
+
+DB 백업:
+
+```text
+/kavita/config/kavita.db.coverfix-final-20260602-050124.bak
+backup_size=243M
+backup_method=sqlite backup copy before remediation
+```
+
+재생성 대상:
+
+```text
+affected_series=1480
+affected_chapters=15256
+affected_volumes=14799
+deleted_unreferenced_cover_files=12791
+series_refresh_metadata_ok=1480
+series_refresh_metadata_fail=0
+```
+
+재생성 후 상태:
+
+```text
+remaining Chapter.CoverImage nulls=93
+remaining Volume.CoverImage nulls=50
+cover_files_after_regeneration=155302
+```
+
+잔여 동일 커버 판단:
+
+- DB가 후권대에 1권 cover file reference를 재사용하는 문제는 해소됐다.
+- 남은 same-hash 사례는 원본 archive의 첫 이미지가 여러 권에서 동일한 경우다.
+- 대표 샘플 `보표`, `파천분뢰수`는 각 권 ZIP의 `001.jpg` hash가 동일했고 2번째 이미지는 달랐다.
+- 따라서 이후 개선은 "첫 이미지 대신 다른 후보를 cover로 선택"하는 정책 문제이며, 이번 강제 재생성 범위와는 분리한다.
+
+운영 강제 `scan-all` 시도:
+
+```text
+POST /api/library/scan-all?force=true -> HTTP 200, but kavita killed by OOM
+16 GiB attempt: exitCode=137, RSS about 11.1 GiB
+24 GiB attempt: exitCode=137, RSS about 19.5 GiB
+32 GiB attempt: host global OOM, kavita RSS about 27.6 GiB
+```
+
+임시 메모리 변경은 원복했다.
+
+```text
+pct set 101 -memory 16384 -swap 1024
+lxc1 memory verified: 16 GiB
+```
+
+결론:
+
+- 현재 `production-library-a` 전체 force scan은 scanner batching 없이는 운영에서 안전하지 않다.
+- 최종 강제 스캔은 `scan-all` 대신 라이브러리별 force scan으로 대체 진행한다.
+- `production-library-b`, `production-library-b`, `production-library-e`은 정상 완료됐다.
+- 이후 `production-library-a`, `production-library-d`도 정상 완료됐다.
+- `성인 만화` force scan 중 ARM64 build가 겹치면서 운영 Kavita가 2026-06-02 07:37:32 KST에 OOM 재시작됐다.
+- 재시작 후 운영 Web UI와 health는 정상 복구됐다.
+
+개별 스캔 최종 상태:
+
+```text
+<redacted> production-library-a     2026-06-02 00:00:26.4261487
+2 연재중        2026-06-02 00:00:31.7440464
+3 성인 만화     2026-06-02 00:00:34.8557038
+<redacted> production-library-a        2026-06-02 07:03:46.5457951
+<redacted> production-library-b          2026-06-02 06:52:21.3806613
+<redacted> production-library-b 2026-06-02 06:55:46.6257085
+<redacted> production-library-e   2026-06-02 06:58:07.8451872
+<redacted> production-library-c  2026-06-02 00:42:14.7546525
+<redacted> production-library-d        2026-06-02 07:08:53.2575256
+```
+
+복구 확인:
+
+```text
+kavita health=healthy
+kavita restart_count=2
+external Web UI=https://kavita.suikano.net/ HTTP 200, 30467 bytes
+kavita memory after recovery=about 209 MiB / 16 GiB
+```
+
+rclone:
+
+```text
+rclone-gds.service=active
+deletes=0
+renames=0
+serverSideCopies=0
+serverSideMoves=0
+errors=7
+lastError=Google Drive rateLimitExceeded / quota exceeded
+recent log: to upload 0, uploading 0
+```
+
+`errors=7`은 Google Drive API quota/rate-limit 누적이며, 원본 GDS 쓰기/삭제/rename은 발생하지 않았다.
+
+## 2026-06-02 ARM64 GHCR Publish
+
+사용자 요청에 따라 `9.0.6-1` ARM64 image를 추가로 빌드해 GHCR에 push했다.
+
+빌드 메모:
+
+- source: `/root/kavita-gds-lab/port-0906-gds`
+- source 핵심 패치 파일 checksum은 host repo와 lxc1 build source가 일치함을 확인했다.
+- 기존 Dockerfile의 `npm ci`는 arm64 optional dependency lock mismatch로 실패했다.
+- 성공한 재시도는 이미 생성돼 있던 `UI/Web/dist/browser` production bundle을 사용하고, `linux-arm64` runtime publish만 수행했다.
+- 임시 Dockerfile: `/root/Dockerfile.0906-gds-arm64-prebuilt-ui`
+
+GHCR 결과:
+
+```text
+arm64 temporary tag:
+ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
+index digest=sha256:96dc7093d4ec133f2a6d921522958f7a3158d2c7b43c6d01b30e941e32e36d8a
+arm64 image manifest=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+
+public tags:
+ghcr.io/suikano1304/kavita-gds:9.0.6-1
+ghcr.io/suikano1304/kavita-gds:latest
+multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a83212aa8df8e
+
+linux/amd64=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+linux/arm64=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+```

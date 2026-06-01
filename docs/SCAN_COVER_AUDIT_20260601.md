@@ -461,3 +461,188 @@ Important limitation:
 - The reported EPUB contains only `cover.jpg`, `cover.xhtml`, `toc.ncx`, and `content.opf`.
 - OPF manifest has only one XHTML item, `cover.xhtml`; spine has only one `itemref`.
 - The repair prevents reader failure, but the item remains a legitimate 1-page cover-only EPUB until the source file is replaced with a copy that contains the actual body chapters.
+
+## 2026-06-02 05:01 KST Production Cover Remediation
+
+After the production metadata refresh finished, a final cover remediation pass was run for 2nd-and-later items that either had no cover or still pointed to the same first-volume cover.
+
+Pre-remediation backup:
+
+```text
+/kavita/config/kavita.db.coverfix-final-20260602-050124.bak
+backup_size=243M
+```
+
+Pre-remediation findings:
+
+```text
+Chapter cover nulls after full metadata refresh: 253
+Volume cover nulls after full metadata refresh: 258
+
+Same-as-first hash audit:
+production-library-a: 3213 chapters / 122 series
+성인 만화: 378 chapters / 32 series
+production-library-d: 1 chapter / 1 series
+연재중: 3 chapters / 2 series
+production-library-c: 11291 chapters / 1271 series, missing files 57
+production-library-a: 11 chapters / 2 series
+```
+
+The remediation script nulled affected `Chapter.CoverImage` and `Volume.CoverImage` rows, removed unreferenced generated cover files, and queued forced metadata refresh for the affected series through `POST /api/series/refresh-metadata`.
+
+Remediation summary:
+
+```text
+affected_series=1480
+refresh_metadata_ok=1480
+refresh_metadata_fail=0
+deleted_cover_files=12791
+cover_files_before=152904
+cover_files_after=140113
+affected_chapters=15256
+affected_volumes=14799
+```
+
+Post-refresh result:
+
+```text
+remaining Chapter.CoverImage nulls=93
+remaining Volume.CoverImage nulls=50
+cover_files_after_regeneration=155302
+```
+
+Remaining same-hash findings were investigated with direct ZIP first-image hashes. Representative samples:
+
+```text
+보표:
+1#34.zip 001.jpg fc301a66...
+10#48.zip 001.jpg fc301a66...
+11#46.zip 001.jpg fc301a66...
+
+파천분뢰수:
+01권#110.zip 001.jpg bb8e62a4...
+02권#110.zip 001.jpg bb8e62a4...
+```
+
+These are not DB reference reuse after the fix. The source archives themselves share the same first image, and Kavita's archive cover rule uses the first image as the volume/chapter cover. Later pages differ, so changing this would require a separate cover-selection policy rather than another forced regeneration.
+
+Residual missing-cover audit:
+
+```text
+production-library-d: chapter 43, volume 17
+production-library-a: chapter 39, volume 39
+production-library-a: chapter 2, volume 2
+production-library-c: chapter 1, volume 1
+production-library-b/성인 만화/연재중/텍스트 libraries: 0
+```
+
+Most residuals are TXT/PDF or source files with no usable image cover; several CBZ/ZIP samples have `Pages=0` or unusual source layout and need separate source-level review.
+
+## 2026-06-02 06:12 KST Forced Scan-All OOM
+
+The requested final `POST /api/library/scan-all?force=true` was attempted after cover regeneration. It consistently OOM-killed the production Kavita process while scanning `production-library-a`.
+
+Observed attempts:
+
+```text
+16 GiB LXC memory: kavita killed, exitCode=137, RSS about 11.1 GiB
+24 GiB LXC memory: kavita killed, exitCode=137, RSS about 19.5 GiB
+32 GiB LXC memory: host global OOM killed kavita, RSS about 27.6 GiB
+```
+
+During the first global OOM event the host also killed VM201 (`vm1-ai`). The temporary LXC memory changes were reverted:
+
+```text
+pct set 101 -memory 16384 -swap 1024
+verified lxc1 total memory: 16 GiB
+```
+
+Conclusion: full `scan-all?force=true` is unsafe against the current `production-library-a` library without scanner batching or a lower-memory scan strategy. The production follow-up switched to individual library scans instead.
+
+## 2026-06-02 06:52 KST Individual Library Scan Follow-up
+
+The full force scan was replaced with sequential per-library force scans.
+
+Completed:
+
+```text
+LibraryId=5 production-library-b: LastScanned=2026-06-02 06:52:21.3806613
+LibraryId=6 production-library-b: LastScanned=2026-06-02 06:55:46.6257085
+LibraryId=7 production-library-e: LastScanned=2026-06-02 06:58:07.8451872
+LibraryId=4 production-library-a: LastScanned=2026-06-02 07:03:46.5457951
+LibraryId=9 production-library-d: LastScanned=2026-06-02 07:08:53.2575256
+```
+
+Interrupted:
+
+```text
+LibraryId=3 성인 만화: force scan started after production-library-d, but Kavita was OOM-killed at 2026-06-02 07:37:32 KST.
+Kavita restart count after recovery: 2
+Kavita health after recovery: healthy
+External Web UI: HTTP 200, 30467 bytes
+```
+
+Cause of the interruption:
+
+- `성인 만화` force scan and the ARM64 build ran concurrently.
+- The kernel OOM log shows Kavita RSS about `9.0 GiB` when lxc1 exceeded its 16 GiB memory cgroup.
+- The ARM build was allowed to finish, but no further production scans were started during that build.
+
+Final scan state after interruption:
+
+```text
+<redacted> production-library-a     2026-06-02 00:00:26.4261487
+2 연재중        2026-06-02 00:00:31.7440464
+3 성인 만화     2026-06-02 00:00:34.8557038
+<redacted> production-library-a        2026-06-02 07:03:46.5457951
+<redacted> production-library-b          2026-06-02 06:52:21.3806613
+<redacted> production-library-b 2026-06-02 06:55:46.6257085
+<redacted> production-library-e   2026-06-02 06:58:07.8451872
+<redacted> production-library-c  2026-06-02 00:42:14.7546525
+<redacted> production-library-d        2026-06-02 07:08:53.2575256
+```
+
+rclone read-only verification:
+
+```text
+rclone-gds.service=active
+RC deletes=0
+RC renames=0
+RC serverSideCopies=0
+RC serverSideMoves=0
+RC errors=7
+lastError=Google Drive rateLimitExceeded / quota exceeded
+recent log: to upload 0, uploading 0
+```
+
+The rclone errors were API quota/rate-limit errors, not write/delete/rename activity.
+
+## 2026-06-02 07:46 KST ARM64 GHCR Publish
+
+The existing GHCR tag was originally a single `linux/amd64` manifest:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-1 sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+```
+
+An ARM64 image was built from the same `port-0906-gds` source. The first Dockerfile path failed at `npm ci` because the package lock did not include arm64 optional dependency entries. The successful build used the already-generated production UI bundle in `UI/Web/dist/browser` and published only the `linux-arm64` runtime.
+
+Build artifact:
+
+```text
+temporary Dockerfile: /root/Dockerfile.0906-gds-arm64-prebuilt-ui
+pushed tag: ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
+arm64 index digest: sha256:96dc7093d4ec133f2a6d921522958f7a3158d2c7b43c6d01b30e941e32e36d8a
+arm64 image manifest: sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+```
+
+The public version and latest tags were then rewritten as a multi-arch manifest:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-1
+ghcr.io/suikano1304/kavita-gds:latest
+multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a83212aa8df8e
+
+platform linux/amd64 -> sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+platform linux/arm64 -> sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+```
