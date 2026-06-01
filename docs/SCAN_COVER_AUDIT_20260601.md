@@ -415,8 +415,10 @@ docker-image/kavita-gds.docker.tar sha256=35ca299130c45ea16b391abb0d32e2a6422713
 GitHub release and GHCR publish:
 
 ```text
-2026-06-01 10:53 KST: commit/push in progress.
-release asset upload, workflow run, and GHCR digest verification are pending.
+release=https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1
+workflow_result=success
+ghcr.io/suikano1304/kavita-gds:9.0.6-1 digest=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+ghcr.io/suikano1304/kavita-gds:latest digest=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
 ```
 
 ## 2026-06-01 09:12 KST Missing EPUB3 NAV follow-up

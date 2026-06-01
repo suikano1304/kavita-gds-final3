@@ -659,8 +659,15 @@ GitHub release package 준비:
 
 GitHub/GHCR 등록:
 
-- 2026-06-01 10:53 KST 기준 GitHub push 선진행 중.
-- release asset upload, GHCR workflow run, and published digest verification are still pending.
+- GitHub push: completed on `main`
+- release: `https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1`
+- release assets:
+  - `kavita-gds.tar.gz`
+  - `SHA256SUMS`
+- GHCR publish workflow: completed successfully
+- published image digest:
+  - `ghcr.io/suikano1304/kavita-gds:9.0.6-1` -> `sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0`
+  - `ghcr.io/suikano1304/kavita-gds:latest` -> `sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0`
 
 ## 2026-06-01 09:12 KST Missing EPUB3 NAV Hotfix
 
