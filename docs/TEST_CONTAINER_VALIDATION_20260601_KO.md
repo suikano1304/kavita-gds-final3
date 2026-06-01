@@ -957,4 +957,45 @@ pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 mi
 pass=3 last_scanned=2026-06-02 08:31:37.6696307
 ```
 
+## 2026-06-02 GDS File Discovery Memory Rebuild
+
+운영 `성인 만화` 강제 스캔이 이전 low-memory post-scan 경로에 도달하기 전 `Beginning file scan` 이후 파일 탐색/파싱 단계에서 다시 OOM으로 재시작되는 것을 확인했다. 따라서 후반 DB/커버/word-count 순차화와 별개로, GDS 파일 discovery 자체의 메모리 사용을 줄이는 추가 빌드를 만들었다.
+
+Source change:
+
+- source: `/root/kavita-gds-lab/port-0906-gds`
+- branch: `codex/gds-0906`
+- source commit: `e922205 fix: reduce GDS scan discovery memory`
+- file: `Kavita.Services/Scanner/ParseScannedFiles.cs`
+- GDS 라이브러리만 recursive directory list materialization 대신 bottom-up streaming directory scan 경로를 사용한다.
+- GDS 파일 파싱은 파일 수만큼 `Task`를 생성하지 않고 sequential parse로 제한한다.
+- `TrackSeriesAcrossScanResults()`에서 `ParserInfo` 전체 flatten list를 만들지 않고 scan result를 streaming iteration한다.
+- changed folder parse가 끝나면 `ScanResult.Files`를 비워 파일 경로 list 보유 시간을 줄인다.
+
+Test image:
+
+- image: `local/kavita-gds:9.0.6-1-streamscan-test`
+- Image ID: `sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19`
+- `local/kavita-gds:9.0.6-1-lowmem-test`도 같은 이미지 ID로 retag 후 `kavita-test`에 반영했다.
+
+Fixture full-reader validation:
+
+```text
+image=sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19
+pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=1 last_scanned=2026-06-02 08:42:59.432797
+pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 last_scanned=2026-06-02 08:43:22.0865337
+pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 last_scanned=2026-06-02 08:43:43.8868232
+```
+
+Production rollout status:
+
+- `local/kavita-gds:9.0.6-1` was retagged to Image ID `sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19`.
+- production `kavita` was recreated from `/opt/compose/kavita/docker-compose.yml`.
+- health became `healthy` after restart.
+- production `성인 만화` (`LibraryId=3`) forced scan was started through the API at `2026-06-02 08:45:08 KST`.
+- At `2026-06-02 08:51 KST`, the scan was still in file discovery before `Found N Series`; production `kavita` remained `healthy`, restart count was `0`, and memory was below `1GiB / 16GiB`.
+
 Note: The current fixture corpus has strong per-file coverage but does not yet prove the literal "10 series per format folder" target. Current series counts by folder are CBZ `6`, ZIP `6`, EPUB `6` plus EPUB problem samples, and TXT `7`. Additional fixture expansion should wait until the production GDS scan finishes or rclone quota pressure drops, to avoid adding read load while production scan is enumerating GDS.

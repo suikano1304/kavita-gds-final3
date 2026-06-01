@@ -617,6 +617,47 @@ recent log: to upload 0, uploading 0
 
 The rclone errors were API quota/rate-limit errors, not write/delete/rename activity.
 
+## 2026-06-02 08:45 KST GDS File Discovery Low-Memory Rebuild
+
+The previous low-memory rebuild fixed the post-file-scan GDS processing path, but production `성인 만화` still OOMed before `Found N Series` appeared. This means the remaining failure was in file discovery/parser aggregation, not cover generation.
+
+New source commit:
+
+```text
+e922205 fix: reduce GDS scan discovery memory
+```
+
+Changed file:
+
+```text
+Kavita.Services/Scanner/ParseScannedFiles.cs
+```
+
+Operational behavior changed for GDS libraries only:
+
+- directory discovery now uses a bottom-up streaming traversal instead of materializing the full recursive directory list first.
+- GDS file parsing no longer creates one task per file for large folders.
+- scan-result parser tracking avoids a separate flattened `ParserInfo` list.
+- changed scan results release their retained `Files` list after parse.
+
+Validation before production:
+
+```text
+image=sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19
+LOCAL-FIXTURES pass 1/2/3: total=118, info_fail=0, nav_fail=0, page_fail=0, zero_bytes=0, zero_pages=0, missing_covers=0
+```
+
+Production status at `2026-06-02 08:51 KST`:
+
+```text
+production image ID=sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19
+kavita health=healthy
+kavita restart count=0
+LibraryId=3 성인 만화 forced scan started at 2026-06-02 08:45:08 KST
+scan phase=file discovery before Found N Series
+observed memory=below 1 GiB / 16 GiB
+```
+
 ## 2026-06-02 07:46 KST ARM64 GHCR Publish
 
 The existing GHCR tag was originally a single `linux/amd64` manifest:

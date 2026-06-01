@@ -21,6 +21,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
 - `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-1` and `latest` multi-arch manifests.
 - GDS library scans now use a low-memory sequential processing path for DB updates, cover generation, and word-count analysis to reduce OOM risk on large rclone-backed libraries.
+- GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - Fixture reader validation passed 3 full passes across ZIP/CBZ/EPUB/TXT samples.
 - Production Web UI, NPM proxy access, EPUB reader page rendering, table-of-contents, and duplicate manifest repair were verified.
 - rclone RC remained read-only: `deletes=0`, `renames=0`, server-side copy/move counters `0`. Later production scan attempts accumulated Google Drive rate-limit errors, not write/delete activity.
@@ -39,6 +40,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Fixed GDS archive cover regeneration so later volumes/chapters do not reuse the first volume cover.
 - Fixed Korean TXT title-cover rendering by bundling Nanum Gothic Regular/Bold/ExtraBold in the runtime image.
 - Added a low-memory GDS scan path that keeps per-series DB update, cover generation, and word-count work sequential instead of running all post-scan work in parallel.
+- Added a GDS-only low-memory file discovery path that streams bottom-up directory traversal and avoids one parse task per file in large folders.
 - Included `sqlite3` in the runtime image for operational DB/API verification inside the container.
 - Made cache cleanup tolerate concurrent directory deletion.
 - Validated `reported page-count EPUB sample` and `reported duplicate-manifest EPUB sample` production EPUBs after deployment.
