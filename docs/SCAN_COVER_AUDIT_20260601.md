@@ -259,6 +259,39 @@ A separate reader issue was found while checking problem EPUBs in the Web UI:
 - The reader showed `1/1`.
 - Choosing an item from the content table worked, but next/previous page navigation did not behave correctly.
 
+## 2026-06-01 Production Cover Regeneration
+
+After deploying final image `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`, production cover references for 2nd-and-later chapters/volumes were cleaned only where they were missing or had the same hash as the first item in the series.
+
+Backups/manifests:
+
+- DB backup: `/mnt/data/docker/kavita/config/kavita.db.coverfix-20260601-093202.bak`
+- cleanup manifest: `/root/kavita-cover-repair-20260601-093312.tsv`
+- final cleanup summary: `/root/kavita-cover-repair-final-20260601-094926.json`
+
+Final cleanup before regeneration:
+
+```text
+series_count 12695
+chapter_rows_nulled 109841
+volume_rows_nulled 104278
+deleted_cover_files 0
+```
+
+Forced metadata refresh was queued for production libraries `1..9` with `force=true&forceColorscape=true`.
+
+Status at `2026-06-01 10:50 KST`:
+
+```text
+production-library-a: 1300 / 4366 series complete (29.8%)
+cover files: 36239
+Chapter null: 100957
+Volume null: 96034
+production Web UI root: HTTP 200
+```
+
+The refresh is still running. The final duplicate/missing cover audit and forced production `scan-all` are intentionally deferred until metadata refresh completes.
+
 Root cause:
 
 - The GDS scan optimization returned `1` page for EPUB/PDF/TXT without reading the file.
@@ -338,7 +371,7 @@ Production image:
 
 ```text
 local/kavita-gds:9.0.6-1
-sha256:4e37e0f29e5410e67480345a2d0f456bfab1900b7653eebb0859d73051a264fa
+sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
 ```
 
 Production verification:
@@ -364,34 +397,65 @@ serverSideCopies=0
 serverSideMoves=0
 ```
 
-Final forced production scan was started after the hotfix validation:
+Final forced production scan:
 
 ```text
-POST /api/library/scan-all?force=true -> HTTP 200
-[ScannerService] Starting Scan of All Libraries, Forced: true
-[ScannerService] Beginning file scan on production-library-a
+2026-06-01 10:53 KST: not started yet.
 ```
 
-Early post-start checks:
-
-```text
-Web UI root HTTP 200
-rclone errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
-```
+The user requested GitHub push first while the production cover metadata refresh continues. The forced `scan-all?force=true` step remains a follow-up after cover regeneration completes.
 
 Release package prepared:
 
 ```text
-kavita-gds.tar.gz sha256=0605e92b5af4984d96aa41babb1af2368f5edc35ae848a085c97e25277b34517
-docker-image/kavita-gds.docker.tar sha256=1f29634c96d7d12650389794c17039ba514f4340d1fd42f9675c3cfa0dd147ab
+kavita-gds.tar.gz sha256=facbf3165d4a3b81ebe14d4d9958f8d63f85d26a2b66dbf8c0d988770a8db367
+docker-image/kavita-gds.docker.tar sha256=35ca299130c45ea16b391abb0d32e2a6422713d350130ffb86392e59c3aea16a
 ```
 
-GitHub release and GHCR publish completed:
+GitHub release and GHCR publish:
 
 ```text
-release=https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1
-workflow=https://github.com/suikano1304/Kavita-GDS/actions/runs/26727930051
-workflow_result=success
-ghcr.io/suikano1304/kavita-gds:9.0.6-1 digest=sha256:492f6de4106b51a374697c8f01b870384a242691371fb4088aa9ba7e9c5b60ea
-ghcr.io/suikano1304/kavita-gds:latest digest=sha256:492f6de4106b51a374697c8f01b870384a242691371fb4088aa9ba7e9c5b60ea
+2026-06-01 10:53 KST: commit/push in progress.
+release asset upload, workflow run, and GHCR digest verification are pending.
 ```
+
+## 2026-06-01 09:12 KST Missing EPUB3 NAV follow-up
+
+User Web UI testing found another EPUB reader failure:
+
+```text
+EPUB parsing error: NAV item not found in EPUB manifest.
+```
+
+Affected production item:
+
+```text
+chapter=131366
+series=<redacted> reported cover-only EPUB sample
+file=<redacted-media-path> reported cover-only EPUB sample/001-440 完[txt].epub
+```
+
+Implemented follow-up:
+
+- temporary EPUB repair now also synthesizes a minimal EPUB3 nav document when OPF has no `properties="nav"` item;
+- EPUB repair fallback catches `EpubReaderException`, not only `EpubPackageException`;
+- applied to `BookService`, `BookController`, and `WordCountAnalyzerService`;
+- copied the reported file into test fixtures at `<redacted-fixture-path> reported cover-only EPUB sample/001-440 完[txt].epub`.
+
+Verification:
+
+```text
+test image local/kavita-gds:9.0.6-1-test intermediate sha256:be556ae5a720674f967468d9ca521d50593251e3297372e5877c471a26f7969b
+LOCAL-FIXTURES scan: 118 files, 27 series, zero pages 0, missing covers 0
+test fixture chapter sample-chapter-redacted: book-info 200, book-page?page=0 200, chapters 200
+production image local/kavita-gds:9.0.6-1 final sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+production chapter <redacted>: book-info 200, book-page?page=0 200, chapters 200
+production Web UI internal/external: HTTP 200
+rclone: errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
+```
+
+Important limitation:
+
+- The reported EPUB contains only `cover.jpg`, `cover.xhtml`, `toc.ncx`, and `content.opf`.
+- OPF manifest has only one XHTML item, `cover.xhtml`; spine has only one `itemref`.
+- The repair prevents reader failure, but the item remains a legitimate 1-page cover-only EPUB until the source file is replaced with a copy that contains the actual body chapters.

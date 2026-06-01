@@ -34,7 +34,8 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Normalized EPUB resource keys so relative `../Images/...` links can resolve correctly.
 - Kept GDS media mounts read-only and avoided scanner-side full EPUB reads against `/mnt/gds`.
 - Fixed GDS archive cover regeneration so later volumes/chapters do not reuse the first volume cover.
-- Fixed Korean TXT title-cover rendering by bundling Nanum Gothic Regular/Bold in the runtime image.
+- Fixed Korean TXT title-cover rendering by bundling Nanum Gothic Regular/Bold/ExtraBold in the runtime image.
+- Included `sqlite3` in the runtime image for operational DB/API verification inside the container.
 - Made cache cleanup tolerate concurrent directory deletion.
 - Validated `reported page-count EPUB sample` and `reported duplicate-manifest EPUB sample` production EPUBs after deployment.
 - Built the public package as a `linux/amd64` Docker archive.

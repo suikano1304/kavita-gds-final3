@@ -11,7 +11,7 @@
 - 이전 배포 기준: `0.9.0.2-8`
 - 현재 테스트 기준: official Kavita `0.9.0.6` nightly
 - 현재 테스트 이미지: `local/kavita-gds:9.0.6-1-test`
-- 현재 테스트 image id: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- 최종 image id: `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`
 - 테스트 컨테이너: `kavita-test`
 - 테스트 접근: `tkavita.suikano.net`, local port `5658`
 - fixture library: `LOCAL-FIXTURES`, path `/fixtures`
@@ -201,17 +201,11 @@ book-page middle/last pages HTTP 200
 - `Kavita.Server/Controllers/BookController.cs`
 - `Kavita.Services/BookService.cs`
 - `Kavita.Services/Helpers/EpubManifestRepairHelper.cs`
-- `Kavita.Services/Helpers/GdsMetadataParser.cs`
-- `Kavita.Services/DirectoryService.cs`
 - `Kavita.Services/Metadata/WordCountAnalyzerService.cs`
-- `Kavita.Services/Scanner/ProcessSeries.cs`
-
-기존 staged/local 변경으로 남아 있던 파일:
-
-- `Kavita.Services/ArchiveService.cs`
 - `Kavita.Services/MetadataService.cs`
+- `Dockerfile`
 
-이 파일들은 현재 검증 흐름의 일부로 취급하되, 커밋 전에는 staged 상태와 diff를 다시 확인해야 한다.
+최종 diff 기준 변경 내용은 EPUB manifest repair 범위 확대, GDS folder cover 적용 범위 축소, runtime `sqlite3` 및 Nanum Gothic Regular/Bold/ExtraBold 포함이다.
 
 ## 3회 반복 fixture 검증 결과
 
@@ -306,11 +300,58 @@ sample-chapter-redacted chapters HTTP 200, 977 bytes
 
 ```text
 local/kavita-gds:9.0.6-1
-sha256:4e37e0f29e5410e67480345a2d0f456bfab1900b7653eebb0859d73051a264fa
+intermediate sha256:4e37e0f29e5410e67480345a2d0f456bfab1900b7653eebb0859d73051a264fa
+final sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
 ```
 
 rclone:
 
 ```text
 errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
+```
+
+### 10. EPUB3 NAV item 누락
+
+증상:
+
+- `reported cover-only EPUB sample`에서 `EPUB parsing error: NAV item not found in EPUB manifest.` 오류가 발생했다.
+- 동일 파일을 test fixture에 복사해 재현했다.
+
+원인:
+
+- 파일은 EPUB3 `version="3.0"`이지만 manifest에 `properties="nav"` item이 없다.
+- 파일 내부 entry는 `cover.jpg`, `cover.xhtml`, `toc.ncx`, `content.opf`뿐이며, 본문 XHTML은 없다.
+- OPF spine도 `cover.xhtml` 하나만 참조한다.
+
+수정:
+
+- `EpubManifestRepairHelper`가 임시 repaired EPUB copy를 만들 때 EPUB3 nav item이 없으면 최소 `kavita-nav.xhtml`을 합성한다.
+- fallback catch 범위를 `EpubReaderException`으로 넓혀 missing NAV도 duplicate manifest와 같은 repair 경로로 처리한다.
+- 적용 경로:
+  - `BookService`
+  - `BookController`
+  - `WordCountAnalyzerService`
+
+검증:
+
+```text
+test fixture chapter sample-chapter-redacted book-info HTTP 200
+test fixture chapter sample-chapter-redacted book-page?page=0 HTTP 200
+test fixture chapter sample-chapter-redacted chapters HTTP 200
+production chapter <redacted> book-info HTTP 200
+production chapter <redacted> book-page?page=0 HTTP 200
+production chapter <redacted> chapters HTTP 200
+```
+
+제한:
+
+- 이 수정은 reader 500을 막는 복구다.
+- 해당 원본 EPUB 자체에 본문 파일이 없어 운영/테스트 모두 `Pages=1`이 맞다.
+- 440화 본문을 보려면 GDS 원본 EPUB을 본문 포함 파일로 교체해야 한다.
+
+운영 image:
+
+```text
+local/kavita-gds:9.0.6-1
+sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
 ```

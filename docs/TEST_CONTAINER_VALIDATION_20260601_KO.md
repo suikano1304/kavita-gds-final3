@@ -20,13 +20,22 @@
 
 - official baseline: `ghcr.io/kareadita/kavita:nightly-0.9.0.6`
 - official revision: `c7e9555061d970b50cedc695e60124bf8c47084a`
-- 태그: `local/kavita-gds:9.0.6-1-test`
-- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- 최종 태그: `local/kavita-gds:9.0.6-1`, `local/kavita-gds:9.0.6-1-test`, `local/kavita-gds:latest`
+- 최종 Image ID: `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`
+- 최종 build time: `2026-06-01T00:47:34Z`
 - 빌드 결과: 성공
 - 빌드 경고:
   - 기존 npm dependency audit 경고
   - Angular Sass/CommonJS/budget 경고
   - 기존 .NET nullable/analyzer 및 package advisory 경고
+
+중간 테스트 이미지 ID(`4aa4a776...`, `c5368ead...`, `bdfefabf...`, `fdf1f5d...`)는 fixture 검증 및 운영 이슈 재현 중 사용한 임시 산출물이며 공개 패키지에는 포함하지 않는다.
+
+최종 runtime 확인:
+
+- `/usr/bin/sqlite3` 포함
+- `NanumGothic-Regular.ttf`, `NanumGothic-Bold.ttf`, `NanumGothic-ExtraBold.ttf` 포함
+- `fc-match NanumGothic` 정상
 
 ## 테스트 compose
 
@@ -590,7 +599,7 @@ rclone read-only 확인:
 - scanner에서는 `/mnt/gds` EPUB/PDF/TXT에 대해 원격 파일 전체 읽기를 하지 않고 기존 shortcut을 유지했다.
 - 대신 EPUB `book-info` 요청 시 실제 reading order count가 `1`보다 크고 DB page count가 `1` 이하이면 `Chapter.Pages`, `MangaFile.Pages`, `Volume.Pages`, `Series.Pages`를 즉시 갱신하도록 했다.
 - duplicate manifest repair를 `BookService`의 EPUB open 경로 전체에 적용해 `book-info`, `book-page`, `chapters`, resource fetch, metadata/word-count 경로가 같은 보정 로직을 사용하게 했다.
-- 운영 image tag `local/kavita-gds:9.0.6-1`을 새 Image ID `4e37e0f29e5410e67480345a2d0f456bfab1900b7653eebb0859d73051a264fa`로 교체하고 `kavita` 컨테이너를 재생성했다.
+- 운영 image tag `local/kavita-gds:9.0.6-1`을 당시 hotfix image로 교체하고 `kavita` 컨테이너를 재생성했다. 최종 공개 image는 이후 추가 보정을 포함한 `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`이다.
 
 검증:
 
@@ -632,38 +641,91 @@ Recent production logs show duplicate manifest repair warnings for `reported dup
 
 운영 최종 강제 스캔:
 
-- endpoint: `POST /api/library/scan-all?force=true`
-- HTTP result: `200`
-- start log:
-
-```text
-[ScannerService] Starting Scan of All Libraries, Forced: true
-[ScannerService] Beginning file scan on production-library-a
-```
-
-- scan start 이후 Web UI root request: `HTTP 200`, `30467 bytes`
-- rclone RC after scan start: `errors=0`, `deletes=0`, `renames=0`, `serverSideCopies=0`, `serverSideMoves=0`
+- 2026-06-01 10:53 KST 기준 아직 실행하지 않았다.
+- 현재는 사용자의 지시에 따라 운영 커버 metadata refresh를 계속 진행 중인 상태로 두고 GitHub push를 먼저 수행한다.
+- 커버 재생성 완료 후 `POST /api/library/scan-all?force=true`를 별도 후속 단계로 실행하고, 완료 로그와 rclone read-only 결과를 추가 기록한다.
 
 GitHub release package 준비:
 
 - package: `/root/Kavita-GDS/kavita-gds.tar.gz`
-- package SHA256: `0605e92b5af4984d96aa41babb1af2368f5edc35ae848a085c97e25277b34517`
 - inner Docker archive: `docker-image/kavita-gds.docker.tar`
-- inner Docker archive SHA256: `1f29634c96d7d12650389794c17039ba514f4340d1fd42f9675c3cfa0dd147ab`
-- archive tags verified with skopeo:
+- archive tags:
   - `local/kavita-gds:9.0.6-1`
   - `local/kavita-gds:latest`
+- archive image id: `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`
+- package SHA256: repository root `SHA256SUMS` 기준
+- inner Docker archive SHA256: repository root `SHA256SUMS` 기준
+- GHCR workflow `RELEASE_ASSET_SHA256`: package rebuild 후 root `SHA256SUMS`와 일치하게 갱신
 
 GitHub/GHCR 등록:
 
-- source/docs commit: `5ab2c78 release: prepare 9.0.6-1`
-- release: `https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1`
-- release assets:
-  - `kavita-gds.tar.gz`
-  - `SHA256SUMS`
-- GHCR publish workflow: `https://github.com/suikano1304/Kavita-GDS/actions/runs/26727930051`
-- workflow result: `success`
-- published image tags verified with skopeo:
-  - `ghcr.io/suikano1304/kavita-gds:9.0.6-1`
-  - `ghcr.io/suikano1304/kavita-gds:latest`
-  - digest: `sha256:492f6de4106b51a374697c8f01b870384a242691371fb4088aa9ba7e9c5b60ea`
+- 2026-06-01 10:53 KST 기준 GitHub push 선진행 중.
+- release asset upload, GHCR workflow run, and published digest verification are still pending.
+
+## 2026-06-01 09:12 KST Missing EPUB3 NAV Hotfix
+
+운영 Web UI 확인 중 `reported cover-only EPUB sample`에서 다음 오류가 확인됐다.
+
+```text
+EPUB parsing error: NAV item not found in EPUB manifest.
+```
+
+조치:
+
+- `EpubManifestRepairHelper`가 EPUB3 OPF에 `properties="nav"` item이 없을 때 임시 repaired EPUB copy에 최소 `kavita-nav.xhtml`을 합성한다.
+- EPUB open fallback 범위를 `EpubPackageException`에서 `EpubReaderException`으로 넓혀 missing NAV 예외도 동일한 임시 repair path를 탄다.
+- 적용 경로: `BookService`, `BookController`, `WordCountAnalyzerService`.
+- 사용자 제보 파일을 fixture에 추가했다.
+  - source: `<redacted-media-path> reported cover-only EPUB sample/001-440 完[txt].epub`
+  - fixture: `<redacted-fixture-path>`
+
+테스트 이미지:
+
+```text
+local/kavita-gds:9.0.6-1-test
+intermediate image sha256:be556ae5a720674f967468d9ca521d50593251e3297372e5877c471a26f7969b
+```
+
+`LOCAL-FIXTURES` 재스캔:
+
+```text
+Finished library scan of 118 files and 27 series in 11574 milliseconds for LOCAL-FIXTURES
+DB summary: 118 chapters, zero pages 0, missing chapter covers 0
+```
+
+검증:
+
+```text
+test original GDS chapter <redacted> book-info HTTP 200
+test original GDS chapter <redacted> book-page?page=0 HTTP 200
+test original GDS chapter <redacted> chapters HTTP 200
+
+test fixture chapter sample-chapter-redacted book-info HTTP 200
+test fixture chapter sample-chapter-redacted book-page?page=0 HTTP 200
+test fixture chapter sample-chapter-redacted chapters HTTP 200
+```
+
+운영 반영:
+
+```text
+local/kavita-gds:9.0.6-1
+final image sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+
+production chapter <redacted> book-info HTTP 200
+production chapter <redacted> book-page?page=0 HTTP 200
+production chapter <redacted> chapters HTTP 200
+production Web UI internal HTTP 200
+production Web UI external HTTP 200
+```
+
+주의:
+
+- `reported cover-only EPUB sample` 원본 EPUB은 ZIP entry가 `cover.jpg`, `cover.xhtml`, `toc.ncx`, `content.opf`뿐이다.
+- OPF manifest의 유일한 XHTML은 `cover.xhtml`이고 spine도 `cover` 하나만 참조한다.
+- 따라서 이 파일은 repair 이후에도 1페이지가 정상이며, 본문이 있는 원본 EPUB로 교체하지 않는 한 Kavita가 440화 본문을 표시할 수 없다.
+
+rclone:
+
+```text
+errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
+```

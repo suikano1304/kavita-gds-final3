@@ -80,7 +80,8 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - GDS 증분 스캔에서 포맷 하위 폴더와 정규화명이 같은 형제 폴더를 기존 시리즈로 매칭해 반복 재처리 감소
 - GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
 - 원본 커버가 없는 GDS TXT 시리즈에 제목 기반 fallback cover 생성
-- TXT 제목 커버의 한글 글꼴 깨짐 방지를 위해 Nanum Gothic Regular/Bold 포함
+- TXT 제목 커버의 한글 글꼴 깨짐 방지를 위해 Nanum Gothic Regular/Bold/ExtraBold 포함
+- 운영 검증과 DB/API 점검을 쉽게 하기 위해 runtime image에 `sqlite3` 포함
 - GDS archive 시리즈의 각 권/챕터 커버가 1권 커버로 고정되는 문제 수정
 - startup migration/BaseUrl 저장 단계의 SQLite FK 오류 진단 로그 보강
 - same-volume duplicate file path cleanup 보강
