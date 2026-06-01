@@ -926,3 +926,35 @@ Release asset update:
 - `kavita-gds.tar.gz`: `7ff66f8327853b6a2c3e5d10d2a969f86a18223c48302501996dbe333927ccc9`
 - `docker-image/kavita-gds.docker.tar`: `fa9773fff71c2ac889ff000a8d1ec341c932f90922fadfbb2f5c999970fa8585`
 - GitHub Release `v9.0.6-1` assets `kavita-gds.tar.gz` and `SHA256SUMS` were replaced with `--clobber`.
+
+Latest fixture full-reader validation on the low-memory image:
+
+- validation script: `scripts/validate_kavita_fixtures.py`
+- container image ID: `sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d`
+- target: `LOCAL-FIXTURES` (`LibraryId=10`)
+- DB summary before pass: `27` series, `118` files
+- format summary: archive `65`, EPUB `31`, TXT `22`
+- top-level fixture file counts: CBZ `39`, ZIP `26`, EPUB `27`, EPUB problem `4`, TXT `22`
+
+Each pass forced a scan and then validated every fixture chapter through the API:
+
+- `reader/chapter-info` HTTP 200 and page count match
+- `reader/next-chapter` and `reader/prev-chapter` HTTP 200 with integer response
+- archive first/middle/last `reader/image` HTTP 200 and non-zero bytes
+- EPUB/TXT first/middle/last `book-page` HTTP 200 and non-zero bytes
+- EPUB `book-info` and `chapters` HTTP 200
+- DB `Pages=0` count and missing chapter cover count remained `0`
+
+Result:
+
+```text
+image=sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d
+pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=1 last_scanned=2026-06-02 08:30:52.7179298
+pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 last_scanned=2026-06-02 08:31:15.7979326
+pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 last_scanned=2026-06-02 08:31:37.6696307
+```
+
+Note: The current fixture corpus has strong per-file coverage but does not yet prove the literal "10 series per format folder" target. Current series counts by folder are CBZ `6`, ZIP `6`, EPUB `6` plus EPUB problem samples, and TXT `7`. Additional fixture expansion should wait until the production GDS scan finishes or rclone quota pressure drops, to avoid adding read load while production scan is enumerating GDS.
