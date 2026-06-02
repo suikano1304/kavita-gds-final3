@@ -19,7 +19,7 @@
 - 합성 single-spine EPUB fixture에서 DB pages `3/3`, `book-info=3`, TOC `3`, `book-page` 0/1/2 distinct content를 확인했습니다.
 - 운영 `reported duplicate-manifest EPUB sample` 03-06권 duplicate manifest EPUB은 `book-info` 호출 후 `12/12`, `12/12`, `12/12`, `13/13` 페이지로 DB가 보정되고 마지막 page API가 200을 반환했습니다.
 - `reported cover-only EPUB sample` 문제 fixture는 EPUB ZIP 내부에 `cover.xhtml`, `cover.jpg`, `toc.ncx`만 있고 본문 XHTML이 없어, 해당 파일의 `1/1`은 Kavita page-count 복구 대상이 아니라 원본 EPUB 구조 문제로 기록했습니다.
-- GHCR `9.0.6-2` multi-arch manifest를 push했습니다. `linux/amd64`는 운영 반영 검증, `linux/arm64`는 qemu smoke test에서 `/api/health` 200을 확인했습니다.
+- GHCR `9.0.6-2` multi-arch manifest를 push했습니다. `linux/amd64`는 운영 반영 검증, `linux/arm64`는 qemu smoke test에서 `/api/health` 200, `linux/arm/v7`는 qemu smoke test에서 `/api/health` 200 및 Docker health `healthy`를 확인했습니다.
 
 ## 2026-06-01: `9.0.6-1` official `0.9.0.6` 포팅
 

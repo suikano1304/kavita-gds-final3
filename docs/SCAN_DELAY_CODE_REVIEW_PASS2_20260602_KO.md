@@ -110,7 +110,9 @@ Verification results:
 - Production health returned `200` and Docker health became `healthy`.
 - Production `reported duplicate-manifest EPUB sample` chapters `sample-chapter-redacted-sample-chapter-redacted` repaired duplicate manifest EPUBs and updated DB pages to `12/12`, `12/12`, `12/12`, `13/13`.
 - `linux/arm64` image built as `local/kavita-gds:9.0.6-2-arm64`, architecture `arm64`, and qemu smoke test returned `/api/health` 200.
+- `linux/arm/v7` image built with .NET RID `linux-arm`, CoreCLR write-xor-execute disabled for qemu ARM32 startup, and qemu smoke test returned host `/api/health` 200 with Docker health `healthy`.
 - GHCR pushed:
-  - multi-arch `ghcr.io/suikano1304/kavita-gds:9.0.6-2`, digest `sha256:980226a70418c5d20f70fc853e154d242a4eb15909c75df8b3a61386b937b386`
+  - multi-arch `ghcr.io/suikano1304/kavita-gds:9.0.6-2`, digest `sha256:fae093d93e2b56cd1debf23256f45f87f59d3b37934a317cabc1a418c45f3fb0`
   - `linux/amd64` digest `sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97`
   - `linux/arm64` digest `sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3`
+  - `linux/arm/v7` digest `sha256:d6d8a01e684a47c2091219906de6accc0976bf07ce3898c4f76da6a4834b9ca0`

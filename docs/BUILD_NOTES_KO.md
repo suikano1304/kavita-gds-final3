@@ -10,6 +10,7 @@ Kavita official `0.9.0.6` 기반 GDS scanfix 빌드 `9.0.6-2`를 Docker/GHCR 배
 
 - `linux/amd64`
 - `linux/arm64` (GHCR multi-arch manifest)
+- `linux/arm/v7` (GHCR multi-arch manifest)
 
 ## 산출물
 
@@ -17,12 +18,14 @@ Release asset:
 
 ```text
 kavita-gds.tar.gz
+kavita-gds-oci.tar.gz
 ```
 
 내부 Docker archive:
 
 ```text
 docker-image/kavita-gds.docker.tar
+docker-image/kavita-gds.oci.tar
 ```
 
 권장 이미지 태그:
@@ -36,9 +39,10 @@ ghcr.io/suikano1304/kavita-gds:9.0.6-2
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-2
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:980226a70418c5d20f70fc853e154d242a4eb15909c75df8b3a61386b937b386
+multiarch digest=sha256:fae093d93e2b56cd1debf23256f45f87f59d3b37934a317cabc1a418c45f3fb0
 linux/amd64=sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97
 linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3
+linux/arm/v7=sha256:d6d8a01e684a47c2091219906de6accc0976bf07ce3898c4f76da6a4834b9ca0
 ```
 
 GHCR publish workflow:
@@ -59,6 +63,9 @@ GHCR publish workflow:
 - Docker Buildx로 `linux/amd64` 이미지를 생성했습니다.
 - `linux/amd64` 이미지는 `kavita-test`와 운영 `kavita` 컨테이너로 기동 검증했습니다.
 - `linux/arm64` 이미지는 같은 소스와 prebuilt production UI로 빌드해 GHCR multi-arch manifest에 포함했고, qemu smoke test에서 `/api/health` 200을 확인했습니다.
+- `linux/arm/v7` 이미지는 .NET RID `linux-arm`으로 빌드했고, qemu smoke test에서 host `/api/health` 200 및 Docker health `healthy`를 확인했습니다.
+- `linux/arm/v7` qemu startup 안정화를 위해 runtime image에 `DOTNET_EnableWriteXorExecute=0`, `COMPlus_EnableWriteXorExecute=0`을 포함하고 healthcheck start period를 300초로 조정했습니다.
+- `kavita-gds-oci.tar.gz`는 GHCR `9.0.6-2` multi-arch manifest에서 생성한 amd64/arm64/armv7 OCI archive입니다.
 - `/kavita/wwwroot` 전체에서 `localhost:5000`, `:5000/api`, Angular development mode 문자열이 없는 것을 확인했습니다.
 - 제목 기반 TXT fallback cover 생성을 위해 Docker image에 Nanum Gothic Regular/Bold 폰트를 포함했습니다.
 - 중간 테스트 이미지와 webtoon patch tree는 배포 패키지에 넣지 않았습니다.
@@ -67,5 +74,5 @@ GHCR publish workflow:
 ## 제한
 
 - 이 빌드는 공식 Kavita 이미지가 아닙니다.
-- `linux/arm64`는 build/manifest 검증 기준이며, native ARM 실서비스 검증은 별도로 수행해야 합니다.
+- `linux/arm64`와 `linux/arm/v7`는 qemu smoke 검증 기준이며, native ARM 실서비스 검증은 별도로 수행해야 합니다.
 - 기존 Kavita 데이터베이스에 적용하기 전에는 백업을 권장합니다.

@@ -4,7 +4,7 @@
 
 Kavita GDS는 Kavita official `0.9.0.6` source에 GDS/rclone scanfix를 포팅한 비공식 Docker 빌드입니다.
 
-현재 릴리즈는 `9.0.6-2`입니다. GHCR의 `9.0.6-2`와 `latest` 태그는 `linux/amd64`, `linux/arm64`를 포함합니다.
+현재 릴리즈는 `9.0.6-2`입니다. GHCR의 `9.0.6-2`와 `latest` 태그는 `linux/amd64`, `linux/arm64`, `linux/arm/v7`를 포함합니다.
 
 이 빌드는 GDS/rclone 원본 media mount를 읽기 전용으로 두고, Kavita config 경로 안에서만 DB, cache, cover를 관리하는 구성을 전제로 합니다.
 
@@ -95,6 +95,17 @@ docker tag ghcr.io/suikano1304/kavita-gds:9.0.6-2-amd64 local/kavita-gds:9.0.6-2
 ```
 
 Release asset의 Docker archive는 `linux/amd64`용입니다. ARM 서버에서는 GHCR multi-arch image를 pull하세요.
+
+amd64/arm64/armv7가 모두 들어 있는 오프라인 archive가 필요하면 `kavita-gds-oci.tar.gz`를 사용합니다.
+
+```bash
+curl -L -o kavita-gds-oci.tar.gz \
+  https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-2/kavita-gds-oci.tar.gz
+tar -xzf kavita-gds-oci.tar.gz
+skopeo copy --all \
+  oci-archive:docker-image/kavita-gds.oci.tar \
+  docker://YOUR_REGISTRY/YOUR_NAMESPACE/kavita-gds:9.0.6-2
+```
 
 ## 업그레이드 전 확인
 
@@ -272,4 +283,5 @@ sqlite3 /path/to/kavita.db 'PRAGMA foreign_key_check;'
 - 기존 DB를 연결하기 전에는 backup을 권장합니다.
 - GDS/rclone 원본 mount는 읽기 전용을 권장합니다.
 - `linux/arm64`는 qemu smoke test에서 `/api/health` 200을 확인했지만, native ARM 실서비스 검증은 별도 환경에서 다시 확인하는 것이 좋습니다.
+- `linux/arm/v7`는 qemu smoke test에서 `/api/health` 200 및 Docker health `healthy`를 확인했지만, native ARMv7 실서비스 검증은 별도 환경에서 다시 확인하는 것이 좋습니다.
 - 큰 binary 파일은 git에 직접 commit하지 않고 GitHub Release asset으로만 배포합니다.

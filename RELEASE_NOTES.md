@@ -8,12 +8,17 @@ Version: `9.0.6-2`
 
 - `linux/amd64`
 - `linux/arm64` on GHCR
+- `linux/arm/v7` on GHCR
 
 ## Asset
 
 `kavita-gds.tar.gz`
 
 The release asset contains `docker-image/kavita-gds.docker.tar`, an amd64 Docker archive. For ARM servers, use the GHCR multi-arch image.
+
+`kavita-gds-oci.tar.gz`
+
+This optional release asset contains `docker-image/kavita-gds.oci.tar`, a multi-platform OCI archive for `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
 
 Use the repository `SHA256SUMS` file or the release checksum note to verify the downloaded asset.
 
@@ -22,6 +27,8 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Built from the official Kavita `0.9.0.6` source with the GDS patch set ported forward.
 - `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
 - `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-2` and `latest` multi-arch manifests.
+- `linux/arm/v7` was built with .NET RID `linux-arm`, qemu-smoke-tested with `/api/health` 200 and Docker health `healthy`, then added to the GHCR `9.0.6-2` and `latest` multi-arch manifests.
+- The optional OCI release asset was generated from the pushed GHCR `9.0.6-2` multi-arch manifest and contains `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
@@ -44,6 +51,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Verified production `local/kavita-gds:9.0.6-2` health and corrected `reported duplicate-manifest EPUB sample` EPUB chapters `sample-chapter-redacted-sample-chapter-redacted` from `1/1` to `12/12`, `12/12`, `12/12`, and `13/13`.
 - Confirmed the reported `reported cover-only EPUB sample` fixture EPUB contains only `cover.xhtml`, `cover.jpg`, `toc.ncx`, and no body content XHTML, so its `1/1` state is source-file corruption rather than a recoverable Kavita page-count issue.
 - Built and pushed GHCR `linux/amd64` and `linux/arm64` images. The arm64 image was started under qemu and returned `/api/health` 200.
+- Added `linux/arm/v7` after qemu validation with CoreCLR write-xor-execute disabled and a longer healthcheck start period for qemu ARM32 startup.
 
 ### 2026-06-01 `9.0.6-1` official `0.9.0.6` port
 
@@ -68,10 +76,11 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-2
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:980226a70418c5d20f70fc853e154d242a4eb15909c75df8b3a61386b937b386
+multiarch digest=sha256:fae093d93e2b56cd1debf23256f45f87f59d3b37934a317cabc1a418c45f3fb0
 
 linux/amd64=sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97
 linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3
+linux/arm/v7=sha256:d6d8a01e684a47c2091219906de6accc0976bf07ce3898c4f76da6a4834b9ca0
 ```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`
@@ -208,4 +217,4 @@ linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e88
 
 ## Caveat
 
-The `linux/arm64` image was built from the same source and passed a qemu `/api/health` startup smoke test. It has not been validated as a long-running production deployment on native ARM hardware in this release record.
+The `linux/arm64` and `linux/arm/v7` images were built from the same source and passed qemu startup smoke tests. `linux/arm/v7` additionally reached Docker health `healthy` with the CoreCLR write-xor-execute workaround enabled. Native ARM long-running production deployment was not validated in this release record.

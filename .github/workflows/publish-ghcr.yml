@@ -1,4 +1,4 @@
-name: Publish GHCR amd64 archive image
+name: Publish GHCR multi-arch OCI image
 
 on:
   workflow_dispatch:
@@ -10,9 +10,9 @@ permissions:
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/kavita-gds
   IMAGE_TAG: 9.0.6-2
-  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-2/kavita-gds.tar.gz
-  RELEASE_ASSET_SHA256: ddb38bf9d3587f09207b6c7ccb54c88cc4021e69b6e23e857378748b34188725
-  DOCKER_ARCHIVE_PATH: kavita-gds/docker-image/kavita-gds.docker.tar
+  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-2/kavita-gds-oci.tar.gz
+  RELEASE_ASSET_SHA256: d1d8ae88fc10d40e45d978fa40a482c8ef7a2311fb9b9234ada84a3c155d7cc5
+  OCI_ARCHIVE_PATH: docker-image/kavita-gds.oci.tar
 
 jobs:
   publish:
@@ -25,16 +25,22 @@ jobs:
 
       - name: Download release package
         run: |
-          curl -L -o kavita-gds.tar.gz "$RELEASE_ASSET_URL"
-          echo "$RELEASE_ASSET_SHA256  kavita-gds.tar.gz" | sha256sum -c -
-          tar -xzf kavita-gds.tar.gz
+          curl -L -o kavita-gds-oci.tar.gz "$RELEASE_ASSET_URL"
+          echo "$RELEASE_ASSET_SHA256  kavita-gds-oci.tar.gz" | sha256sum -c -
+          tar -xzf kavita-gds-oci.tar.gz
 
       - name: Login to GHCR
         run: |
           echo "${{ github.token }}" | skopeo login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Publish amd64 archive tag
+      - name: Publish version tag
         run: |
           skopeo --tmpdir "$RUNNER_TEMP" copy --all \
-            "docker-archive:${DOCKER_ARCHIVE_PATH}:${IMAGE_NAME}:${IMAGE_TAG}-amd64" \
-            "docker://${IMAGE_NAME}:${IMAGE_TAG}-amd64"
+            "oci-archive:${OCI_ARCHIVE_PATH}" \
+            "docker://${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Publish latest tag
+        run: |
+          skopeo --tmpdir "$RUNNER_TEMP" copy --all \
+            "oci-archive:${OCI_ARCHIVE_PATH}" \
+            "docker://${IMAGE_NAME}:latest"
