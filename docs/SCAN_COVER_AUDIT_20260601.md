@@ -806,7 +806,7 @@ docker-image/kavita-gds.docker.tar sha256=24d4d4438e20c75f6303052cc7115e8baf5b07
 
 ## 2026-06-02 Final Fixture Expansion to 10 Series per Format
 
-After the production scan and public image publication were complete, `LOCAL-FIXTURES` was expanded to meet the literal 10-series-per-format validation target.
+After the production scan and public image publication were complete, `LOCAL-FIXTURES` was expanded to meet the literal 10-series-per-format validation target. User-reported EPUB samples were also copied into fixtures with their source folder structure preserved.
 
 Fixture filesystem summary:
 
@@ -815,14 +815,14 @@ cbz series=<redacted>
 zip series=<redacted>
 epub series=<redacted>
 txt series=<redacted>
-epub-problem groups=1
+epub-problem groups=2
 
 cbz media files=44
 zip media files=30
-epub media files=35
-txt media files=25
-total validated media files=134
-fixture root size=864M
+epub media files=54
+txt media files=27
+total validated media files=155
+fixture root size=882M
 ```
 
 Added source directories:
@@ -843,21 +843,27 @@ EPUB <redacted-media-path> epub-sample-redacted
 TXT <redacted-media-path>
 TXT <redacted-media-path>
 TXT <redacted-media-path>
+REPORTED <redacted-media-path> reported cover-only EPUB sample
+REPORTED <redacted-media-path> page-count EPUB sample
+REPORTED <redacted-media-path> reported page-count EPUB sample
+REPORTED <redacted-media-path> duplicate-manifest EPUB sample
+REPORTED <redacted-media-path> reported duplicate-manifest EPUB sample
 ```
 
 Validation on final image `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`:
 
 ```text
-Finished library scan of 134 files and 42 series in 10437 milliseconds for LOCAL-FIXTURES
-Finished library scan of 134 files and 42 series in 10547 milliseconds for LOCAL-FIXTURES
-Finished library scan of 134 files and 42 series in 11401 milliseconds for LOCAL-FIXTURES
+Finished library scan of 155 files and 44 series in 11196 milliseconds for LOCAL-FIXTURES
+Finished library scan of 155 files and 44 series in 12234 milliseconds for LOCAL-FIXTURES
+Finished library scan of 155 files and 44 series in 11177 milliseconds for LOCAL-FIXTURES
 
-pass=1 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=2 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=3 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=1 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
 
-DB summary: series=<redacted> media=134 zero_pages=0 missing_covers=0
-DB format rows: Archive=74 EPUB=35 TXT=25
+DB summary: series=<redacted> media=155 zero_pages=0 missing_covers=0
+DB format rows: Archive=74 EPUB=54 TXT=27
+Reported fixture sample DB checks: reported cover-only EPUB sample, reported page-count EPUB sample, and reported duplicate-manifest EPUB sample all have non-zero pages and cover references.
 ```
 
 rclone remained read-only during fixture expansion:

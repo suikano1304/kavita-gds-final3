@@ -23,7 +23,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
-- Fixture reader validation passed 3 full passes across the expanded LOCAL-FIXTURES corpus: CBZ `10` series, ZIP `10` series, EPUB `10` series, TXT `10` series, plus retained problem EPUB samples.
+- Fixture reader validation passed 3 full passes across the expanded LOCAL-FIXTURES corpus: CBZ `10` series, ZIP `10` series, EPUB `10` series, TXT `10` series, plus retained problem EPUB samples including the reported `reported cover-only EPUB sample`, `reported page-count EPUB sample`, and `reported duplicate-manifest EPUB sample` cases.
 - Production Web UI, NPM proxy access, EPUB reader page rendering, table-of-contents, and duplicate manifest repair were verified.
 - rclone RC remained read-only: `deletes=0`, `renames=0`, server-side copy/move counters `0`. Later production scan attempts accumulated Google Drive rate-limit errors, not write/delete activity.
 - The package does not include intermediate test images.

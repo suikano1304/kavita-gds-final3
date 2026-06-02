@@ -1130,7 +1130,7 @@ docker-image/kavita-gds.docker.tar sha256=24d4d4438e20c75f6303052cc7115e8baf5b07
 
 ## 2026-06-02 Local Fixture 10-Series Expansion
 
-운영 스캔과 public image/GHCR 등록 완료 후, goal의 literal 요구였던 포맷별 10 series fixture를 맞추기 위해 `LOCAL-FIXTURES`를 추가 확장했다. 모든 추가 파일은 GDS read-only 원본에서 읽어 local fixture root에만 복사했다.
+운영 스캔과 public image/GHCR 등록 완료 후, goal의 literal 요구였던 포맷별 10 series fixture를 맞추기 위해 `LOCAL-FIXTURES`를 추가 확장했다. 이후 사용자 지정 EPUB 문제 샘플인 `reported page-count EPUB sample`과 `reported duplicate-manifest EPUB sample`도 원본 하위 구조를 보존해 추가했다. 모든 추가 파일은 GDS read-only 원본에서 읽어 local fixture root에만 복사했다.
 
 확장 후 filesystem 요약:
 
@@ -1139,14 +1139,14 @@ cbz series=<redacted>
 zip series=<redacted>
 epub series=<redacted>
 txt series=<redacted>
-epub-problem groups=1
+epub-problem groups=2
 
 cbz media files=44
 zip media files=30
-epub media files=35
-txt media files=25
-total validated media files=134
-fixture root size=864M
+epub media files=54
+txt media files=27
+total validated media files=155
+fixture root size=882M
 ```
 
 추가 source directory:
@@ -1167,6 +1167,11 @@ EPUB <redacted-media-path> epub-sample-redacted
 TXT <redacted-media-path>
 TXT <redacted-media-path>
 TXT <redacted-media-path>
+REPORTED <redacted-media-path> reported cover-only EPUB sample
+REPORTED <redacted-media-path> page-count EPUB sample
+REPORTED <redacted-media-path> reported page-count EPUB sample
+REPORTED <redacted-media-path> duplicate-manifest EPUB sample
+REPORTED <redacted-media-path> reported duplicate-manifest EPUB sample
 ```
 
 `kavita-test` 상태:
@@ -1181,28 +1186,36 @@ restart count=0
 3회 강제 scan / reader 검증:
 
 ```text
-Finished library scan of 134 files and 42 series in 10437 milliseconds for LOCAL-FIXTURES
-Finished library scan of 134 files and 42 series in 10547 milliseconds for LOCAL-FIXTURES
-Finished library scan of 134 files and 42 series in 11401 milliseconds for LOCAL-FIXTURES
+Finished library scan of 155 files and 44 series in 11196 milliseconds for LOCAL-FIXTURES
+Finished library scan of 155 files and 44 series in 12234 milliseconds for LOCAL-FIXTURES
+Finished library scan of 155 files and 44 series in 11177 milliseconds for LOCAL-FIXTURES
 
-pass=1 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=1 last_scanned=2026-06-02 20:16:13.5352036
-pass=2 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=2 last_scanned=2026-06-02 20:16:37.8710767
-pass=3 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=3 last_scanned=2026-06-02 20:17:02.4564576
+pass=1 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=1 last_scanned=2026-06-02 20:22:26.7537176
+pass=2 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 last_scanned=2026-06-02 20:22:52.0716544
+pass=3 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 last_scanned=2026-06-02 20:23:17.7408709
 ```
 
 DB 요약:
 
 ```text
-Series=42
-MangaFile=134
+Series=44
+MangaFile=155
 zero_pages=0
 missing_covers=0
 Archive rows=74
-EPUB rows=35
-TXT rows=25
+EPUB rows=54
+TXT rows=27
+```
+
+사용자 지정 샘플 DB 확인:
+
+```text
+reported cover-only EPUB sample: pages=1, cover=<redacted-cover-file>
+reported page-count EPUB sample: TXT pages=76, EPUB pages=12-15, cover references present
+reported duplicate-manifest EPUB sample: TXT pages=48, EPUB pages=12-13, cover references present
 ```
 
 rclone read-only 확인:

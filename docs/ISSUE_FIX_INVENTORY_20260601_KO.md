@@ -209,19 +209,20 @@ book-page middle/last pages HTTP 200
 
 ## 3회 반복 fixture 검증 결과
 
-2026-06-02 20:17 KST 최종 기준:
+2026-06-02 20:23 KST 최종 기준:
 
 ```text
-LOCAL-FIXTURES force scan: 134 files / 42 series
-Fixture directories: CBZ 10 series / ZIP 10 series / EPUB 10 series / TXT 10 series / EPUB problem 1 group
-DB: 134 media rows / 42 series / zero pages 0 / missing covers 0
+LOCAL-FIXTURES force scan: 155 files / 44 series
+Fixture directories: CBZ 10 series / ZIP 10 series / EPUB 10 series / TXT 10 series / EPUB problem 2 groups
+Reported fixture samples: reported cover-only EPUB sample, reported page-count EPUB sample, reported duplicate-manifest EPUB sample
+DB: 155 media rows / 44 series / zero pages 0 / missing covers 0
 Archive: 74 files / zero pages 0 / missing covers 0
-EPUB: 35 files / zero pages 0 / missing covers 0
-TXT: 25 files / zero pages 0 / missing covers 0
+EPUB: 54 files / zero pages 0 / missing covers 0
+TXT: 27 files / zero pages 0 / missing covers 0
 
-pass=1 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=2 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
-pass=3 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=1 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 total=155 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
 recent error/exception logs: none
 ```
 
