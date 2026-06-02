@@ -20,8 +20,9 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Built from the official Kavita `0.9.0.6` source with the GDS patch set ported forward.
 - `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
 - `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-1` and `latest` multi-arch manifests.
-- GDS library scans now use a low-memory sequential processing path for DB updates, cover generation, and word-count analysis to reduce OOM risk on large rclone-backed libraries.
+- GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
+- GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
 - Fixture reader validation passed 3 full passes across ZIP/CBZ/EPUB/TXT samples.
 - Production Web UI, NPM proxy access, EPUB reader page rendering, table-of-contents, and duplicate manifest repair were verified.
 - rclone RC remained read-only: `deletes=0`, `renames=0`, server-side copy/move counters `0`. Later production scan attempts accumulated Google Drive rate-limit errors, not write/delete activity.
@@ -41,6 +42,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Fixed Korean TXT title-cover rendering by bundling Nanum Gothic Regular/Bold/ExtraBold in the runtime image.
 - Added a low-memory GDS scan path that keeps per-series DB update, cover generation, and word-count work sequential instead of running all post-scan work in parallel.
 - Added a GDS-only low-memory file discovery path that streams bottom-up directory traversal and avoids one parse task per file in large folders.
+- Split GDS word-count analysis out of the library scan path after production `production-library-c` showed 13,675 series and per-series EPUB word-count work taking up to 130 seconds. Cover generation remains part of the forced scan path.
 - Included `sqlite3` in the runtime image for operational DB/API verification inside the container.
 - Made cache cleanup tolerate concurrent directory deletion.
 - Validated `reported page-count EPUB sample` and `reported duplicate-manifest EPUB sample` production EPUBs after deployment.
@@ -51,10 +53,10 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:0aeaef5b75d1c81b24f0b7518400fb37aeb41728b1cad4ac32d90dae57debeb6
+multiarch digest=pending final arm64 rebuild
 
-linux/amd64=sha256:be8ba4848f3fb256ca960b53c081597a1211fc6562b1890c08d2503e844ad030
-linux/arm64=sha256:35b03994b1a25c5ad72e56783f3fed86801178eb913465acb2bd4ab2d899d742
+linux/amd64=sha256:e68d3280cc9eeea20f3807922d7070eee7a53c6a6113dca48e0a10850530499c
+linux/arm64=pending final rebuild
 ```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`

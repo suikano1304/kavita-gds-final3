@@ -16,6 +16,30 @@
 - 빌드 staging: `/mnt/data/docker/kavita-test/build` (lxc1)
 - 소스 작업 tree: `/root/kavita-gds-lab/port-0906-gds`
 
+## 2026-06-02 운영 재스캔 후속
+
+`9.0.6-1` stream-discovery 빌드를 운영에 반영한 뒤 대형 GDS 라이브러리 강제 스캔을 진행했다.
+
+완료 확인:
+
+- `성인 만화`: `2026-06-02 09:29:16 KST`
+- `production-library-a`: `2026-06-02 12:34:55 KST`
+- `연재중`: `2026-06-02 13:25:30 KST`
+
+`production-library-c`은 `2026-06-02 13:31:10 KST`에 시작했고, discovery 완료 후 `13675` series가 산출됐다. 이후 per-series 단계에서 `WordCountAnalyzerService`가 강제 실행되며 일부 EPUB series에 수십 초에서 130초까지 소요되는 병목이 확인됐다.
+
+새 후속 패치:
+
+- source commit: `17253b3 fix: skip GDS word count during library scans`
+- package patch: `patches/9.0.6-1/0002-fix-skip-GDS-word-count-during-library-scans.patch`
+
+의도:
+
+- GDS library scan은 DB update와 cover generation을 계속 수행한다.
+- GDS library scan 중 강제 word-count는 건너뛴다.
+- 별도 analyze/word-count 기능은 유지한다.
+- 사용자가 요청한 커버 중심 강제 스캔 시간을 현실적인 범위로 줄인다.
+
 ## 테스트 이미지
 
 - official baseline: `ghcr.io/kareadita/kavita:nightly-0.9.0.6`

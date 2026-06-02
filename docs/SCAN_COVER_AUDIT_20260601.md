@@ -259,6 +259,51 @@ A separate reader issue was found while checking problem EPUBs in the Web UI:
 - The reader showed `1/1`.
 - Choosing an item from the content table worked, but next/previous page navigation did not behave correctly.
 
+## 2026-06-02 GDS scan word-count bottleneck
+
+After `9.0.6-1` was applied to production, the large GDS libraries were forced-scanned again.
+
+Completed on the low-memory stream-discovery image:
+
+- `성인 만화`: `1200` series, `10190` files, finished `2026-06-02 09:29:16 KST`.
+- `production-library-a`: `4394` series, `41276` files, finished `2026-06-02 12:34:55 KST`.
+- `연재중`: `1930` series, `14231` files, finished `2026-06-02 13:25:30 KST`.
+
+`production-library-c` was then started at `2026-06-02 13:31:10 KST`. File discovery completed at `2026-06-02 16:13 KST` with:
+
+```text
+Series to process: 13675
+```
+
+The scan then slowed down in the per-series post-processing phase because the GDS low-memory path was still forcing `WordCountAnalyzerService.ScanSeries(...)` after each cover update. Representative production logs showed:
+
+```text
+Updated metadata for 조선대혁명 in 130409 milliseconds
+Updated metadata for 내 안에 천재 배우 in 22432 milliseconds
+Updated metadata for 눈먼 짐승의 목줄을 쥐었다 in 24666 milliseconds
+```
+
+This is not required for the user's requested cover-focused forced scan. A new patch was prepared:
+
+- source commit: `17253b3 fix: skip GDS word count during library scans`
+- package patch: `patches/9.0.6-1/0002-fix-skip-GDS-word-count-during-library-scans.patch`
+
+Behavior after the patch:
+
+- GDS library scan still performs DB import/update and cover generation sequentially.
+- GDS library scan no longer forces word-count analysis during the scan path.
+- Word-count remains available through explicit analyze/word-count actions.
+- Non-GDS scan behavior is unchanged.
+
+The latest amd64 image with the previous stream-discovery fix was pushed before this new word-count split:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
+digest sha256:e68d3280cc9eeea20f3807922d7070eee7a53c6a6113dca48e0a10850530499c
+```
+
+Final arm64 and multiarch publication remain pending until the production scan path is rebuilt and revalidated.
+
 ## 2026-06-01 Production Cover Regeneration
 
 After deploying final image `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`, production cover references for 2nd-and-later chapters/volumes were cleaned only where they were missing or had the same hash as the first item in the series.
