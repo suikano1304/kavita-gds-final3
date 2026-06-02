@@ -480,7 +480,7 @@ python3 scripts/summarize_kavita_scan_logs.py \
 Kavita 로그만으로는 `Found N Series that need processing in X ms` 전의 시간이 실제 어디서 쓰이는지 알기 어렵다. 그래서 read-only 파일 트리 프로파일러를 추가했다.
 
 ```bash
-scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path> \
+scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path>
   --time-limit 120
 ```
 

@@ -152,13 +152,13 @@ Additional root cause:
 Validated fix in `kavita-test`:
 
 ```text
-cbz-sample-a 01  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
-cbz-sample-a 02  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
-cbz-sample-a 03  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
-cbz-sample-b 01  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
-cbz-sample-b 02  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
-zip-sample-a 01  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-zip-sample-a 02  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+sample-a volume-1  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
+sample-a volume-2  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
+sample-a volume-3  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
+sample-b volume-1  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
+sample-b volume-2  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
+sample-c volume-1  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
+sample-c volume-2  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
 ```
 
 TXT cover rendering issue:
@@ -176,9 +176,9 @@ EPUB duplicate manifest follow-up:
 - Validated forced cover refresh and `series/analyze` completed for `epub-problem`; word counts were written:
 
 ```text
-24535|epub-problem|589835|sample-chapter-redacted|180283
-24535|epub-problem|589835|sample-chapter-redacted|207839
-24535|epub-problem|589835|sample-chapter-redacted|201713
+<redacted-series-id>|epub-problem|589835|problem-chapter-a|180283
+<redacted-series-id>|epub-problem|589835|problem-chapter-b|207839
+<redacted-series-id>|epub-problem|589835|problem-chapter-c|201713
 ```
 
 The duplicate manifest repair path now logs the recovery message without an exception stack when repair succeeds.
@@ -204,16 +204,16 @@ Result:
 Representative hash evidence:
 
 ```text
-epub-problem sample-chapter-redacted <redacted-cover-file> ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
-epub-problem sample-chapter-redacted <redacted-cover-file> da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
-epub-problem sample-chapter-redacted <redacted-cover-file> e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
-epub-sample-a sample-chapter-redacted <redacted-cover-file> a498bd2e231dbd4307cd5a248f411ec949202d9796659c6523986194de34fb4e
-epub-sample-a sample-chapter-redacted <redacted-cover-file> 75dd57eef22cbb186bd4080400ba0fbf3e7c2cac1459e1054113c787a245bd9f
-epub-sample-a sample-chapter-redacted <redacted-cover-file> 119e17f803886334cf3b1ce5608541c3a11720fd4bab8bd800588a31b305e5b1
-zip-sample-a sample-chapter-redacted <redacted-cover-file> 4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-zip-sample-a sample-chapter-redacted <redacted-cover-file> 6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
-cbz-sample-a sample-chapter-redacted <redacted-cover-file> 5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
-cbz-sample-a sample-chapter-redacted <redacted-cover-file> 6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
+epub-problem sample-1 <redacted-cover-file> ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
+epub-problem sample-2 <redacted-cover-file> da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
+epub-problem sample-3 <redacted-cover-file> e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
+epub sample-a <redacted-cover-file> a498bd2e231dbd4307cd5a248f411ec949202d9796659c6523986194de34fb4e
+epub sample-b <redacted-cover-file> 75dd57eef22cbb186bd4080400ba0fbf3e7c2cac1459e1054113c787a245bd9f
+epub sample-c <redacted-cover-file> 119e17f803886334cf3b1ce5608541c3a11720fd4bab8bd800588a31b305e5b1
+zip sample-a <redacted-cover-file> 4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
+zip sample-b <redacted-cover-file> 6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+cbz sample-a <redacted-cover-file> 5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
+cbz sample-b <redacted-cover-file> 6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
 ```
 
 The "2nd-and-later cover equals 1st cover" symptom is not present in the current test image after forced refresh.
@@ -351,9 +351,9 @@ Fix prepared and validated:
 Validation:
 
 ```text
-sample-chapter-redacted Chapter.Pages=34 MangaFile.Pages=34
-sample-chapter-redacted Chapter.Pages=49 MangaFile.Pages=49
-sample-chapter-redacted Chapter.Pages=42 MangaFile.Pages=42
+problem-chapter-a Chapter.Pages=34 MangaFile.Pages=34
+problem-chapter-b Chapter.Pages=49 MangaFile.Pages=49
+problem-chapter-c Chapter.Pages=42 MangaFile.Pages=42
 book-page middle/last pages HTTP 200
 first EPUB font resources HTTP 200
 ```
@@ -426,10 +426,10 @@ kavita health: healthy
 internal Web UI: HTTP 200
 external kavita.suikano.net via NPM: HTTP 200
 
-reported page-count EPUB sample 1권 chapter sample-chapter-redacted: pages 1 -> 15, book-page page=2 HTTP 200
-reported page-count EPUB sample 2권 chapter sample-chapter-redacted: pages 1 -> 12
-reported duplicate-manifest EPUB sample 1권 chapter sample-chapter-redacted: pages 1 -> 13, book-page page=2 HTTP 200, chapters HTTP 200
-reported duplicate-manifest EPUB sample 2권 chapter sample-chapter-redacted: pages 1 -> 12, book-page page=2 HTTP 200, chapters HTTP 200
+reported page-count EPUB sample 1권 chapter sample-chapter-a: pages 1 -> 15, book-page page=2 HTTP 200
+reported page-count EPUB sample 2권 chapter sample-chapter-b: pages 1 -> 12
+reported duplicate-manifest EPUB sample 1권 chapter sample-chapter-c: pages 1 -> 13, book-page page=2 HTTP 200, chapters HTTP 200
+reported duplicate-manifest EPUB sample 2권 chapter sample-chapter-d: pages 1 -> 12, book-page page=2 HTTP 200, chapters HTTP 200
 ```
 
 rclone safety check:
@@ -479,7 +479,7 @@ Affected production item:
 ```text
 chapter=131366
 series=<redacted> reported cover-only EPUB sample
-file=<redacted-media-path> reported cover-only EPUB sample/001-440 完[txt].epub
+file=<redacted-media-path>
 ```
 
 Implemented follow-up:
@@ -487,14 +487,14 @@ Implemented follow-up:
 - temporary EPUB repair now also synthesizes a minimal EPUB3 nav document when OPF has no `properties="nav"` item;
 - EPUB repair fallback catches `EpubReaderException`, not only `EpubPackageException`;
 - applied to `BookService`, `BookController`, and `WordCountAnalyzerService`;
-- copied the reported file into test fixtures at `<redacted-fixture-path> reported cover-only EPUB sample/001-440 完[txt].epub`.
+- copied the reported file into a redacted local test fixture path.
 
 Verification:
 
 ```text
 test image local/kavita-gds:9.0.6-1-test intermediate sha256:be556ae5a720674f967468d9ca521d50593251e3297372e5877c471a26f7969b
 LOCAL-FIXTURES scan: 118 files, 27 series, zero pages 0, missing covers 0
-test fixture chapter sample-chapter-redacted: book-info 200, book-page?page=0 200, chapters 200
+test fixture chapter sample-chapter-cover-only: book-info 200, book-page?page=0 200, chapters 200
 production image local/kavita-gds:9.0.6-1 final sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
 production chapter <redacted>: book-info 200, book-page?page=0 200, chapters 200
 production Web UI internal/external: HTTP 200
@@ -828,7 +828,7 @@ fixture root size=882M
 Added source directories:
 
 ```text
-CBZ <redacted-media-path> OR W [creator-redacted]
+CBZ <redacted-media-path>
 CBZ <redacted-media-path>
 CBZ <redacted-media-path>
 CBZ <redacted-media-path>
@@ -839,15 +839,15 @@ ZIP <redacted-media-path>
 EPUB <redacted-media-path>
 EPUB <redacted-media-path>
 EPUB <redacted-media-path>
-EPUB <redacted-media-path> epub-sample-redacted
+EPUB <redacted-media-path>
 TXT <redacted-media-path>
 TXT <redacted-media-path>
 TXT <redacted-media-path>
-REPORTED <redacted-media-path> reported cover-only EPUB sample
-REPORTED <redacted-media-path> page-count EPUB sample
-REPORTED <redacted-media-path> reported page-count EPUB sample
-REPORTED <redacted-media-path> duplicate-manifest EPUB sample
-REPORTED <redacted-media-path> reported duplicate-manifest EPUB sample
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
 ```
 
 Validation on final image `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`:

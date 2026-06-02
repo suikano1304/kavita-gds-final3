@@ -95,7 +95,7 @@ Changed source files:
 
 Additional finding during production verification:
 
-- `reported cover-only EPUB sample` remained `1/1` after a focused production series scan.
+- redacted cover-only EPUB sample remained `1/1` after a focused production series scan.
 - ZIP inspection of the fixture EPUB showed only `cover.xhtml`, `cover.jpg`, `toc.ncx`, and `content.opf`; no body content XHTML exists.
 - This case is source-file corruption, not a recoverable Kavita page-count failure.
 - A separate single-spine EPUB with real body XHTML and multiple TOC anchors was covered with a synthetic regression fixture.
@@ -108,7 +108,7 @@ Verification results:
 - Synthetic single-spine EPUB regression passed: DB pages `3/3`, `book-info` pages `3`, TOC `3`, `book-page` 0/1/2 returned distinct content.
 - Production ran `local/kavita-gds:9.0.6-2` image id `sha256:6ed1d2933392333c9baf609a25802e5e8ff065cf41f92e49414f4bcc2a323ead`.
 - Production health returned `200` and Docker health became `healthy`.
-- Production `reported duplicate-manifest EPUB sample` chapters `sample-chapter-redacted-sample-chapter-redacted` repaired duplicate manifest EPUBs and updated DB pages to `12/12`, `12/12`, `12/12`, `13/13`.
+- Production redacted duplicate-manifest EPUB sample chapters `sample-chapter-range` repaired duplicate manifest EPUBs and updated DB pages to `12/12`, `12/12`, `12/12`, `13/13`.
 - `linux/arm64` image built as `local/kavita-gds:9.0.6-2-arm64`, architecture `arm64`, and qemu smoke test returned `/api/health` 200.
 - `linux/arm/v7` image built with .NET RID `linux-arm`, CoreCLR write-xor-execute disabled for qemu ARM32 startup, and qemu smoke test returned host `/api/health` 200 with Docker health `healthy`.
 - GHCR pushed:

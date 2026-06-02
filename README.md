@@ -42,7 +42,7 @@ services:
           propagation: rslave
     environment:
       TZ: Asia/Seoul
-      WAIT_ANCHOR_DIRS: <redacted-media-path>
+      WAIT_ANCHOR_DIRS: /mnt/gds/READING_ROOT
 ```
 
 `/your/kavita/config`와 `/your/gds/mount`는 본인 환경에 맞게 바꾸세요. GDS/rclone 원본 mount는 읽기 전용을 권장합니다.
@@ -125,7 +125,7 @@ skopeo copy --all \
 - CBZ/ZIP/EPUB/TXT reader info, TOC/nav, page API, cover reference 실패 0건
 - synthetic single-spine EPUB regression에서 DB pages `3/3`, `book-info=3`, TOC `3`, page 0/1/2 distinct content 확인
 - 운영 `kavita`에 `linux/amd64` 적용 후 health `200` 및 Docker health `healthy`
-- 운영 `reported duplicate-manifest EPUB sample` duplicate manifest EPUB chapter `sample-chapter-redacted-sample-chapter-redacted`가 `12/12`, `12/12`, `12/12`, `13/13`로 보정되는 것 확인
+- 운영 redacted duplicate-manifest EPUB sample chapter `sample-chapter-range`가 `12/12`, `12/12`, `12/12`, `13/13`로 보정되는 것 확인
 - `linux/arm64` image를 qemu에서 기동해 `/api/health` 200 확인
 - `linux/arm/v7` image를 qemu에서 기동해 host `/api/health` 200 및 Docker health `healthy` 확인
 

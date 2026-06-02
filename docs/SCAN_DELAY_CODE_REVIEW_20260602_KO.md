@@ -20,9 +20,9 @@
   - `A Scan is already running, rescheduling ScanLibrary in 3 hours`
   - request path was `/api/library/scan?libraryId=<redacted>&force=false`
 - Library id mapping at that time:
-  - `1`: `production-library-a`
+  - `<redacted>`: `production-library-a`
   - `2`: `연재중`
-  - `4`: `production-library-a`
+  - `<redacted>`: `production-library-a`
 - Container still showed about one full CPU core in use after the finish log.
 
 ## Official comparison

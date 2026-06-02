@@ -120,43 +120,14 @@ Expanded fixture size/count after 2026-06-01 07:00 KST:
 - `txt`: `22` TXT files
 - total media: `117` files
 
-Expanded source directories:
+Expanded source directories and sample titles are redacted from public docs.
 
-- CBZ: `<redacted-media-path>`
-- ZIP: `<redacted-media-path>`
-- EPUB: `<redacted-media-path>`
-- EPUB: `<redacted-media-path>`
-- TXT: `<redacted-media-path>`
-- TXT: `<redacted-media-path>`
+Sample coverage:
 
-CBZ samples:
-
-- `cbz-sample-redacted`
-- `cbz-sample-b`
-- `cbz-sample-redacted`
-- `cbz-sample-a`
-- `cbz-sample-redacted`
-
-ZIP samples:
-
-- `zip-sample-redacted`
-- `zip-sample-a`
-- `zip-sample-redacted`
-- `zip-sample-redacted`
-- `zip-sample-redacted`
-
-Normal EPUB samples:
-
-- `epub-sample-redacted`
-- `epub-sample-redacted`
-- `<redacted-marker> epub-sample-a`
-- `epub-sample-redacted`
-
-Problem EPUB samples:
-
-- `problem-epub-sample-c [스스디] [txt].epub`
-- `problem-epub-sample-a [김성열] [txt].epub`
-- `001-263 完.epub`
+- CBZ: 5 representative multi-volume/single-volume samples
+- ZIP: 5 representative multi-volume/single-volume samples
+- EPUB: normal EPUB samples and retained problem EPUB samples
+- TXT: representative plain-text samples
 
 TXT samples:
 
@@ -281,13 +252,13 @@ Status: 진행 중. 운영 반영 대기.
 - CBZ/ZIP multi-volume cover sample hashes after forced cover refresh:
 
 ```text
-cbz-sample-a 01  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
-cbz-sample-a 02  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
-cbz-sample-a 03  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
-cbz-sample-b 01  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
-cbz-sample-b 02  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
-zip-sample-a 01  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-zip-sample-a 02  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+sample-a volume-1  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
+sample-a volume-2  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
+sample-a volume-3  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
+sample-b volume-1  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
+sample-b volume-2  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
+sample-c volume-1  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
+sample-c volume-2  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
 ```
 
 확인된 수정 내용:
@@ -307,9 +278,9 @@ Resolved after 06:24 KST redeploy:
 Problem EPUB API 검증:
 
 ```text
-sample-chapter-redacted book-info HTTP 200  problem-epub-sample-a
-sample-chapter-redacted book-info HTTP 200  problem-epub-sample-b
-sample-chapter-redacted book-info HTTP 200  problem-epub-sample-c
+problem-chapter-a book-info HTTP 200  problem-epub-sample-a
+problem-chapter-b book-info HTTP 200  problem-epub-sample-b
+problem-chapter-c book-info HTTP 200  problem-epub-sample-c
 ```
 
 Metadata/word count 검증:
@@ -317,9 +288,9 @@ Metadata/word count 검증:
 ```text
 refresh-metadata libraryId=<redacted> force=true forceColorscape=true -> completed for 20 series
 series/analyze libraryId=<redacted> seriesId=<redacted> forceUpdate=true -> completed
-24535|epub-problem|589835|sample-chapter-redacted|180283
-24535|epub-problem|589835|sample-chapter-redacted|207839
-24535|epub-problem|589835|sample-chapter-redacted|201713
+<redacted-series-id>|epub-problem|589835|problem-chapter-a|180283
+<redacted-series-id>|epub-problem|589835|problem-chapter-b|207839
+<redacted-series-id>|epub-problem|589835|problem-chapter-c|201713
 ```
 
 로그에는 원본 `VersOne.Epub.EpubPackageException`이 warning으로 기록된 뒤 `Repaired duplicate EPUB manifest items in a temporary copy`가 남고, 작업은 실패하지 않는다.
@@ -349,34 +320,34 @@ series/analyze libraryId=<redacted> seriesId=<redacted> forceUpdate=true -> comp
 Problem EPUB page-count 결과:
 
 ```text
-sample-chapter-redacted Chapter.Pages=34  MangaFile.Pages=34  WordCount=180283
-sample-chapter-redacted Chapter.Pages=49  MangaFile.Pages=49  WordCount=207839
-sample-chapter-redacted Chapter.Pages=42  MangaFile.Pages=42  WordCount=201713
+problem-chapter-a Chapter.Pages=34  MangaFile.Pages=34  WordCount=180283
+problem-chapter-b Chapter.Pages=49  MangaFile.Pages=49  WordCount=207839
+problem-chapter-c Chapter.Pages=42  MangaFile.Pages=42  WordCount=201713
 ```
 
 Reader API 결과:
 
 ```text
-sample-chapter-redacted book-info pages=34, reader/chapter-info pages=34
-sample-chapter-redacted book-info pages=49, reader/chapter-info pages=49
-sample-chapter-redacted book-info pages=42, reader/chapter-info pages=42
+problem-chapter-a book-info pages=34, reader/chapter-info pages=34
+problem-chapter-b book-info pages=49, reader/chapter-info pages=49
+problem-chapter-c book-info pages=42, reader/chapter-info pages=42
 seriesTotalPages=125
 ```
 
 `book-page` 실제 page 응답:
 
 ```text
-sample-chapter-redacted page 0/1/33 HTTP 200
-sample-chapter-redacted page 0/1/48 HTTP 200
-sample-chapter-redacted page 0/1/41 HTTP 200
+problem-chapter-a page 0/1/33 HTTP 200
+problem-chapter-b page 0/1/48 HTTP 200
+problem-chapter-c page 0/1/41 HTTP 200
 ```
 
 EPUB resource 검증:
 
 ```text
-sample-chapter-redacted first 3 font resources HTTP 200
-sample-chapter-redacted first 3 font resources HTTP 200
-sample-chapter-redacted first 3 font resources HTTP 200
+problem-chapter-a first 3 font resources HTTP 200
+problem-chapter-b first 3 font resources HTTP 200
+problem-chapter-c first 3 font resources HTTP 200
 ```
 
 이전 빌드에서 `OEBPS/Styles/../Fonts/...` 또는 정규화된 `OEBPS/Fonts/...` 리소스가 400을 반환하던 문제는 `BookService`에서 content key 정규화와 manifest/file-path fallback을 추가해 해결했다.
@@ -384,9 +355,9 @@ sample-chapter-redacted first 3 font resources HTTP 200
 Next/previous chapter API:
 
 ```text
-sample-chapter-redacted next=sample-chapter-redacted prev=-1
-sample-chapter-redacted next=sample-chapter-redacted prev=sample-chapter-redacted
-sample-chapter-redacted next=-1 prev=sample-chapter-redacted
+problem-chapter-b next=problem-chapter-a prev=-1
+problem-chapter-a next=problem-chapter-c prev=problem-chapter-b
+problem-chapter-c next=-1 prev=problem-chapter-a
 ```
 
 정렬은 현재 fixture filename/sort order 기준이며, API는 edge를 제외하고 유효한 chapter id를 반환한다.
@@ -406,9 +377,9 @@ sample-chapter-redacted next=-1 prev=sample-chapter-redacted
 대표 hash:
 
 ```text
-epub-problem sample-chapter-redacted ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
-epub-problem sample-chapter-redacted da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
-epub-problem sample-chapter-redacted e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
+epub-problem problem-chapter-a ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
+epub-problem problem-chapter-b da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
+epub-problem problem-chapter-c e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
 epub-sample-a 01 a498bd2e231dbd4307cd5a248f411ec949202d9796659c6523986194de34fb4e
 epub-sample-a 02 75dd57eef22cbb186bd4080400ba0fbf3e7c2cac1459e1054113c787a245bd9f
 epub-sample-a 03 119e17f803886334cf3b1ce5608541c3a11720fd4bab8bd800588a31b305e5b1
@@ -423,9 +394,9 @@ zip-sample-a 02 6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
 `LOCAL-FIXTURES` 대상으로 force scan과 핵심 reader/cover checks를 3회 반복했다.
 
 ```text
-pass 1: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page sample-chapter-redacted page 48 HTTP 200
-pass 2: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page sample-chapter-redacted page 48 HTTP 200
-pass 3: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page sample-chapter-redacted page 48 HTTP 200
+pass 1: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page problem-chapter-b page 48 HTTP 200
+pass 2: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page problem-chapter-b page 48 HTTP 200
+pass 3: 61 files / 20 series, EPUB pages 34/49/42, sample cover hashes distinct=5, book-page problem-chapter-b page 48 HTTP 200
 ```
 
 Scan durations:
@@ -488,9 +459,9 @@ pass=3 total=117 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0
 Problem EPUB next/previous chapter API:
 
 ```text
-chapter=sample-chapter-redacted next=sample-chapter-redacted prev=sample-chapter-redacted
-chapter=sample-chapter-redacted next=sample-chapter-redacted prev=-1
-chapter=sample-chapter-redacted next=-1 prev=sample-chapter-redacted
+chapter=problem-chapter-a next=problem-chapter-c prev=problem-chapter-b
+chapter=problem-chapter-b next=problem-chapter-a prev=-1
+chapter=problem-chapter-c next=-1 prev=problem-chapter-a
 ```
 
 사용자가 보고한 "열리지만 1/1로 보이고 다음/이전 이동이 안 됨" 증상은 `Pages=1` scan shortcut이 local fixture EPUB에도 적용된 것이 원인이었다. 최종 빌드에서는 problem EPUB page count가 `34/49/42`로 유지되고, next/previous chapter API도 edge를 제외하고 유효한 chapter id를 반환한다.
@@ -515,11 +486,11 @@ External/rclone final check:
 
 ## 2026-06-01 06:20 KST 삭제/재추가 재스캔 검증
 
-- `<redacted-fixture-path> 02권 (완결) (예스)#146.zip`을 library root 밖 `/tmp/kavita-fixture-removed`로 이동.
-- scan 후 `LOCAL-FIXTURES`: `60 files`, `20 series`; `zip-sample-a` DB 파일 수 `1`.
+- ZIP fixture sample volume 2를 library root 밖 `/tmp/kavita-fixture-removed`로 이동.
+- scan 후 `LOCAL-FIXTURES`: `60 files`, `20 series`; 해당 sample DB 파일 수 `1`.
 - 같은 파일을 원래 위치로 복구.
-- scan 후 `LOCAL-FIXTURES`: `61 files`, `20 series`; `zip-sample-a` DB 파일 수 `2`.
-- 재추가된 2권은 새 cover filename `<redacted-cover-file>`로 생성됨.
+- scan 후 `LOCAL-FIXTURES`: `61 files`, `20 series`; 해당 sample DB 파일 수 `2`.
+- 재추가된 2권은 새 cover filename으로 생성됨.
 - 1권/2권 hash:
 
 ```text
@@ -645,22 +616,22 @@ internal root: HTTP 200, 30467 bytes
 internal main-MWPUWZBY.js: HTTP 200, 108811 bytes
 external kavita.suikano.net via NPM: HTTP 200, 30467 bytes
 
-sample-chapter-redacted reported page-count EPUB sample 1권 book-info: HTTP 200, pages=15
-sample-chapter-redacted reported page-count EPUB sample 2권 book-info: HTTP 200, pages=12
-sample-chapter-redacted reported duplicate-manifest EPUB sample 1권 book-info: HTTP 200, pages=13
-sample-chapter-redacted reported duplicate-manifest EPUB sample 2권 book-info: HTTP 200, pages=12
+sample-chapter-a reported page-count EPUB sample 1권 book-info: HTTP 200, pages=15
+sample-chapter-b reported page-count EPUB sample 2권 book-info: HTTP 200, pages=12
+sample-chapter-c reported duplicate-manifest EPUB sample 1권 book-info: HTTP 200, pages=13
+sample-chapter-d reported duplicate-manifest EPUB sample 2권 book-info: HTTP 200, pages=12
 
-sample-chapter-redacted book-page page=2: HTTP 200, 1393 bytes
-sample-chapter-redacted book-page page=2: HTTP 200, 3739 bytes
-sample-chapter-redacted book-page page=2: HTTP 200, 44497 bytes
-sample-chapter-redacted chapters: HTTP 200, 1017 bytes
-sample-chapter-redacted chapters: HTTP 200, 977 bytes
+sample-chapter-a book-page page=2: HTTP 200, 1393 bytes
+sample-chapter-c book-page page=2: HTTP 200, 3739 bytes
+sample-chapter-d book-page page=2: HTTP 200, 44497 bytes
+sample-chapter-c chapters: HTTP 200, 1017 bytes
+sample-chapter-d chapters: HTTP 200, 977 bytes
 
 DB after on-read repair:
-sample-chapter-redacted Chapter.Pages=15 MangaFile.Pages=15
-sample-chapter-redacted Chapter.Pages=12 MangaFile.Pages=12
-sample-chapter-redacted Chapter.Pages=13 MangaFile.Pages=13
-sample-chapter-redacted Chapter.Pages=12 MangaFile.Pages=12
+sample-chapter-a Chapter.Pages=15 MangaFile.Pages=15
+sample-chapter-b Chapter.Pages=12 MangaFile.Pages=12
+sample-chapter-c Chapter.Pages=13 MangaFile.Pages=13
+sample-chapter-d Chapter.Pages=12 MangaFile.Pages=12
 ```
 
 rclone RC after verification:
@@ -719,7 +690,7 @@ EPUB parsing error: NAV item not found in EPUB manifest.
 - EPUB open fallback 범위를 `EpubPackageException`에서 `EpubReaderException`으로 넓혀 missing NAV 예외도 동일한 임시 repair path를 탄다.
 - 적용 경로: `BookService`, `BookController`, `WordCountAnalyzerService`.
 - 사용자 제보 파일을 fixture에 추가했다.
-  - source: `<redacted-media-path> reported cover-only EPUB sample/001-440 完[txt].epub`
+  - source: `<redacted-media-path>`
   - fixture: `<redacted-fixture-path>`
 
 테스트 이미지:
@@ -743,9 +714,9 @@ test original GDS chapter <redacted> book-info HTTP 200
 test original GDS chapter <redacted> book-page?page=0 HTTP 200
 test original GDS chapter <redacted> chapters HTTP 200
 
-test fixture chapter sample-chapter-redacted book-info HTTP 200
-test fixture chapter sample-chapter-redacted book-page?page=0 HTTP 200
-test fixture chapter sample-chapter-redacted chapters HTTP 200
+test fixture chapter sample-chapter-cover-only book-info HTTP 200
+test fixture chapter sample-chapter-cover-only book-page?page=0 HTTP 200
+test fixture chapter sample-chapter-cover-only chapters HTTP 200
 ```
 
 운영 반영:
@@ -1152,7 +1123,7 @@ fixture root size=882M
 추가 source directory:
 
 ```text
-CBZ <redacted-media-path> OR W [creator-redacted]
+CBZ <redacted-media-path>
 CBZ <redacted-media-path>
 CBZ <redacted-media-path>
 CBZ <redacted-media-path>
@@ -1163,15 +1134,15 @@ ZIP <redacted-media-path>
 EPUB <redacted-media-path>
 EPUB <redacted-media-path>
 EPUB <redacted-media-path>
-EPUB <redacted-media-path> epub-sample-redacted
+EPUB <redacted-media-path>
 TXT <redacted-media-path>
 TXT <redacted-media-path>
 TXT <redacted-media-path>
-REPORTED <redacted-media-path> reported cover-only EPUB sample
-REPORTED <redacted-media-path> page-count EPUB sample
-REPORTED <redacted-media-path> reported page-count EPUB sample
-REPORTED <redacted-media-path> duplicate-manifest EPUB sample
-REPORTED <redacted-media-path> reported duplicate-manifest EPUB sample
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
+REPORTED <redacted-media-path>
 ```
 
 `kavita-test` 상태:

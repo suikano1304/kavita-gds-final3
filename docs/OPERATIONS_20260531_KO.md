@@ -58,7 +58,7 @@ Kavita.Services/Reading/ReadingItemService.cs
 검증한 대표 케이스:
 
 ```text
-<redacted-media-path> 포함 시리즈>/<시리즈명> Vol. 1 - <부제> (완결) [1440px] [직스샷] (리디)#138.zip
+<redacted-media-path>
 ```
 
 확인 내용:
@@ -385,7 +385,7 @@ Kavita를 거치지 않고 PVE host의 rclone mount에서 텍스트 라이브러
 명령:
 
 ```bash
-scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path> \
+scripts/profile_gds_tree.py /mnt/data/rclone/gds/<redacted-media-path>
   --time-limit 120
 ```
 

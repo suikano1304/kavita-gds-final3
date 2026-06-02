@@ -46,7 +46,7 @@ services:
           propagation: rslave
     environment:
       TZ: Asia/Seoul
-      WAIT_ANCHOR_DIRS: <redacted-media-path>
+      WAIT_ANCHOR_DIRS: /mnt/gds/READING_ROOT
 ```
 
 바꿔야 하는 값:

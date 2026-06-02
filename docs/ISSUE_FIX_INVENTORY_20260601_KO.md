@@ -113,9 +113,9 @@
 - word count populated:
 
 ```text
-sample-chapter-redacted 180283
-sample-chapter-redacted 207839
-sample-chapter-redacted 201713
+problem-chapter-a 180283
+problem-chapter-b 207839
+problem-chapter-c 201713
 ```
 
 ### 4. EPUB reader resource path
@@ -155,9 +155,9 @@ sample-chapter-redacted 201713
 검증:
 
 ```text
-sample-chapter-redacted Pages 34
-sample-chapter-redacted Pages 49
-sample-chapter-redacted Pages 42
+problem-chapter-a Pages 34
+problem-chapter-b Pages 49
+problem-chapter-c Pages 42
 seriesTotalPages 125
 book-page middle/last pages HTTP 200
 ```
@@ -229,9 +229,9 @@ recent error/exception logs: none
 Problem EPUB navigation:
 
 ```text
-sample-chapter-redacted next=sample-chapter-redacted prev=-1
-sample-chapter-redacted next=sample-chapter-redacted prev=sample-chapter-redacted
-sample-chapter-redacted next=-1 prev=sample-chapter-redacted
+problem-chapter-b next=problem-chapter-a prev=-1
+problem-chapter-a next=problem-chapter-c prev=problem-chapter-b
+problem-chapter-c next=-1 prev=problem-chapter-a
 ```
 
 NPM and rclone:
@@ -243,7 +243,7 @@ NPM and rclone:
 
 ## 남은 gate
 
-- 운영 Web UI에서 사용자가 `reported page-count EPUB sample`, `reported duplicate-manifest EPUB sample`, 다른 EPUB 대표 샘플을 직접 재확인.
+- 운영 Web UI에서 사용자가 redacted page-count and duplicate-manifest EPUB samples, 다른 EPUB 대표 샘플을 직접 재확인.
 - 운영 안정성 확인 후 GitHub commit/push/release를 별도 단계로 수행.
 
 ## 운영 반영 후 추가 이슈: GDS EPUB page count와 duplicate href
@@ -270,9 +270,9 @@ NPM and rclone:
 검증:
 
 ```text
-sample-chapter-redacted reported page-count EPUB sample 1권: book-info HTTP 200, pages=15, DB Chapter/MangaFile pages=15
-sample-chapter-redacted reported page-count EPUB sample 2권: book-info HTTP 200, pages=12, DB Chapter/MangaFile pages=12
-sample-chapter-redacted book-page page=2 HTTP 200
+sample-chapter-a reported page-count EPUB sample 1권: book-info HTTP 200, pages=15, DB Chapter/MangaFile pages=15
+sample-chapter-b reported page-count EPUB sample 2권: book-info HTTP 200, pages=12, DB Chapter/MangaFile pages=12
+sample-chapter-a book-page page=2 HTTP 200
 ```
 
 ### 9. `reported duplicate-manifest EPUB sample` duplicate EPUB manifest href
@@ -290,12 +290,12 @@ sample-chapter-redacted book-page page=2 HTTP 200
 검증:
 
 ```text
-sample-chapter-redacted reported duplicate-manifest EPUB sample 1권: book-info HTTP 200, pages=13
-sample-chapter-redacted book-page page=2 HTTP 200, 3739 bytes
-sample-chapter-redacted chapters HTTP 200, 1017 bytes
-sample-chapter-redacted reported duplicate-manifest EPUB sample 2권: book-info HTTP 200, pages=12
-sample-chapter-redacted book-page page=2 HTTP 200, 44497 bytes
-sample-chapter-redacted chapters HTTP 200, 977 bytes
+sample-chapter-c reported duplicate-manifest EPUB sample 1권: book-info HTTP 200, pages=13
+sample-chapter-c book-page page=2 HTTP 200, 3739 bytes
+sample-chapter-c chapters HTTP 200, 1017 bytes
+sample-chapter-d reported duplicate-manifest EPUB sample 2권: book-info HTTP 200, pages=12
+sample-chapter-d book-page page=2 HTTP 200, 44497 bytes
+sample-chapter-d chapters HTTP 200, 977 bytes
 ```
 
 운영 image:
@@ -337,9 +337,9 @@ errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
 검증:
 
 ```text
-test fixture chapter sample-chapter-redacted book-info HTTP 200
-test fixture chapter sample-chapter-redacted book-page?page=0 HTTP 200
-test fixture chapter sample-chapter-redacted chapters HTTP 200
+test fixture chapter sample-chapter-cover-only book-info HTTP 200
+test fixture chapter sample-chapter-cover-only book-page?page=0 HTTP 200
+test fixture chapter sample-chapter-cover-only chapters HTTP 200
 production chapter <redacted> book-info HTTP 200
 production chapter <redacted> book-page?page=0 HTTP 200
 production chapter <redacted> chapters HTTP 200
