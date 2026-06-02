@@ -21,7 +21,7 @@
 - 대형 GDS 강제 스캔에서 DB 갱신, 커버 생성, word-count 분석이 동시에 많이 쌓여 OOM으로 이어질 수 있어, GDS 라이브러리만 시리즈 단위 저메모리 직렬 처리 경로를 사용하도록 보강했습니다.
 - 운영 DB/API 확인을 컨테이너 안에서 바로 수행할 수 있도록 runtime image에 `sqlite3`를 포함했습니다.
 - cache cleanup과 reader/cache 작업 경합에서 이미 삭제된 directory를 조용히 무시하도록 보강했습니다.
-- `kavita-test` fixture 117개 항목에 대해 reader/API 3회 반복 검증을 통과했습니다.
+- `kavita-test` fixture를 CBZ/ZIP/EPUB/TXT 각 10 series로 확장하고, 134개 media 항목에 대해 reader/API 3회 반복 검증을 통과했습니다.
 - 운영 `kavita`에 적용 후 `reported page-count EPUB sample`, `reported duplicate-manifest EPUB sample` EPUB page count, page render, TOC API, NPM 접근, rclone read-only 상태를 확인했습니다.
 
 ## 2026-05-31: `0.9.0.2-8` 기본 시리즈 정렬 hotfix

@@ -1034,7 +1034,7 @@ Production rollout status:
 - production `성인 만화` (`LibraryId=3`) forced scan was started through the API at `2026-06-02 08:45:08 KST`.
 - At `2026-06-02 08:51 KST`, the scan was still in file discovery before `Found N Series`; production `kavita` remained `healthy`, restart count was `0`, and memory was below `1GiB / 16GiB`.
 
-Note: The current fixture corpus has strong per-file coverage but does not yet prove the literal "10 series per format folder" target. Current series counts by folder are CBZ `6`, ZIP `6`, EPUB `6` plus EPUB problem samples, and TXT `7`. The production GDS scan has now finished; further fixture expansion can be handled as a separate follow-up if the literal 10-series-per-format target is still required.
+Note: This earlier fixture corpus had strong per-file coverage but did not yet prove the literal "10 series per format folder" target. That target was completed later in the `2026-06-02 Local Fixture 10-Series Expansion` section.
 
 ## 2026-06-02 Skip-Word Final Build / Production Scan / ARM64 Publish
 
@@ -1126,4 +1126,90 @@ Final release assets:
 ```text
 kavita-gds.tar.gz sha256=ba9e57f61c8dfbb85be47359ded39ba18a3cd014a1da9a96e66947a35a6e3f7a
 docker-image/kavita-gds.docker.tar sha256=24d4d4438e20c75f6303052cc7115e8baf5b075ad3fbfb3250ea236ec1fcda3b
+```
+
+## 2026-06-02 Local Fixture 10-Series Expansion
+
+운영 스캔과 public image/GHCR 등록 완료 후, goal의 literal 요구였던 포맷별 10 series fixture를 맞추기 위해 `LOCAL-FIXTURES`를 추가 확장했다. 모든 추가 파일은 GDS read-only 원본에서 읽어 local fixture root에만 복사했다.
+
+확장 후 filesystem 요약:
+
+```text
+cbz series=<redacted>
+zip series=<redacted>
+epub series=<redacted>
+txt series=<redacted>
+epub-problem groups=1
+
+cbz media files=44
+zip media files=30
+epub media files=35
+txt media files=25
+total validated media files=134
+fixture root size=864M
+```
+
+추가 source directory:
+
+```text
+CBZ <redacted-media-path> OR W [creator-redacted]
+CBZ <redacted-media-path>
+CBZ <redacted-media-path>
+CBZ <redacted-media-path>
+ZIP <redacted-media-path>
+ZIP <redacted-media-path>
+ZIP <redacted-media-path>
+ZIP <redacted-media-path>
+EPUB <redacted-media-path>
+EPUB <redacted-media-path>
+EPUB <redacted-media-path>
+EPUB <redacted-media-path> epub-sample-redacted
+TXT <redacted-media-path>
+TXT <redacted-media-path>
+TXT <redacted-media-path>
+```
+
+`kavita-test` 상태:
+
+```text
+image=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+status=running
+health=healthy
+restart count=0
+```
+
+3회 강제 scan / reader 검증:
+
+```text
+Finished library scan of 134 files and 42 series in 10437 milliseconds for LOCAL-FIXTURES
+Finished library scan of 134 files and 42 series in 10547 milliseconds for LOCAL-FIXTURES
+Finished library scan of 134 files and 42 series in 11401 milliseconds for LOCAL-FIXTURES
+
+pass=1 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=1 last_scanned=2026-06-02 20:16:13.5352036
+pass=2 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 last_scanned=2026-06-02 20:16:37.8710767
+pass=3 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 last_scanned=2026-06-02 20:17:02.4564576
+```
+
+DB 요약:
+
+```text
+Series=42
+MangaFile=134
+zero_pages=0
+missing_covers=0
+Archive rows=74
+EPUB rows=35
+TXT rows=25
+```
+
+rclone read-only 확인:
+
+```text
+rclone-gds.service=active/running
+ExecStart includes --read-only
+NRestarts=0
+recent /var/log/rclone.gds.log: to upload 0, uploading 0
 ```

@@ -803,3 +803,68 @@ Final release archive checksums:
 kavita-gds.tar.gz sha256=ba9e57f61c8dfbb85be47359ded39ba18a3cd014a1da9a96e66947a35a6e3f7a
 docker-image/kavita-gds.docker.tar sha256=24d4d4438e20c75f6303052cc7115e8baf5b075ad3fbfb3250ea236ec1fcda3b
 ```
+
+## 2026-06-02 Final Fixture Expansion to 10 Series per Format
+
+After the production scan and public image publication were complete, `LOCAL-FIXTURES` was expanded to meet the literal 10-series-per-format validation target.
+
+Fixture filesystem summary:
+
+```text
+cbz series=<redacted>
+zip series=<redacted>
+epub series=<redacted>
+txt series=<redacted>
+epub-problem groups=1
+
+cbz media files=44
+zip media files=30
+epub media files=35
+txt media files=25
+total validated media files=134
+fixture root size=864M
+```
+
+Added source directories:
+
+```text
+CBZ <redacted-media-path> OR W [creator-redacted]
+CBZ <redacted-media-path>
+CBZ <redacted-media-path>
+CBZ <redacted-media-path>
+ZIP <redacted-media-path>
+ZIP <redacted-media-path>
+ZIP <redacted-media-path>
+ZIP <redacted-media-path>
+EPUB <redacted-media-path>
+EPUB <redacted-media-path>
+EPUB <redacted-media-path>
+EPUB <redacted-media-path> epub-sample-redacted
+TXT <redacted-media-path>
+TXT <redacted-media-path>
+TXT <redacted-media-path>
+```
+
+Validation on final image `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`:
+
+```text
+Finished library scan of 134 files and 42 series in 10437 milliseconds for LOCAL-FIXTURES
+Finished library scan of 134 files and 42 series in 10547 milliseconds for LOCAL-FIXTURES
+Finished library scan of 134 files and 42 series in 11401 milliseconds for LOCAL-FIXTURES
+
+pass=1 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 total=134 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+
+DB summary: series=<redacted> media=134 zero_pages=0 missing_covers=0
+DB format rows: Archive=74 EPUB=35 TXT=25
+```
+
+rclone remained read-only during fixture expansion:
+
+```text
+rclone-gds.service=active/running
+service ExecStart includes --read-only
+NRestarts=0
+recent log: to upload 0, uploading 0
+```
