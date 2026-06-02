@@ -4,7 +4,7 @@ Kavita official `0.9.0.6` 기반 비공식 GDS 빌드입니다.
 
 `0.9.0.2-8`까지의 GDS/rclone scanfix와 이후 운영에서 확인한 EPUB/TXT/커버 수정사항을 `0.9.0.6` 코드베이스에 포팅했습니다.
 
-현재 배포 기준은 `9.0.6-1`입니다. GHCR 이미지는 `linux/amd64`와 `linux/arm64`를 포함하는 multi-arch manifest이며, GDS/rclone 원본 마운트는 읽기 전용으로 유지하는 구성을 전제로 합니다.
+현재 배포 기준은 `9.0.6-2`입니다. GHCR 이미지는 `linux/amd64`와 `linux/arm64`를 포함하는 multi-arch manifest이며, GDS/rclone 원본 마운트는 읽기 전용으로 유지하는 구성을 전제로 합니다.
 
 `0.9.0.2-4` 배포 이미지에서 Web UI가 개발 빌드로 포함되어 `localhost:5000/api`를 호출하던 문제는 `0.9.0.2-5`에서 production UI 번들로 교체해 수정했습니다.
 
@@ -15,7 +15,7 @@ Kavita official `0.9.0.6` 기반 비공식 GDS 빌드입니다.
 ## Docker Pull
 
 ```bash
-docker pull ghcr.io/suikano1304/kavita-gds:9.0.6-1
+docker pull ghcr.io/suikano1304/kavita-gds:9.0.6-2
 ```
 
 최신 태그도 제공합니다.
@@ -24,14 +24,14 @@ docker pull ghcr.io/suikano1304/kavita-gds:9.0.6-1
 docker pull ghcr.io/suikano1304/kavita-gds:latest
 ```
 
-운영에는 `latest`보다 고정 버전 태그 `9.0.6-1` 사용을 권장합니다.
+운영에는 `latest`보다 고정 버전 태그 `9.0.6-2` 사용을 권장합니다.
 
 ## Compose 예시
 
 ```yaml
 services:
   kavita:
-    image: ghcr.io/suikano1304/kavita-gds:9.0.6-1
+    image: ghcr.io/suikano1304/kavita-gds:9.0.6-2
     container_name: kavita
     restart: always
     ports:
@@ -54,7 +54,7 @@ services:
 
 Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
-- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1>
+- Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-2>
 - File: `kavita-gds.tar.gz`
 - SHA256: GitHub Release의 `SHA256SUMS` 또는 저장소 루트 [SHA256SUMS](SHA256SUMS)를 확인하세요.
 
@@ -65,6 +65,11 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 - EPUB manifest 중복 ID 자동 복구
 - EPUB manifest duplicate `href` 자동 복구
 - GDS EPUB reader `1/1` 표시 문제를 열람 시점 page-count 보정으로 완화
+- GDS EPUB/PDF/TXT 신규/재빌드 스캔에서 `Pages=1`로 고정되는 shortcut 제거
+- 단일 XHTML 안에 여러 TOC 앵커가 있는 EPUB를 backend 가상 페이지로 분리
+- malformed `kavita.yaml`이 전체 미디어 파일 import를 막지 않도록 fallback metadata 적용
+- folder cover가 이후 series cover 재선정에 즉시 덮어써지지 않도록 보정
+- scanner post-cleanup 완료 이후 최종 scan-job completion log 추가
 - EPUB 내부 resource 경로의 `../`/상대경로 보정
 - 손상 PDF의 XRef 무한 재귀 방지
 - rclone/FUSE 대형 라이브러리 디렉터리 스캔 hang 완화
@@ -117,4 +122,4 @@ Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
 
 이 이미지는 공식 Kavita 이미지가 아닙니다. 개인 GDS/rclone 읽기 전용 마운트 환경에서 스캔 안정성을 확인하기 위해 만든 비공식 빌드입니다.
 
-`9.0.6-1` 공개 Docker tag는 `linux/amd64`와 `linux/arm64`를 포함합니다. 운영 실서비스 검증은 `linux/amd64`에서 수행했고, `linux/arm64`는 동일 소스와 prebuilt production UI 번들로 빌드해 GHCR manifest에 추가했습니다. startup SQLite FK 제보가 특정 서버에서만 발생한다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.
+`9.0.6-2` 공개 Docker tag는 `linux/amd64`와 `linux/arm64`를 포함합니다. 운영 실서비스 검증은 `linux/amd64`에서 수행했고, `linux/arm64`는 동일 소스와 prebuilt production UI 번들로 빌드한 뒤 qemu smoke test에서 `/api/health` 200을 확인했습니다. startup SQLite FK 제보가 특정 서버에서만 발생한다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.

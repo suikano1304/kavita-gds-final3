@@ -3,7 +3,7 @@ set -euo pipefail
 
 REPO_NAME="${REPO_NAME:-Kavita-GDS}"
 VISIBILITY="${VISIBILITY:-public}"
-TAG="${TAG:-v9.0.6-1}"
+TAG="${TAG:-v9.0.6-2}"
 TITLE="${TITLE:-Kavita GDS}"
 ASSET="${ASSET:-/root/Kavita-GDS/kavita-gds.tar.gz}"
 NOTES_FILE="${NOTES_FILE:-RELEASE_NOTES.md}"

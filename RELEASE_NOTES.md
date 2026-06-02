@@ -2,7 +2,7 @@
 
 This release provides the Kavita official `0.9.0.6` based GDS build as a Docker image archive and GHCR Docker image.
 
-Version: `9.0.6-1`
+Version: `9.0.6-2`
 
 ## Included Platforms
 
@@ -19,7 +19,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 
 - Built from the official Kavita `0.9.0.6` source with the GDS patch set ported forward.
 - `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
-- `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-1` and `latest` multi-arch manifests.
+- `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-2` and `latest` multi-arch manifests.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
@@ -29,6 +29,19 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - The package does not include intermediate test images.
 
 ## Changes Since `0.9.0.2-8`
+
+### 2026-06-02 `9.0.6-2` scan/page-count stabilization
+
+- Removed the GDS EPUB/PDF/TXT scanner shortcut that could persist new or rebuilt remote book files as `Pages = 1`.
+- Added malformed `kavita.yaml` fallback handling so bad sidecar YAML no longer drops the entire media file from the scan.
+- Added an explicit final scan-job completion log after post-scan cleanup and abandoned metadata cleanup.
+- Preserved folder-level GDS series covers when later volume/chapter cover generation runs.
+- Added backend virtual pages for EPUBs that have one XHTML spine item but multiple internal TOC anchors.
+- Verified `kavita-test` on `linux/amd64` with 3 LOCAL-FIXTURES passes: `155` media items, all API/page/nav/cover checks passed.
+- Verified a synthetic single-spine EPUB regression fixture: DB pages `3/3`, `book-info` pages `3`, TOC `3`, `book-page` 0/1/2 all returned distinct content.
+- Verified production `local/kavita-gds:9.0.6-2` health and corrected `reported duplicate-manifest EPUB sample` EPUB chapters `sample-chapter-redacted-sample-chapter-redacted` from `1/1` to `12/12`, `12/12`, `12/12`, and `13/13`.
+- Confirmed the reported `reported cover-only EPUB sample` fixture EPUB contains only `cover.xhtml`, `cover.jpg`, `toc.ncx`, and no body content XHTML, so its `1/1` state is source-file corruption rather than a recoverable Kavita page-count issue.
+- Built and pushed GHCR `linux/amd64` and `linux/arm64` images. The arm64 image was started under qemu and returned `/api/health` 200.
 
 ### 2026-06-01 `9.0.6-1` official `0.9.0.6` port
 
@@ -51,12 +64,12 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 ## GHCR
 
 ```text
-ghcr.io/suikano1304/kavita-gds:9.0.6-1
+ghcr.io/suikano1304/kavita-gds:9.0.6-2
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:aa0a9e6c2991fc3e85d097477245762e1068f4971db6bdd7a03d2d5e0dafc4d4
+multiarch digest=sha256:980226a70418c5d20f70fc853e154d242a4eb15909c75df8b3a61386b937b386
 
-linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
-linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+linux/amd64=sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97
+linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3
 ```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`

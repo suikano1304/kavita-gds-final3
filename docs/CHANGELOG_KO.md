@@ -2,9 +2,24 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-9.0.6-1`
+현재 공개 릴리즈: `kavita-gds-9.0.6-2`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-06-02: `9.0.6-2` 스캔/page-count 안정화
+
+아래 변경은 `9.0.6-2` 배포 후보에 포함했습니다.
+
+- GDS EPUB/PDF/TXT 신규 또는 재빌드 파일이 scanner shortcut 때문에 `Pages=1`로 저장되는 문제를 수정했습니다.
+- 잘못된 `kavita.yaml`이 있더라도 미디어 파일 전체를 scan에서 제외하지 않고 파일명 기반 fallback metadata로 계속 import되도록 했습니다.
+- `Finished library scan` 이후 post-scan cleanup이 남아 있어 수동 스캔이 지연되어 보이는 혼선을 줄이기 위해 최종 scan-job completion log를 추가했습니다.
+- GDS folder cover가 적용된 직후 volume/chapter cover 생성 흐름에서 series cover가 다시 덮어써지는 문제를 보정했습니다.
+- 하나의 XHTML spine 안에 여러 TOC anchor가 있는 EPUB은 backend 가상 페이지로 나눠 `book-info`, TOC, `book-page`가 여러 페이지를 반환하도록 했습니다.
+- `kavita-test`에서 LOCAL-FIXTURES 155개 항목을 3회 반복 검증했고, reader info/nav/page/cover 실패가 0건임을 확인했습니다.
+- 합성 single-spine EPUB fixture에서 DB pages `3/3`, `book-info=3`, TOC `3`, `book-page` 0/1/2 distinct content를 확인했습니다.
+- 운영 `reported duplicate-manifest EPUB sample` 03-06권 duplicate manifest EPUB은 `book-info` 호출 후 `12/12`, `12/12`, `12/12`, `13/13` 페이지로 DB가 보정되고 마지막 page API가 200을 반환했습니다.
+- `reported cover-only EPUB sample` 문제 fixture는 EPUB ZIP 내부에 `cover.xhtml`, `cover.jpg`, `toc.ncx`만 있고 본문 XHTML이 없어, 해당 파일의 `1/1`은 Kavita page-count 복구 대상이 아니라 원본 EPUB 구조 문제로 기록했습니다.
+- GHCR `9.0.6-2` multi-arch manifest를 push했습니다. `linux/amd64`는 운영 반영 검증, `linux/arm64`는 qemu smoke test에서 `/api/health` 200을 확인했습니다.
 
 ## 2026-06-01: `9.0.6-1` official `0.9.0.6` 포팅
 
