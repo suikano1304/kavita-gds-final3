@@ -32,6 +32,7 @@
 
 - source commit: `17253b3 fix: skip GDS word count during library scans`
 - package patch: `patches/9.0.6-1/0002-fix-skip-GDS-word-count-during-library-scans.patch`
+- test/production image ID after rebuild: `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`
 
 의도:
 
@@ -39,6 +40,17 @@
 - GDS library scan 중 강제 word-count는 건너뛴다.
 - 별도 analyze/word-count 기능은 유지한다.
 - 사용자가 요청한 커버 중심 강제 스캔 시간을 현실적인 범위로 줄인다.
+
+`LOCAL-FIXTURES` 재검증:
+
+```text
+Finished library scan of 118 files and 27 series in 12013 milliseconds for LOCAL-FIXTURES
+pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+```
+
+동일 로그 범위에서 `WordCountAnalyzerService` 로그는 발생하지 않았다.
 
 ## 테스트 이미지
 
