@@ -55,7 +55,7 @@ ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
 multiarch digest=pending final arm64 rebuild
 
-linux/amd64=sha256:e68d3280cc9eeea20f3807922d7070eee7a53c6a6113dca48e0a10850530499c
+linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
 linux/arm64=pending final rebuild
 ```
 

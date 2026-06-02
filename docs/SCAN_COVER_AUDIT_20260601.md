@@ -295,11 +295,11 @@ Behavior after the patch:
 - Word-count remains available through explicit analyze/word-count actions.
 - Non-GDS scan behavior is unchanged.
 
-The latest amd64 image with the previous stream-discovery fix was pushed before this new word-count split:
+The latest amd64 image with the GDS word-count split was pushed:
 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
-digest sha256:e68d3280cc9eeea20f3807922d7070eee7a53c6a6113dca48e0a10850530499c
+digest sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
 ```
 
 Final arm64 and multiarch publication remain pending until the production scan path is rebuilt and revalidated.
