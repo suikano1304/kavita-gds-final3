@@ -53,10 +53,10 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=pending final arm64 rebuild
+multiarch digest=sha256:aa0a9e6c2991fc3e85d097477245762e1068f4971db6bdd7a03d2d5e0dafc4d4
 
 linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
-linux/arm64=pending final rebuild
+linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
 ```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`

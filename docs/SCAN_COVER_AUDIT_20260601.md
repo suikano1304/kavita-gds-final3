@@ -302,7 +302,7 @@ ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
 digest sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
 ```
 
-Final arm64 and multiarch publication remain pending until the production scan path is rebuilt and revalidated.
+Final arm64 and multiarch publication were completed after the production scan path was rebuilt and revalidated. Final public GHCR digest values are recorded in the `2026-06-02 Final Skip-Word Production Scan and GHCR Publish` section below.
 
 ## 2026-06-01 Production Cover Regeneration
 
@@ -731,4 +731,68 @@ multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a8321
 
 platform linux/amd64 -> sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
 platform linux/arm64 -> sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+```
+
+## 2026-06-02 Final Skip-Word Production Scan and GHCR Publish
+
+The final skip-word scan image was deployed to production:
+
+```text
+production image ID=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+container status=running
+health=healthy
+restart count=0
+OOMKilled=false
+```
+
+`production-library-c` final forced scan completed on the skip-word image:
+
+```text
+Found 13675 Series that need processing in 7519036 ms
+Using low-memory sequential GDS scan path for production-library-c. Series to process: 13675
+Finished library scan of 63039 files and 13675 series in 11536369 milliseconds for production-library-c
+scan complete time=2026-06-02 19:46:55 KST
+Finished series update count=13675
+WordCountAnalyzerService logs in scan range=0
+critical/fatal/OOM logs in scan range=0
+```
+
+Library `LastScanned` after the final scan:
+
+```text
+<redacted>|production-library-a|2026-06-02 12:34:55.5868943
+2|연재중|2026-06-02 13:25:30.6796249
+3|성인 만화|2026-06-02 09:29:16.4414823
+<redacted>|production-library-a|2026-06-02 07:03:46.5457951
+<redacted>|production-library-b|2026-06-02 06:52:21.3806613
+<redacted>|production-library-b|2026-06-02 06:55:46.6257085
+<redacted>|production-library-e|2026-06-02 06:58:07.8451872
+<redacted>|production-library-c|2026-06-02 19:46:55.4197661
+<redacted>|production-library-d|2026-06-02 07:08:53.2575256
+```
+
+rclone read-only verification:
+
+```text
+rclone-gds.service=active/running
+service ExecStart includes --read-only
+NRestarts=0
+recent log: to upload 0, uploading 0
+```
+
+The final GHCR publication was rebuilt from the same source snapshot:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
+linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+
+ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
+arm64 index digest=sha256:645b23adfb7c1269420444d5bc797d506109cb3f2f2c91824ce2bacf6c74b181
+linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+
+ghcr.io/suikano1304/kavita-gds:9.0.6-1
+ghcr.io/suikano1304/kavita-gds:latest
+multiarch digest=sha256:aa0a9e6c2991fc3e85d097477245762e1068f4971db6bdd7a03d2d5e0dafc4d4
+platform linux/amd64 -> sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+platform linux/arm64 -> sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
 ```

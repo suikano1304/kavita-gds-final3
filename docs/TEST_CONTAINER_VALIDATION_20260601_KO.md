@@ -1034,4 +1034,89 @@ Production rollout status:
 - production `성인 만화` (`LibraryId=3`) forced scan was started through the API at `2026-06-02 08:45:08 KST`.
 - At `2026-06-02 08:51 KST`, the scan was still in file discovery before `Found N Series`; production `kavita` remained `healthy`, restart count was `0`, and memory was below `1GiB / 16GiB`.
 
-Note: The current fixture corpus has strong per-file coverage but does not yet prove the literal "10 series per format folder" target. Current series counts by folder are CBZ `6`, ZIP `6`, EPUB `6` plus EPUB problem samples, and TXT `7`. Additional fixture expansion should wait until the production GDS scan finishes or rclone quota pressure drops, to avoid adding read load while production scan is enumerating GDS.
+Note: The current fixture corpus has strong per-file coverage but does not yet prove the literal "10 series per format folder" target. Current series counts by folder are CBZ `6`, ZIP `6`, EPUB `6` plus EPUB problem samples, and TXT `7`. The production GDS scan has now finished; further fixture expansion can be handled as a separate follow-up if the literal 10-series-per-format target is still required.
+
+## 2026-06-02 Skip-Word Final Build / Production Scan / ARM64 Publish
+
+대형 `production-library-c` 운영 스캔에서 per-series 단계가 EPUB word-count 재분석 때문에 과도하게 느려지는 것을 확인했다. 사용자가 요청한 강제 스캔 목적은 커버 재생성과 누락 커버 회복이므로, GDS 라이브러리 scan path에서는 `WordCountAnalyzerService.ScanSeries(...)`를 호출하지 않도록 분리했다.
+
+Source / package:
+
+- source commit: `17253b3 fix: skip GDS word count during library scans`
+- package commit: `5b02950 fix: skip GDS word count in library scans`
+- docs commits: `a20e6fd`, `e1e8ada`
+- source checksum parity between host repo and lxc1 build source was verified for `ScannerService.cs` and `ProcessSeries.cs`.
+
+Fixture validation on final image:
+
+```text
+image=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+LOCAL-FIXTURES forced scan: Finished library scan of 118 files and 27 series in 12013 ms
+pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
+WordCountAnalyzerService logs in fixture scan range=0
+```
+
+Production rollout:
+
+```text
+production image ID=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+container status=running
+health=healthy
+restart count=0
+OOMKilled=false
+observed memory after final scan=about 702MiB / 16GiB
+```
+
+Final `production-library-c` forced scan:
+
+```text
+2026-06-02 16:34:39 KST Beginning file scan on production-library-c
+2026-06-02 18:39:58 KST Found 13675 Series that need processing in 7519036 ms
+2026-06-02 18:39:58 KST Using low-memory sequential GDS scan path for production-library-c. Series to process: 13675
+2026-06-02 19:46:55 KST Finished library scan of 63039 files and 13675 series in 11536369 ms
+Finished series update count=13675
+WordCountAnalyzerService logs in final scan range=0
+critical/fatal/OOM logs in final scan range=0
+```
+
+Library `LastScanned` after final scan:
+
+```text
+<redacted>|production-library-a|2026-06-02 12:34:55.5868943
+2|연재중|2026-06-02 13:25:30.6796249
+3|성인 만화|2026-06-02 09:29:16.4414823
+<redacted>|production-library-a|2026-06-02 07:03:46.5457951
+<redacted>|production-library-b|2026-06-02 06:52:21.3806613
+<redacted>|production-library-b|2026-06-02 06:55:46.6257085
+<redacted>|production-library-e|2026-06-02 06:58:07.8451872
+<redacted>|production-library-c|2026-06-02 19:46:55.4197661
+<redacted>|production-library-d|2026-06-02 07:08:53.2575256
+```
+
+rclone read-only:
+
+```text
+rclone-gds.service=active/running
+ExecStart includes --read-only
+NRestarts=0
+recent /var/log/rclone.gds.log: to upload 0, uploading 0
+```
+
+Final GHCR publish:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
+linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+
+ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
+arm64 index digest=sha256:645b23adfb7c1269420444d5bc797d506109cb3f2f2c91824ce2bacf6c74b181
+linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+
+ghcr.io/suikano1304/kavita-gds:9.0.6-1
+ghcr.io/suikano1304/kavita-gds:latest
+multiarch digest=sha256:aa0a9e6c2991fc3e85d097477245762e1068f4971db6bdd7a03d2d5e0dafc4d4
+linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+```
