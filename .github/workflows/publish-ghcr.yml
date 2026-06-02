@@ -1,4 +1,4 @@
-name: Publish GHCR image
+name: Publish GHCR amd64 archive image
 
 on:
   workflow_dispatch:
@@ -9,9 +9,9 @@ permissions:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/kavita-gds
-  IMAGE_TAG: 9.0.6-1
-  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-1/kavita-gds.tar.gz
-  RELEASE_ASSET_SHA256: 7ff66f8327853b6a2c3e5d10d2a969f86a18223c48302501996dbe333927ccc9
+  IMAGE_TAG: 9.0.6-2
+  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-2/kavita-gds.tar.gz
+  RELEASE_ASSET_SHA256: ddb38bf9d3587f09207b6c7ccb54c88cc4021e69b6e23e857378748b34188725
   DOCKER_ARCHIVE_PATH: kavita-gds/docker-image/kavita-gds.docker.tar
 
 jobs:
@@ -33,14 +33,8 @@ jobs:
         run: |
           echo "${{ github.token }}" | skopeo login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Publish version tag
+      - name: Publish amd64 archive tag
         run: |
           skopeo --tmpdir "$RUNNER_TEMP" copy --all \
-            "docker-archive:${DOCKER_ARCHIVE_PATH}:local/kavita-gds:${IMAGE_TAG}" \
-            "docker://${IMAGE_NAME}:${IMAGE_TAG}"
-
-      - name: Publish latest tag
-        run: |
-          skopeo --tmpdir "$RUNNER_TEMP" copy --all \
-            "docker-archive:${DOCKER_ARCHIVE_PATH}:local/kavita-gds:latest" \
-            "docker://${IMAGE_NAME}:latest"
+            "docker-archive:${DOCKER_ARCHIVE_PATH}:${IMAGE_NAME}:${IMAGE_TAG}-amd64" \
+            "docker://${IMAGE_NAME}:${IMAGE_TAG}-amd64"

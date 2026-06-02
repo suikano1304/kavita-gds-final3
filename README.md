@@ -1,32 +1,28 @@
 # Kavita GDS
 
-Kavita official `0.9.0.6` 기반 비공식 GDS 빌드입니다.
+Kavita official `0.9.0.6` source에 GDS/rclone 환경용 scanfix를 포팅한 비공식 Docker 빌드입니다.
 
-`0.9.0.2-8`까지의 GDS/rclone scanfix와 이후 운영에서 확인한 EPUB/TXT/커버 수정사항을 `0.9.0.6` 코드베이스에 포팅했습니다.
+현재 공개 릴리즈는 `9.0.6-2`입니다. GHCR의 `9.0.6-2`와 `latest` 태그는 `linux/amd64`, `linux/arm64`를 포함하는 multi-arch manifest입니다.
 
-현재 배포 기준은 `9.0.6-2`입니다. GHCR 이미지는 `linux/amd64`와 `linux/arm64`를 포함하는 multi-arch manifest이며, GDS/rclone 원본 마운트는 읽기 전용으로 유지하는 구성을 전제로 합니다.
+## 이 빌드가 필요한 경우
 
-`0.9.0.2-4` 배포 이미지에서 Web UI가 개발 빌드로 포함되어 `localhost:5000/api`를 호출하던 문제는 `0.9.0.2-5`에서 production UI 번들로 교체해 수정했습니다.
+이 저장소는 일반 Kavita 배포판이 아니라, 다음 환경을 위해 만든 운영용 hotfix 패키지입니다.
 
-2026-05-31 운영 서버에는 `kavita.yaml` 메타데이터 반영과 회차 제목 보정 패치를 추가 검증했습니다. 해당 운영 기록은 [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md)에 정리했습니다.
+- Google Drive/rclone/FUSE 같은 원격 media mount를 Kavita에 읽기 전용으로 연결한다.
+- GDS 라이브러리에서 ZIP/CBZ/EPUB/PDF/TXT가 섞여 있다.
+- 대형 라이브러리 스캔 중 hang, OOM, 반복 재스캔, `Pages=0` 또는 `1/1` reader 문제가 있었다.
+- GDS sidecar metadata인 `kavita.yaml`/`kavita.yml`과 folder cover를 사용한다.
+- 원본 media 경로에는 쓰지 않고 Kavita config/cache 안에서만 cover와 scan state를 관리하고 싶다.
 
-추가로 GDS/rclone 재스캔 병목, 혼합 폴더 스캔 문제, TXT 커버 부재 문제를 확인했습니다. 일반 재스캔은 빠르게 유지하고, 누락 복구가 필요한 경우만 실제 파일 목록을 다시 읽도록 정리했습니다. 커버가 없는 GDS TXT 시리즈는 외부 API 없이 제목 기반 커버를 Kavita config에 생성합니다.
+일반 로컬 디스크 기반 Kavita만 쓰는 경우에는 official Kavita 이미지를 먼저 사용하는 편이 낫습니다.
 
-## Docker Pull
+## 빠른 설치
 
 ```bash
 docker pull ghcr.io/suikano1304/kavita-gds:9.0.6-2
 ```
 
-최신 태그도 제공합니다.
-
-```bash
-docker pull ghcr.io/suikano1304/kavita-gds:latest
-```
-
-운영에는 `latest`보다 고정 버전 태그 `9.0.6-2` 사용을 권장합니다.
-
-## Compose 예시
+Compose 예시:
 
 ```yaml
 services:
@@ -42,84 +38,103 @@ services:
         source: /your/gds/mount
         target: /mnt/gds
         read_only: true
+        bind:
+          propagation: rslave
     environment:
       TZ: Asia/Seoul
+      WAIT_ANCHOR_DIRS: <redacted-media-path>
 ```
 
-`/your/kavita/config`와 `/your/gds/mount`는 본인 환경에 맞게 바꾸세요. GDS/rclone 원본 마운트는 읽기 전용으로 두는 것을 권장합니다.
+`/your/kavita/config`와 `/your/gds/mount`는 본인 환경에 맞게 바꾸세요. GDS/rclone 원본 mount는 읽기 전용을 권장합니다.
 
 전체 예시는 [compose/docker-compose.production.yml](compose/docker-compose.production.yml)에 있습니다.
 
+## 태그
+
+권장 태그:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-2
+```
+
+`latest`도 같은 릴리즈를 가리키지만, 운영에서는 고정 버전 태그를 권장합니다.
+
+현재 GHCR digest:
+
+```text
+ghcr.io/suikano1304/kavita-gds:9.0.6-2
+ghcr.io/suikano1304/kavita-gds:latest
+multiarch digest=sha256:980226a70418c5d20f70fc853e154d242a4eb15909c75df8b3a61386b937b386
+
+linux/amd64=sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97
+linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3
+```
+
 ## 수동 다운로드
 
-Docker pull 대신 GitHub Release에서 tarball을 받을 수 있습니다.
+Docker pull을 쓸 수 없는 환경에서는 GitHub Release asset을 사용할 수 있습니다.
 
 - Release: <https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-2>
-- File: `kavita-gds.tar.gz`
-- SHA256: GitHub Release의 `SHA256SUMS` 또는 저장소 루트 [SHA256SUMS](SHA256SUMS)를 확인하세요.
+- Asset: `kavita-gds.tar.gz`
+- Checksum: [SHA256SUMS](SHA256SUMS)
 
-압축 안에는 `docker-image/kavita-gds.docker.tar`가 들어 있습니다.
+압축 안에는 `docker-image/kavita-gds.docker.tar`가 들어 있습니다. 이 archive는 `linux/amd64` 이미지입니다.
 
-## 주요 변경
+```bash
+tar -xzf kavita-gds.tar.gz
+docker load -i docker-image/kavita-gds.docker.tar
+docker tag ghcr.io/suikano1304/kavita-gds:9.0.6-2-amd64 local/kavita-gds:9.0.6-2
+```
 
-- EPUB manifest 중복 ID 자동 복구
-- EPUB manifest duplicate `href` 자동 복구
-- GDS EPUB reader `1/1` 표시 문제를 열람 시점 page-count 보정으로 완화
-- GDS EPUB/PDF/TXT 신규/재빌드 스캔에서 `Pages=1`로 고정되는 shortcut 제거
-- 단일 XHTML 안에 여러 TOC 앵커가 있는 EPUB를 backend 가상 페이지로 분리
-- malformed `kavita.yaml`이 전체 미디어 파일 import를 막지 않도록 fallback metadata 적용
-- folder cover가 이후 series cover 재선정에 즉시 덮어써지지 않도록 보정
-- scanner post-cleanup 완료 이후 최종 scan-job completion log 추가
-- EPUB 내부 resource 경로의 `../`/상대경로 보정
-- 손상 PDF의 XRef 무한 재귀 방지
-- rclone/FUSE 대형 라이브러리 디렉터리 스캔 hang 완화
-- GDS reader/runtime 오류 수정
-- 혼합 포맷 GDS 시리즈 분리 완화
-- `kavita.yaml`, `kavita.yml`, `cover.*` 등 메타데이터 파일의 미디어 오인식 방지
-- GDS `kavita.yaml`의 요약/인물/출판사/날짜 등 sidecar metadata 반영
-- YAML `meta.Name`이 회차 제목을 덮어쓰지 않도록 하고 파일명 기반 회차 제목 사용
-- GDS/rclone 반복 스캔에서 변경 없는 파일의 page/hash 재계산과 커버 재분석을 줄여 속도 개선
-- GDS EPUB/PDF/TXT가 `Pages=0`으로 남아 읽기 불가처럼 보이는 문제 완화
-- `Pages=0`으로 남은 기존 GDS 파일이 있으면 변경 없음 최적화를 건너뛰고 다시 파싱해 scan debt를 회복
-- 같은 작품이 `작품명/`과 `작품명 -/`처럼 나뉜 production-library-d 폴더에서도 기존 GDS 볼륨을 보존
-- GDS 증분 스캔에서 포맷 하위 폴더와 정규화명이 같은 형제 폴더를 기존 시리즈로 매칭해 반복 재처리 감소
-- GDS 스캔 중 원본 media 경로에 쓰지 않도록 커버/정리 동작 방어
-- 원본 커버가 없는 GDS TXT 시리즈에 제목 기반 fallback cover 생성
-- TXT 제목 커버의 한글 글꼴 깨짐 방지를 위해 Nanum Gothic Regular/Bold/ExtraBold 포함
-- 운영 검증과 DB/API 점검을 쉽게 하기 위해 runtime image에 `sqlite3` 포함
-- GDS archive 시리즈의 각 권/챕터 커버가 1권 커버로 고정되는 문제 수정
-- 대형 GDS 강제 스캔에서 DB 갱신, 커버 생성, 단어 수 분석을 시리즈 단위로 직렬 처리해 OOM 위험 완화
-- startup migration/BaseUrl 저장 단계의 SQLite FK 오류 진단 로그 보강
-- same-volume duplicate file path cleanup 보강
-- GDS 이어보기/볼륨 화면에서 `LibraryType.GDS`를 chapter 계열로 처리
-- 오래된 DB의 file type migration에서 GDS 기본 파일 그룹 보강
-- Web UI production 빌드 적용으로 외부 접속 시 `localhost:5000/api`로 요청이 빠지는 문제 수정
-- 혼합 포맷 시리즈에서 EPUB 단어 수 분석기가 PDF/TXT 같은 비 EPUB 파일을 EPUB로 열어 오류를 내던 문제 수정
-- YAML/base64 커버나 TXT 제목 커버가 없는 GDS archive 시리즈도 ZIP/CBZ 내부 첫 페이지 커버 추출로 fallback되도록 수정
-- 기본 시리즈 정렬이 정렬 조건 없음 상태에서 `최근 수정 내림차순`으로 적용되도록 UI/백엔드 fallback 수정
-- 읽기 전용 GDS 진단 스크립트 추가
-- 반복 스캔 churn 감소
-- stale Angular chunk 방지를 위한 UI/정적 캐시 정책 조정
-- `linux/amd64` 운영 검증 배포 및 `linux/arm64` GHCR 이미지 추가
+ARM 서버에서는 GHCR multi-arch image를 pull하는 방식을 권장합니다.
 
-자세한 내용은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 보세요.
+## 주요 수정
+
+`9.0.6-2`에는 다음 안정화가 포함되어 있습니다.
+
+- GDS EPUB/PDF/TXT 신규 또는 재빌드 파일이 scanner shortcut 때문에 `Pages=1`로 저장되는 문제 수정
+- 단일 XHTML 안에 여러 TOC anchor가 있는 EPUB을 backend 가상 페이지로 분리
+- malformed `kavita.yaml`이 media import 전체를 막지 않도록 fallback metadata 적용
+- folder cover가 이후 series cover 재선정에 바로 덮어써지지 않도록 보정
+- `Finished library scan` 뒤 post-scan cleanup이 남아 있는 혼선을 줄이기 위한 최종 scan-job completion log 추가
+- GDS archive 시리즈에서 2권 이후 cover가 1권 cover로 고정되는 문제 수정
+- TXT fallback cover 한글 렌더링을 위해 Nanum Gothic 포함
+- GDS 대형 라이브러리 스캔의 OOM 위험을 줄이기 위해 DB update/cover generation 경로를 저메모리 직렬 처리
+- EPUB duplicate manifest id/href 복구, resource 상대경로 보정, `1/1` page-count 보정
+- Web UI production bundle 적용으로 외부 접속 시 `localhost:5000/api`로 요청이 빠지는 문제 수정
+- runtime image에 `sqlite3` 포함, 읽기 전용 진단 스크립트 제공
+
+전체 변경 내역은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)와 [RELEASE_NOTES.md](RELEASE_NOTES.md)를 보세요.
+
+## 검증 기록
+
+`9.0.6-2` 배포 전 다음 검증을 수행했습니다.
+
+- `kavita-test`에서 LOCAL-FIXTURES 155개 media 항목을 3회 반복 검증
+- CBZ/ZIP/EPUB/TXT reader info, TOC/nav, page API, cover reference 실패 0건
+- synthetic single-spine EPUB regression에서 DB pages `3/3`, `book-info=3`, TOC `3`, page 0/1/2 distinct content 확인
+- 운영 `kavita`에 `linux/amd64` 적용 후 health `200` 및 Docker health `healthy`
+- 운영 `reported duplicate-manifest EPUB sample` duplicate manifest EPUB chapter `sample-chapter-redacted-sample-chapter-redacted`가 `12/12`, `12/12`, `12/12`, `13/13`로 보정되는 것 확인
+- `linux/arm64` image를 qemu에서 기동해 `/api/health` 200 확인
+
+세부 기록은 [docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md)에 있습니다.
 
 ## 문서
 
-- [docs/USAGE_KO.md](docs/USAGE_KO.md): 한국어 사용 설명서
+- [docs/USAGE_KO.md](docs/USAGE_KO.md): 설치와 운영 사용법
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): 변경 내역
-- [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드 노트
-- [docs/OPERATIONS_20260531_KO.md](docs/OPERATIONS_20260531_KO.md): 커버 복구와 YAML 적용 검증 운영 기록
-- [docs/SCANNER_ROOT_CAUSE_KO.md](docs/SCANNER_ROOT_CAUSE_KO.md): GDS 스캐너 병목/오동작 근본 원인 분석
-- [docs/VERIFICATION_MATRIX_KO.md](docs/VERIFICATION_MATRIX_KO.md): 목표 완료 판단용 검증 매트릭스
-- [docs/NEXT_RELEASE_CHECKLIST_KO.md](docs/NEXT_RELEASE_CHECKLIST_KO.md): 다음 release/source/운영 일치 체크리스트
-- [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔/startup migration 상태 진단 도구
-- [scripts/summarize_kavita_scan_logs.py](scripts/summarize_kavita_scan_logs.py): 읽기 전용 scan log 및 slow reader request timing 요약 도구
-- [scripts/analyze_kavita_reader_latency.py](scripts/analyze_kavita_reader_latency.py): 느린 reader 요청과 DB/cache 상태 상관분석 도구
-- [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리스 노트
+- [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드/배포 노트
+- [docs/SCAN_DELAY_CODE_REVIEW_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_20260602_KO.md): scan delay 1차 코드리뷰
+- [docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md): 9.0.6-2 2차 코드리뷰와 검증 기록
+- [docs/TEST_CONTAINER_VALIDATION_20260601_KO.md](docs/TEST_CONTAINER_VALIDATION_20260601_KO.md): 테스트 컨테이너 검증 기록
+- [docs/SCAN_COVER_AUDIT_20260601.md](docs/SCAN_COVER_AUDIT_20260601.md): cover/scan 운영 감사 기록
+- [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔/startup migration 진단
+- [scripts/collect_gds_preflight.sh](scripts/collect_gds_preflight.sh): 운영 적용 전후 preflight/postflight 수집
 
 ## 주의
 
-이 이미지는 공식 Kavita 이미지가 아닙니다. 개인 GDS/rclone 읽기 전용 마운트 환경에서 스캔 안정성을 확인하기 위해 만든 비공식 빌드입니다.
+이 이미지는 공식 Kavita 이미지가 아닙니다. 기존 Kavita DB를 연결하기 전에는 config와 DB를 백업하세요.
 
-`9.0.6-2` 공개 Docker tag는 `linux/amd64`와 `linux/arm64`를 포함합니다. 운영 실서비스 검증은 `linux/amd64`에서 수행했고, `linux/arm64`는 동일 소스와 prebuilt production UI 번들로 빌드한 뒤 qemu smoke test에서 `/api/health` 200을 확인했습니다. startup SQLite FK 제보가 특정 서버에서만 발생한다면, 이미지 아키텍처보다 해당 서버의 기존 DB 상태, 이전 컨테이너 종료 상태, compose volume 연결, migration history를 먼저 확인하세요. 이 확인을 돕기 위해 startup FK 진단 로그와 읽기 전용 진단 스크립트를 포함합니다. 진단 JSON에는 `__EFMigrationsHistory`, `ManualMigrationHistory`, 핵심 `ServerSetting`, 주요 테이블 row count도 포함됩니다.
+이 빌드는 GDS/rclone 원본 media mount를 읽기 전용으로 유지하는 구성을 전제로 합니다. cover 생성, 진단, cache, DB 변경은 Kavita config 경로에서만 일어나야 합니다.
+
+`linux/arm64`는 같은 소스와 production UI bundle로 빌드했고 qemu smoke test를 통과했지만, native ARM 실서비스 검증은 별도 환경에서 다시 확인하는 것이 좋습니다.

@@ -1,63 +1,57 @@
 # 다음 릴리즈 체크리스트
 
-작성일: 2026-05-31
+작성일: 2026-06-02
 
-현재 빌드 후보는 `0.9.0.2-5`이다. `0.9.0.2-4` 배포 이미지의 Web UI dev build 문제를 production UI hotfix로 보정한 multi-arch OCI archive를 다시 만들었다.
+현재 공개 릴리즈는 `9.0.6-2`입니다. 다음 릴리즈는 official Kavita 기준 버전, source patch, GHCR image, Release asset, 운영 compose tag가 서로 어긋나지 않는지 먼저 확인합니다.
 
-현재 공개 runtime tag `v0.9.0.2-5`는 `fda1eab` 기준이다. 이후 `main`에는 preflight snapshot 안정화, MediaError full-count gate, scan churn gate, 빠른 cover gate와 source cover probe 분리, 문서 보강이 추가되어 있다. 다음 runtime 이미지를 다시 만들 때는 이 tooling 변경을 source archive와 release notes에도 포함해 source/release/운영 기준을 다시 맞춘다.
+## 기본 원칙
 
-## 목적
+- official Kavita source/image 기준 버전을 명시한다.
+- 운영 GDS/rclone 원본 mount는 읽기 전용으로 유지한다.
+- 운영 DB/config를 변경하기 전 backup 또는 snapshot을 만든다.
+- test 컨테이너에서 fixture 검증을 먼저 통과한 뒤 운영에 반영한다.
+- 운영 반영 후 health, reader API, scan log, rclone read-only 상태를 확인한다.
+- 검증 전에는 GitHub commit, release, package publish를 하지 않는다.
 
-- source branch, release source archive, GHCR image, 운영 compose image tag를 같은 기준으로 맞춘다.
-- 운영 적용 전후 `collect_gds_preflight.sh` 결과를 비교해 scanner/Kavita 문제가 실제로 개선됐는지 판정한다.
-- 운영 DB와 GDS/rclone 원본에는 검증 전 쓰기 작업을 하지 않는다.
+## 버전 결정
 
-## 포함해야 할 source 변경
+다음 값을 릴리즈 문서에 모두 기록한다.
 
-- GDS 이어보기/볼륨 표시 분기에서 `LibraryType.GDS`를 chapter 계열로 처리
-- 오래된 DB가 file type migration을 다시 탈 때 GDS 기본 file group에 `Archive`, `EPub`, `Pdf`, `Images`, `Text`를 모두 포함
-- Web UI가 `localhost:5000/api`를 호출하지 않도록 production 환경 번들만 포함
-
-## 권장 버전
-
-현재 후보는 `0.9.0.2-5`로 둔다.
-
-## 빌드 산출물
-
-- Release package: `/tmp/kavita-gds-0.9.0.2-5.tar.gz`
-- OCI archive: `/tmp/kavita-gds-0.9.0.2-5.oci.tar`
-
-## 산출물 SHA256
-
-```text
-64d6de0d1f384e80fa5c0fc97e00c231d990f1d54cb6c26c300e076b7445c714  kavita-gds-0.9.0.2-5.tar.gz
-55ecf03127480de13e795da426833fa6924d164c2049b15796532c02f9f1a40d  kavita-gds-0.9.0.2-5.oci.tar
-```
-
-## 완료한 검증
-
-- `linux/amd64` startup smoke test: `Ok`
-- OCI index 내부 manifest list: `linux/amd64`, `linux/arm64` 확인
-- `/kavita/wwwroot` 전체에서 `localhost:5000`, `:5000/api`, Angular development mode 문자열 없음
-- 운영 컨테이너는 변경하지 않음
+- official Kavita version
+- official source revision 또는 image label
+- GDS patch version
+- local test image tag
+- production image tag
+- GHCR version tag
+- GHCR multi-arch digest
+- `linux/amd64` digest
+- `linux/arm64` digest
 
 ## 빌드 전 확인
 
 ```bash
-git -C /root/kavita-gds-lab/port-0902-min status --short
-git -C /root/kavita-gds-lab/port-0902-min log --oneline -5
+git -C /root/kavita-gds-lab/port-0906-gds status --short
+git -C /root/kavita-gds-lab/port-0906-gds log --oneline -5
 git -C /root/Kavita-GDS status --short
 ```
 
+패키징 repo에는 큰 binary를 commit하지 않습니다. Docker archive와 tarball은 GitHub Release asset으로만 배포합니다.
+
 ## 필수 검증
 
-1. UI production build 통과
-2. backend build 또는 container build 통과
-3. `linux/amd64` startup smoke test 통과
-4. `linux/arm64` manifest 포함 확인
-5. 가능하면 QEMU entrypoint smoke test 통과
-6. 운영 DB 사본 또는 Oracle A1 제보 DB로 startup smoke test 통과
-7. public release asset과 GHCR image가 같은 source snapshot에서 생성됐는지 확인
+1. official source 대비 GDS patch diff 리뷰
+2. 수정 대상 코드리뷰 2회 기록
+3. backend/container build 통과
+4. `kavita-test` startup health 통과
+5. fixture validation 최소 2회 통과
+6. 문제 EPUB/TXT/ZIP/CBZ 샘플 reader API 확인
+7. 운영 반영 후 startup health 통과
+8. 운영 반영 후 대표 문제 series API 확인
+9. rclone log/RC에서 write/delete/rename activity가 없는지 확인
+10. `linux/arm64` build와 qemu smoke test 통과
+11. GHCR amd64/arm64 image push
+12. multi-arch manifest와 `latest` manifest 확인
+13. GitHub Release asset과 `SHA256SUMS` 확인
 
 ## 운영 적용 전 baseline
 
@@ -66,7 +60,7 @@ scripts/collect_gds_preflight.sh \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
-  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavitaYYYYMMDD.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
   --snapshot-db \
@@ -81,7 +75,7 @@ scripts/collect_gds_preflight.sh \
   --db /mnt/data/docker/kavita/config/kavita.db \
   --container-root /mnt/gds \
   --host-root /mnt/data/rclone/gds \
-  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --scan-log /mnt/data/docker/kavita/config/logs/kavitaYYYYMMDD.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
   --snapshot-db \
@@ -94,9 +88,24 @@ scripts/collect_gds_preflight.sh \
 
 ## 완료 판정
 
-- `FAIL`이 없어야 한다.
-- `Pages=0`, same-series duplicate, TXT config cover가 `WARN`으로 남으면 목표 완료가 아니라 추가 분석 대상으로 둔다.
-- source `cover.*`와 YAML hint까지 포함한 TXT missing-cover debt는 `--check-covers --check-cover-source-files`를 before/after 양쪽에 넣은 별도 느린 검사에서만 판정한다.
-- scan gate에서 non-forced processed series 또는 churn scan count가 `WARN`으로 남으면 재스캔 churn 감소가 아직 증명되지 않은 상태로 둔다.
-- cross-series duplicate는 자동 삭제 대상이 아니므로 증가하지 않는지만 확인한다.
-- cover cache gate가 실패하면 운영 config cover 보존 로직을 다시 봐야 한다.
+- `postflight-gates`에 `FAIL`이 없어야 한다.
+- `Pages=0`, missing cover, same-series duplicate가 증가하지 않아야 한다.
+- 문제 샘플의 reader API가 정상 page count와 page response를 반환해야 한다.
+- Web UI가 production bundle로 동작하고 `localhost:5000/api` 요청이 없어야 한다.
+- 운영 compose image tag와 GHCR digest가 문서에 기록된 값과 일치해야 한다.
+- release asset checksum이 `SHA256SUMS`와 일치해야 한다.
+
+## 문서 갱신
+
+릴리즈 전에 다음 파일을 갱신한다.
+
+- `README.md`
+- `RELEASE_NOTES.md`
+- `SHA256SUMS`
+- `compose/docker-compose.production.yml`
+- `docs/USAGE_KO.md`
+- `docs/CHANGELOG_KO.md`
+- `docs/BUILD_NOTES_KO.md`
+- `docs/SCAN_*` 또는 해당 릴리즈 검증 기록
+- `patches/<version>/`
+- `.github/workflows/publish-ghcr.yml`을 사용하는 경우 현재 asset/tag/checksum

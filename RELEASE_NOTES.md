@@ -13,6 +13,8 @@ Version: `9.0.6-2`
 
 `kavita-gds.tar.gz`
 
+The release asset contains `docker-image/kavita-gds.docker.tar`, an amd64 Docker archive. For ARM servers, use the GHCR multi-arch image.
+
 Use the repository `SHA256SUMS` file or the release checksum note to verify the downloaded asset.
 
 ## Verification
@@ -206,4 +208,4 @@ linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e88
 
 ## Caveat
 
-This host is `amd64`, so `arm64` was build/manifest verified, but not fully runtime-tested on native ARM hardware.
+The `linux/arm64` image was built from the same source and passed a qemu `/api/health` startup smoke test. It has not been validated as a long-running production deployment on native ARM hardware in this release record.
