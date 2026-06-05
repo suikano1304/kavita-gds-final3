@@ -2,12 +2,12 @@
   "openapi": "3.0.4",
   "info": {
     "title": "Kavita",
-    "description": "Kavita provides a set of APIs authenticated via an Auth Key passed in the `x-api-key` header. Generate an Auth Key under User Settings → Manage Auth Keys, paste it into the Authorize panel, and all Try It requests will include it. Assume all fields of a payload are required unless marked optional. Built against v0.9.0.5",
+    "description": "Kavita provides a set of APIs authenticated via an Auth Key passed in the `x-api-key` header. Generate an Auth Key under User Settings → Manage Auth Keys, paste it into the Authorize panel, and all Try It requests will include it. Assume all fields of a payload are required unless marked optional. Built against v0.9.0.6",
     "license": {
       "name": "GPL-3.0",
       "url": "https://github.com/Kareadita/Kavita/blob/develop/LICENSE"
     },
-    "version": "0.9.0.5"
+    "version": "0.9.0.6"
   },
   "servers": [
     {
@@ -13542,29 +13542,38 @@
         }
       }
     },
-    "/api/Scrobbling/anilist-token": {
+    "/api/Scrobbling/scrobble-settings": {
       "get": {
         "tags": [
           "Scrobbling"
         ],
-        "summary": "Get the current user's AniList token",
+        "summary": "Returns all scrobble providers for a user. This list is guaranteed to contain an entry for each currently\nvalid scrobble provider. If the user has none setup, returns the empty default values.",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrobbleProviderDto"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrobbleProviderDto"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrobbleProviderDto"
+                  }
                 }
               }
             }
@@ -13572,132 +13581,79 @@
         }
       }
     },
-    "/api/Scrobbling/mal-token": {
-      "get": {
-        "tags": [
-          "Scrobbling"
-        ],
-        "summary": "Get the current user's MAL token and username",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MalUserInfoDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MalUserInfoDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MalUserInfoDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Scrobbling/update-anilist-token": {
+    "/api/Scrobbling/update-scrobble-settings": {
       "post": {
         "tags": [
           "Scrobbling"
         ],
-        "summary": "Update the current user's AniList token",
+        "summary": "Updates the scrobble settings for a given provider. Libraries are filtered on supported types",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "$ref": "#/components/schemas/ScrobbleProvider"
+            }
+          }
+        ],
         "requestBody": {
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AniListUpdateDto"
+                "$ref": "#/components/schemas/ScrobbleProviderSettingsDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AniListUpdateDto"
+                "$ref": "#/components/schemas/ScrobbleProviderSettingsDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AniListUpdateDto"
+                "$ref": "#/components/schemas/ScrobbleProviderSettingsDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
     },
-    "/api/Scrobbling/update-mal-token": {
+    "/api/Scrobbling/update-user-scrobble-provider": {
       "post": {
         "tags": [
           "Scrobbling"
         ],
-        "summary": "Update the current user's MAL token (Client ID) and Username",
+        "summary": "Update authentication details for the given provider",
+        "description": "Kicks of a sync background job, listen on signalr for when it completes",
         "requestBody": {
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MalUserInfoDto"
+                "$ref": "#/components/schemas/UpdateScrobbleProviderDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/MalUserInfoDto"
+                "$ref": "#/components/schemas/UpdateScrobbleProviderDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/MalUserInfoDto"
+                "$ref": "#/components/schemas/UpdateScrobbleProviderDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -13707,10 +13663,50 @@
         "tags": [
           "Scrobbling"
         ],
-        "summary": "When a user request to generate scrobble events from history. Should only be ran once per user.",
+        "summary": "Generate scrobble events from history. Should only be ran once per user.",
+        "parameters": [
+          {
+            "name": "scrobbleProvider",
+            "in": "query",
+            "description": "Members:\n- `0` — Kavita\n- `1` — AniList\n- `2` — Mal\n- `4` — Cbr\n- `5` — Hardcover\n- `6` — MangaBaka",
+            "schema": {
+              "$ref": "#/components/schemas/ScrobbleProvider"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Scrobbling/generate-scrobble-events-all": {
+      "post": {
+        "tags": [
+          "Scrobbling"
+        ],
+        "summary": "Generate scrobble events from history for all valid providers.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           }
         }
       }
@@ -13748,6 +13744,45 @@
               "text/json": {
                 "schema": {
                   "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Scrobbling/expired-tokens": {
+      "get": {
+        "tags": [
+          "Scrobbling"
+        ],
+        "summary": "Returns all expired tokens for the current user",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrobbleProvider"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrobbleProvider"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrobbleProvider"
+                  }
                 }
               }
             }
@@ -14050,36 +14085,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Scrobbling/has-ran-scrobble-gen": {
-      "get": {
-        "tags": [
-          "Scrobbling"
-        ],
-        "summary": "Has the logged-in user ran scrobble generation",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
           }
         }
       }
@@ -20592,7 +20597,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/UserTokenInfo"
+                    "$ref": "#/components/schemas/UserTokenInfoDto"
                   }
                 }
               },
@@ -20600,7 +20605,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/UserTokenInfo"
+                    "$ref": "#/components/schemas/UserTokenInfoDto"
                   }
                 }
               },
@@ -20608,7 +20613,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/UserTokenInfo"
+                    "$ref": "#/components/schemas/UserTokenInfoDto"
                   }
                 }
               }
@@ -21112,16 +21117,6 @@
           },
           "includeUnknowns": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AniListUpdateDto": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -25704,10 +25699,22 @@
             "format": "float",
             "nullable": true
           },
+          "percentRead": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
           "rating": {
             "type": "number",
             "format": "float",
             "nullable": true
+          },
+          "reviewBody": {
+            "type": "string",
+            "nullable": true
+          },
+          "readStatus": {
+            "$ref": "#/components/schemas/ScrobbleReadStatus"
           },
           "provider": {
             "$ref": "#/components/schemas/ScrobbleProvider"
@@ -25722,20 +25729,26 @@
         "enum": [
           0,
           1,
-          2
+          2,
+          3,
+          4
         ],
         "type": "integer",
-        "description": "Members:\n- `0` — Active\n- `1` — Cancelled\n- `2` — Paused",
+        "description": "Members:\n- `0` — Active\n- `1` — Cancelled\n- `2` — Paused\n- `3` — Cancelling\n- `4` — Expired",
         "format": "int32",
         "x-enum-varnames": [
           "Active",
           "Cancelled",
-          "Paused"
+          "Paused",
+          "Cancelling",
+          "Expired"
         ],
         "x-enum-descriptions": [
           "Active",
           "Cancelled",
-          "Paused"
+          "Paused",
+          "Cancelling",
+          "Expired"
         ]
       },
       "KeyBind": {
@@ -25987,12 +26000,10 @@
             "$ref": "#/components/schemas/KavitaPlusSubscriptionState"
           },
           "isActive": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
           },
           "isCancelled": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
           },
           "expirationDate": {
             "type": "string",
@@ -26044,6 +26055,9 @@
           "installId": {
             "type": "string",
             "nullable": true
+          },
+          "pastDue": {
+            "type": "boolean"
           },
           "discordId": {
             "type": "string",
@@ -26112,24 +26126,6 @@
           "existingId": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "MalUserInfoDto": {
-        "required": [
-          "accessToken",
-          "username"
-        ],
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "nullable": true
-          },
-          "accessToken": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -27705,6 +27701,29 @@
         },
         "additionalProperties": false
       },
+      "ReadStatusTransitionRule": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "days": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transitionStatus": {
+            "$ref": "#/components/schemas/ScrobbleReadStatus"
+          },
+          "excludedPublicationStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicationStatus"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ReadTimeByHourDto": {
         "type": "object",
         "properties": {
@@ -28956,6 +28975,26 @@
         },
         "additionalProperties": false
       },
+      "ReviewScrobbleTarget": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "description": "Members:\n- `0` — Private\n- `1` — Friends\n- `2` — Public",
+        "format": "int32",
+        "x-enum-varnames": [
+          "Private",
+          "Friends",
+          "Public"
+        ],
+        "x-enum-descriptions": [
+          "Private",
+          "Friends",
+          "Public"
+        ]
+      },
       "RgbaColor": {
         "type": "object",
         "properties": {
@@ -29113,8 +29152,14 @@
             "format": "float",
             "nullable": true
           },
+          "readStatus": {
+            "$ref": "#/components/schemas/ScrobbleReadStatus"
+          },
           "scrobbleEventType": {
             "$ref": "#/components/schemas/ScrobbleEventType"
+          },
+          "scrobbleProvider": {
+            "$ref": "#/components/schemas/ScrobbleProvider"
           },
           "isErrored": {
             "type": "boolean"
@@ -29183,24 +29228,27 @@
           1,
           2,
           3,
-          4
+          4,
+          5
         ],
         "type": "integer",
-        "description": "Members:\n- `0` — Chapter Read (ChapterRead)\n- `1` — Add to Want to Read (AddWantToRead)\n- `2` — Remove from Want to Read (RemoveWantToRead)\n- `3` — Score Updated (ScoreUpdated)\n- `4` — Review Added/Updated (Review)",
+        "description": "Members:\n- `0` — Chapter Read (ChapterRead)\n- `1` — Add to Want to Read (AddWantToRead)\n- `2` — Remove from Want to Read (RemoveWantToRead)\n- `3` — Score Updated (ScoreUpdated)\n- `4` — Review Added/Updated (Review)\n- `5` — Read status Updated (ReadStatusUpdate)",
         "format": "int32",
         "x-enum-varnames": [
           "ChapterRead",
           "AddWantToRead",
           "RemoveWantToRead",
           "ScoreUpdated",
-          "Review"
+          "Review",
+          "ReadStatusUpdate"
         ],
         "x-enum-descriptions": [
           "Chapter Read",
           "Add to Want to Read",
           "Remove from Want to Read",
           "Score Updated",
-          "Review Added/Updated"
+          "Review Added/Updated",
+          "Read status Updated"
         ]
       },
       "ScrobbleHoldDto": {
@@ -29256,6 +29304,111 @@
           "Cbr",
           "Hardcover",
           "MangaBaka"
+        ]
+      },
+      "ScrobbleProviderDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ScrobbleProvider"
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "authenticationToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "validUntilUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastSyncedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hasRunScrobbleEventGeneration": {
+            "type": "boolean"
+          },
+          "scrobbleEventGenerationRan": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/ScrobbleProviderSettingsDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScrobbleProviderSettingsDto": {
+        "type": "object",
+        "properties": {
+          "progressScrobbling": {
+            "type": "boolean"
+          },
+          "wantToReadSync": {
+            "type": "boolean"
+          },
+          "ratingScrobbling": {
+            "type": "boolean"
+          },
+          "reviewsScrobbling": {
+            "type": "boolean"
+          },
+          "reviewScrobbleTarget": {
+            "$ref": "#/components/schemas/ReviewScrobbleTarget"
+          },
+          "allLibraries": {
+            "type": "boolean"
+          },
+          "libraries": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "highestAgeRating": {
+            "$ref": "#/components/schemas/AgeRating"
+          },
+          "inactiveSeriesRule": {
+            "$ref": "#/components/schemas/ReadStatusTransitionRule"
+          },
+          "droppedSeriesRule": {
+            "$ref": "#/components/schemas/ReadStatusTransitionRule"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScrobbleReadStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "description": "Members:\n- `0` — Ignore\n- `1` — Want to Read (WantToRead)\n- `2` — Read\n- `3` — Un read (UnRead)\n- `4` — Dropped\n- `5` — On hold (OnHold)",
+        "format": "int32",
+        "x-enum-varnames": [
+          "Ignore",
+          "WantToRead",
+          "Read",
+          "UnRead",
+          "Dropped",
+          "OnHold"
+        ],
+        "x-enum-descriptions": [
+          "Ignore",
+          "Want to Read",
+          "Read",
+          "Un read",
+          "Dropped",
+          "On hold"
         ]
       },
       "SearchResultDto": {
@@ -31466,6 +31619,19 @@
         },
         "additionalProperties": false
       },
+      "TokenValidityInfoDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ScrobbleProvider"
+          },
+          "validUntilUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "TopReadDto": {
         "type": "object",
         "properties": {
@@ -32461,6 +32627,26 @@
         },
         "additionalProperties": false
       },
+      "UpdateScrobbleProviderDto": {
+        "required": [
+          "provider"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ScrobbleProvider"
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "authenticationToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateSeriesDto": {
         "type": "object",
         "properties": {
@@ -33330,7 +33516,7 @@
         },
         "additionalProperties": false
       },
-      "UserTokenInfo": {
+      "UserTokenInfoDto": {
         "type": "object",
         "properties": {
           "userId": {
@@ -33341,18 +33527,12 @@
             "type": "string",
             "nullable": true
           },
-          "isAniListTokenSet": {
-            "type": "boolean"
-          },
-          "isAniListTokenValid": {
-            "type": "boolean"
-          },
-          "aniListValidUntilUtc": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "isMalTokenSet": {
-            "type": "boolean"
+          "tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenValidityInfoDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
