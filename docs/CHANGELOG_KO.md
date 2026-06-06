@@ -6,6 +6,20 @@
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
 
+## 2026-06-06: official `0.9.0.7` nightly 병합 후보 검증
+
+아래 변경은 아직 공개 릴리스 태그로 승격하지 않은 `0.9.0.7` 병합 후보 검증 기록입니다.
+
+- official Kavita `0.9.0.7` nightly 변경을 GDS 포팅 브랜치에 병합했습니다.
+- GDS reader metadata refresh 안정화 패치를 유지했습니다.
+- upstream `BookController`의 chapter access 보호 변경과 GDS no-store cache policy가 함께 유지되는지 확인했습니다.
+- Kavita+를 쓰지 않는 운영 가정에서도 일반 Book 라이브러리 eligibility가 깨지지 않도록 GDS만 Kavita+ metadata 대상에서 제외되는지 확인했습니다.
+- 테스트 컨테이너에서 health, version API, DB integrity, GDS read-only mount를 확인했습니다.
+- TXT, ZIP/CBZ archive, EPUB, PDF reader/API 경로를 확장 검증했고 새 MediaError, 404/500/Fatal/SQLite/database-lock/disk I/O error 로그가 없음을 확인했습니다.
+- synthetic single-spine EPUB fixture는 cover 검증 대상이 아니라 TOC page mapping 회귀 검증 대상으로만 분리했습니다.
+- 릴리스 승격 시 `linux/amd64`, `linux/arm64`, 필요 시 `linux/arm/v7` 모두 같은 source patch set에서 RID별 publish output으로 빌드하고, ARM 계열 smoke test를 통과한 뒤 multi-arch manifest에 포함해야 합니다.
+- 상세 검증 기록은 `docs/GDS_0.9.0.7_VALIDATION.md`에 남겼습니다.
+
 ## 2026-06-02: `9.0.6-2` 스캔/page-count 안정화
 
 아래 변경은 `9.0.6-2` 배포 후보에 포함했습니다.
