@@ -10,6 +10,8 @@
 - 운영 GDS/rclone 원본 mount는 읽기 전용으로 유지한다.
 - 운영 DB/config를 변경하기 전 backup 또는 snapshot을 만든다.
 - test 컨테이너에서 fixture 검증을 먼저 통과한 뒤 운영에 반영한다.
+- 배포 전 회귀 검증은 [GDS_REGRESSION_CHECKLIST_KO.md](GDS_REGRESSION_CHECKLIST_KO.md)를 따른다.
+- 실제 작품명/경로가 필요한 로컬 상세 매트릭스는 `/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md`를 확인한다.
 - 운영 반영 후 health, reader API, scan log, rclone read-only 상태를 확인한다.
 - 검증 전에는 GitHub commit, release, package publish를 하지 않는다.
 
@@ -44,15 +46,17 @@ git -C /root/Kavita-GDS status --short
 2. 수정 대상 코드리뷰 2회 기록
 3. backend/container build 통과
 4. `kavita-test` startup health 통과
-5. fixture validation 최소 2회 통과
-6. 문제 EPUB/TXT/ZIP/CBZ 샘플 reader API 확인
-7. 운영 반영 후 startup health 통과
-8. 운영 반영 후 대표 문제 series API 확인
-9. rclone log/RC에서 write/delete/rename activity가 없는지 확인
-10. `linux/arm64` build와 qemu smoke test 통과
-11. GHCR amd64/arm64/armv7 image push
-12. multi-arch manifest와 `latest` manifest 확인
-13. GitHub Release asset과 `SHA256SUMS` 확인
+5. [배포 전 회귀 검증 체크리스트](GDS_REGRESSION_CHECKLIST_KO.md)의 extended verifier 통과
+6. 문제 EPUB/TXT/ZIP/CBZ/PDF 샘플 reader API 확인
+7. Web UI production bundle 문자열 검사 통과
+8. `linux/arm64` qemu/native smoke test 통과
+9. `linux/arm/v7` qemu/native smoke test 통과
+10. GHCR amd64/arm64/armv7 image push
+11. multi-arch manifest와 `latest` manifest 확인
+12. 운영 반영 후 startup health 통과
+13. 운영 반영 후 대표 문제 series API 확인
+14. rclone log/RC에서 write/delete/rename activity가 없는지 확인
+15. GitHub Release asset과 `SHA256SUMS` 확인
 
 ## 운영 적용 전 baseline
 
@@ -107,6 +111,7 @@ scripts/collect_gds_preflight.sh \
 - `docs/USAGE_KO.md`
 - `docs/CHANGELOG_KO.md`
 - `docs/BUILD_NOTES_KO.md`
+- `docs/GDS_REGRESSION_CHECKLIST_KO.md`
 - `docs/SCAN_*` 또는 해당 릴리즈 검증 기록
 - `patches/<version>/`
 - `.github/workflows/publish-ghcr.yml`을 사용하는 경우 현재 asset/tag/checksum

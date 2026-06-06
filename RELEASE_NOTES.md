@@ -30,6 +30,18 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 - rclone RC remained read-only: `deletes=0`, `renames=0`, server-side copy/move counters `0`. Later production scan attempts accumulated Google Drive rate-limit errors, not write/delete activity.
 - The package does not include intermediate test images.
 
+## Pre-Release Regression Checklist
+
+Before publishing the next release, run the repeatable GDS regression checklist:
+
+- [docs/GDS_REGRESSION_CHECKLIST_KO.md](docs/GDS_REGRESSION_CHECKLIST_KO.md)
+
+The local-only matrix with actual sample titles, chapter ids, and media paths is kept on the PVE host:
+
+```text
+/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md
+```
+
 ## Changes Since `9.0.6-2`
 
 ### 2026-06-06 `9.0.7` official `0.9.0.7` nightly port

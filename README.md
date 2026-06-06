@@ -109,11 +109,14 @@ linux/arm/v7=sha256:48d4d285e41ba9ffe1c2819aa12f4d91b2e69f69d1312c4e60605e5ca0b7
 
 세부 기록은 [docs/GDS_0.9.0.7_VALIDATION.md](docs/GDS_0.9.0.7_VALIDATION.md)에 있습니다.
 
+다음 릴리즈 배포 전에는 [docs/GDS_REGRESSION_CHECKLIST_KO.md](docs/GDS_REGRESSION_CHECKLIST_KO.md)를 따라 기존 문제 샘플 회귀 검증을 먼저 통과시킵니다. 실제 작품명과 경로가 필요한 로컬 상세 매트릭스는 PVE host의 `/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md`에만 기록합니다.
+
 ## 문서
 
 - [docs/USAGE_KO.md](docs/USAGE_KO.md): 설치와 운영 사용법
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): 변경 내역
 - [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드/배포 노트
+- [docs/GDS_REGRESSION_CHECKLIST_KO.md](docs/GDS_REGRESSION_CHECKLIST_KO.md): 배포 전 회귀 검증 체크리스트
 - [docs/SCAN_DELAY_CODE_REVIEW_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_20260602_KO.md): scan delay 1차 코드리뷰
 - [docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md): 9.0.6-2 2차 코드리뷰와 검증 기록
 - [docs/TEST_CONTAINER_VALIDATION_20260601_KO.md](docs/TEST_CONTAINER_VALIDATION_20260601_KO.md): 테스트 컨테이너 검증 기록
