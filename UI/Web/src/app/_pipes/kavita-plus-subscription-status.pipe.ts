@@ -12,10 +12,17 @@ export class KavitaPlusSubscriptionStatusPipe implements PipeTransform {
 
   transform(state: KavitaPlusSubscriptionState | null | undefined): string {
     switch (state) {
-      case KavitaPlusSubscriptionState.Active:    return this.translocoService.translate('kavita-plus-subscription-status-pipe.active-label');
-      case KavitaPlusSubscriptionState.Cancelled: return this.translocoService.translate('kavita-plus-subscription-status-pipe.cancelled-label');
-      case KavitaPlusSubscriptionState.Paused:    return this.translocoService.translate('kavita-plus-subscription-status-pipe.paused-label');
-      default:                                    return '';
+      case KavitaPlusSubscriptionState.Active:
+        return this.translocoService.translate('kavita-plus-subscription-status-pipe.active');
+      case KavitaPlusSubscriptionState.Cancelling:
+        return this.translocoService.translate('kavita-plus-subscription-status-pipe.cancelling');
+      case KavitaPlusSubscriptionState.Paused:
+        return this.translocoService.translate('kavita-plus-subscription-status-pipe.paused');
+      case KavitaPlusSubscriptionState.Expired:
+        return this.translocoService.translate('kavita-plus-subscription-status-pipe.expired');
+      default:
+        return '';
     }
+
   }
 }

@@ -1,6 +1,10 @@
 import {ChangeDetectionStrategy, Component, computed, inject, input, output, signal} from '@angular/core';
 import {DatePipe, UpperCasePipe} from '@angular/common';
-import {KavitaPlusBillingInterval, LicenseInfo} from '../../../_models/kavitaplus/license-info';
+import {
+  KavitaPlusBillingInterval,
+  KavitaPlusSubscriptionState,
+  LicenseInfo
+} from '../../../_models/kavitaplus/license-info';
 import {environment} from '../../../../environments/environment';
 import {UtcToLocalTimePipe} from '../../../_pipes/utc-to-local-time.pipe';
 import {VersionService} from '../../../_services/version.service';
@@ -15,7 +19,7 @@ import {MemberService} from "../../../_services/member.service";
   styleUrl: './license-info-panel.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [UtcToLocalTimePipe, UpperCasePipe, DatePipe, TranslocoDirective, KavitaPlusSubscriptionStatusPipe, KavitaPlusBillingIntervalPipe],
-  host: { '[attr.data-status]': 'status()' }
+  host: { '[attr.data-status]': 'statusToken()' }
 })
 export class LicenseInfoPanelComponent {
 
@@ -29,13 +33,21 @@ export class LicenseInfoPanelComponent {
 
   usersCount = signal<number>(0);
 
-  readonly status = computed((): 'active' | 'paused' | 'cancelled' => {
-    const info = this.licenseInfo();
-    if (!info) return 'paused';
+  readonly status = computed((): KavitaPlusSubscriptionState => {
+    return this.licenseInfo()?.state ?? KavitaPlusSubscriptionState.Expired;
+  });
 
-    if (info.isCancelled) return 'cancelled';
-    if (info.isActive) return 'active';
-    return 'paused';
+  readonly statusToken = computed((): 'active' | 'cancelling' | 'paused' | 'expired' => {
+    switch (this.status()) {
+      case KavitaPlusSubscriptionState.Active:
+        return 'active';
+      case KavitaPlusSubscriptionState.Cancelling:
+        return 'cancelling';
+      case KavitaPlusSubscriptionState.Paused:
+        return 'paused';
+      default:
+        return 'expired';
+    }
   });
 
   readonly activeVersion = this.versionService.currentVersion;
@@ -52,11 +64,6 @@ export class LicenseInfoPanelComponent {
     const email = this.licenseInfo()?.registeredEmail;
     if (!email) return environment.manageLink;
     return environment.manageLink + '?prefilled_email=' + encodeURIComponent(email);
-  });
-
-  readonly isExpired = computed((): boolean => {
-    return this.licenseInfo()?.isExpired ?? true;
-
   });
 
   readonly daysUntilExpiry = computed((): number => {
@@ -95,5 +102,7 @@ export class LicenseInfoPanelComponent {
       this.usersCount.set(members.length);
     });
   }
+
+  protected readonly KavitaPlusSubscriptionState = KavitaPlusSubscriptionState;
 
 }

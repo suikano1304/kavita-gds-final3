@@ -277,6 +277,13 @@
               </div>
             }
           }
+          @case (SettingsTabId.ScrobbleSettings) {
+            @defer (prefetch on idle) {
+              <div>
+                <app-manage-scrobble-providers />
+              </div>
+            }
+          }
 
           @case (SettingsTabId.CustomKeyBinds) {
             @defer (prefetch on idle) {

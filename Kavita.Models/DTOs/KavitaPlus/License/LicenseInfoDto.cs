@@ -6,8 +6,13 @@ namespace Kavita.Models.DTOs.KavitaPlus.License;
 public enum KavitaPlusSubscriptionState
 {
     Active = 0,
+    /// <summary>Only present for Kavita v0.9.0.6.</summary>
     Cancelled = 1,
-    Paused = 2
+    Paused = 2,
+    /// <summary>Still grants access but set to cancel at period end (or past_due within grace)</summary>
+    Cancelling = 3,
+    /// <summary>No access remaining (ended, fully canceled, or past_due grace elapsed)</summary>
+    Expired = 4
 }
 
 public enum KavitaPlusBillingInterval
@@ -28,12 +33,12 @@ public sealed record LicenseInfoDto
     /// <summary>
     /// Backward-compat shim - true when State is Active
     /// </summary>
-    public bool IsActive => State == KavitaPlusSubscriptionState.Active;
+    public bool IsActive { get; set; }
 
     /// <summary>
     /// Backward-compat shim - true when State is Cancelled
     /// </summary>
-    public bool IsCancelled => State == KavitaPlusSubscriptionState.Cancelled;
+    public bool IsCancelled { get; set; }
 
     /// <summary>
     /// If cancelled, represents the cancellation/expiry date; if active, the next renewal date
@@ -100,6 +105,11 @@ public sealed record LicenseInfoDto
     public string InstallId { get; set; }
 
     /// <summary>
+    /// In a Past Due state which we treat as cancelling
+    /// </summary>
+    public bool PastDue { get; set; }
+
+    /// <summary>
     /// Discord UserId if set
     /// </summary>
     public string? DiscordId { get; set; }
@@ -108,4 +118,5 @@ public sealed record LicenseInfoDto
     /// Has Discord Set
     /// </summary>
     public bool HasDiscordSet => DiscordId is not null;
+
 }

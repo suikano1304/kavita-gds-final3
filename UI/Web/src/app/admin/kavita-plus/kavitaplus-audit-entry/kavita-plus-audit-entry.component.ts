@@ -22,12 +22,12 @@ import {KavitaPlusEventTypePipe} from '../../../_pipes/kavita-plus-event-type.pi
 import {KavitaPlusEventDescriptionPipe} from '../../../_pipes/kavita-plus-event-description.pipe';
 import {AuditLogErrorPipe} from '../../../_pipes/audit-log-error.pipe';
 import {TimeAgoPipe} from '../../../_pipes/time-ago.pipe';
-import {UtcToLocalTimePipe} from '../../../_pipes/utc-to-local-time.pipe';
 import {AuditStatusTitlePipe} from "../../../_pipes/audit-status-title.pipe";
 import {KavitaplusDiffComponent} from "../kavitaplus-diff/kavitaplus-diff.component";
 import {AuditSubjectType} from "../../../_models/kavitaplus/audit-subject-type.enum";
 import {MetadataFetchTriggerTitlePipe} from "../../../_pipes/metadata-fetch-trigger-title.pipe";
 import {TruncatePipe} from "../../../_pipes/truncate.pipe";
+import {UtcToLocalDatePipe} from "../../../_pipes/utc-to-locale-date.pipe";
 
 @Component({
   selector: 'app-kavitaplus-audit-entry',
@@ -44,11 +44,11 @@ import {TruncatePipe} from "../../../_pipes/truncate.pipe";
     KavitaPlusEventDescriptionPipe,
     AuditLogErrorPipe,
     TimeAgoPipe,
-    UtcToLocalTimePipe,
     AuditStatusTitlePipe,
     KavitaplusDiffComponent,
     TruncatePipe,
     MetadataFetchTriggerTitlePipe,
+    UtcToLocalDatePipe,
   ],
   templateUrl: './kavita-plus-audit-entry.component.html',
   styleUrl: './kavita-plus-audit-entry.component.scss',

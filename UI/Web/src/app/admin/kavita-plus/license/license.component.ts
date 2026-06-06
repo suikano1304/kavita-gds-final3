@@ -8,6 +8,7 @@ import {KavitaPlusUpsellComponent} from "../kavita-plus-upsell/kavita-plus-upsel
 import {
   KavitaPlusConnectProvidersComponent
 } from "../kavita-plus-connect-providers/kavita-plus-connect-providers.component";
+import {LoadingComponent} from "../../../shared/loading/loading.component";
 
 export enum KavitaPlusRegistrationStep {
   Upsell = 0,
@@ -19,7 +20,7 @@ export enum KavitaPlusRegistrationStep {
     templateUrl: './license.component.html',
     styleUrls: ['./license.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, LicenseDashboardComponent, KavitaPlusUpsellComponent, KavitaPlusConnectProvidersComponent]
+  imports: [ReactiveFormsModule, LicenseDashboardComponent, KavitaPlusUpsellComponent, KavitaPlusConnectProvidersComponent, LoadingComponent]
 })
 export class LicenseComponent implements OnInit {
 

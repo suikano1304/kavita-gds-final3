@@ -372,6 +372,7 @@ public class ProcessSeries(
             series.MalId = ExternalIdParser.GetMalId(series.Metadata.WebLinks) ?? 0;
             series.ComicVineId = ExternalIdParser.GetComicVineId(series.Metadata.WebLinks).Item1;
             series.MangaBakaId = ExternalIdParser.GetMangaBakaId(series.Metadata.WebLinks);
+            series.HardcoverId = ExternalIdParser.GetHardcoverSeriesId(series.Metadata.WebLinks);
         }
 
         if (!string.IsNullOrEmpty(firstChapter?.SeriesGroup) && library.ManageCollections)

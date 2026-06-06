@@ -7,6 +7,7 @@ import {
   KavitaPlusAuditEventTypeIconComponent
 } from "../../shared/_components/kavitaplus-event-type-icon/kavita-plus-audit-event-type-icon.component";
 import {EmptyStateComponent} from "../../shared/_components/empty-state/empty-state.component";
+import {AuditSubjectType} from "../../_models/kavitaplus/audit-subject-type.enum";
 
 interface DayGroup {
   key: string;

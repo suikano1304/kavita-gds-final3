@@ -63,6 +63,7 @@ export enum SettingsTabId {
   // Non-Admin
   Account = 'account',
   Preferences = 'preferences',
+  ScrobbleSettings = 'scrobble-settings',
   CustomKeyBinds = 'custom-key-binds',
   ReadingProfiles = 'reading-profiles',
   Font = 'font',
@@ -314,6 +315,7 @@ export class PreferenceNavComponent implements AfterViewInit {
           SideNavItem.kPlusOnly(SettingsTabId.ScrobblingHolds),
           SideNavItem.kPlusOnly(SettingsTabId.ManageKavitaPlusActivity),
           SideNavItem.kPlusOnly(SettingsTabId.MyActivity, [], this.scrobblingFailuresBadgeCount),
+          SideNavItem.kPlusOnly(SettingsTabId.ScrobbleSettings),
           SideNavItem.kPlusOnly(SettingsTabId.Scrobbling, [], this.scrobblingErrorBadgeCount),
         ]
       }
@@ -330,7 +332,7 @@ export class PreferenceNavComponent implements AfterViewInit {
 
     this.keyBindService.registerListener(
       this.destroyRef,
-      () => this.router.navigate(['/settings'], { fragment: SettingsTabId.Scrobbling})
+      () => this.router.navigate(['/settings'], { fragment: SettingsTabId.MyActivity})
         .then(() => this.scrollToActiveItem()),
       [KeyBindTarget.NavigateToScrobbling],
       {condition$: this.hasValidLicense$},

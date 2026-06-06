@@ -173,6 +173,7 @@
         "description": "Here you will find any scrobble events linked with your account. In order for events to exist, you must have an active scrobble provider configured. All events that have been processed will clear after a month. If there are non-processed events, it is likely these cannot form matches upstream. Please reach out to your admin to get them corrected.",
         "not-read-warning": "Upstream providers will always keep the highest number",
         "filter-label": "{{common.filter}}",
+        "provider-header": "Provider",
         "created-header": "Created",
         "last-modified-header": "Last Modified",
         "type-header": "Type",
@@ -190,9 +191,9 @@
         "processed": "Processed",
         "not-processed": "Not Processed",
         "special": "{{entity-title.special}}",
-        "generate-scrobble-events": "Backfill Events",
         "token-expired": "Your AniList token is Expired! Scrobbling events will not process until you renew on Accounts page.",
-        "scrobbling-disabled": "Scrobbling is disabled on your Account Settings."
+        "scrobbling-disabled": "Scrobbling is disabled on your Account Settings.",
+        "read-status-update": "Status: {{status}}"
     },
 
     "scrobble-event-type-pipe": {
@@ -200,7 +201,8 @@
         "score-updated": "Rating Update",
         "want-to-read-add": "Want to Read: Add",
         "want-to-read-remove": "Want to Read: Remove",
-        "review": "Review update"
+        "review": "Review update",
+        "read-status-update": "Read Status Update"
     },
 
     "spoiler": {
@@ -701,6 +703,51 @@
         "years-ago": "{{value}} years ago"
     },
 
+    "time-difference-pipe": {
+        "never": "Never",
+        "just-now": "just now",
+        "min": {
+            "ago": "a minute ago",
+            "in": "in a minute"
+        },
+        "mins": {
+            "ago": "{{value}} minutes ago",
+            "in": "in {{value}} minutes"
+        },
+        "hour": {
+            "ago": "an hour ago",
+            "in": "in an hour"
+        },
+        "hours": {
+            "ago": "{{value}} hours ago",
+            "in": "in {{value}} hours"
+        },
+        "day": {
+            "ago": "a day ago",
+            "in": "in a day"
+        },
+        "days": {
+            "ago": "{{value}} days ago",
+            "in": "in {{value}} days"
+        },
+        "month": {
+            "ago": "a month ago",
+            "in": "in a month"
+        },
+        "months": {
+            "ago": "{{value}} months ago",
+            "in": "in {{value}} months"
+        },
+        "year": {
+            "ago": "a year ago",
+            "in": "in a year"
+        },
+        "years": {
+            "ago": "{{value}} years ago",
+            "in": "in {{value}} years"
+        }
+    },
+
     "duration-pipe": {
         "seconds": "{{num}} seconds",
         "minutes": "{{num}} minutes",
@@ -944,9 +991,10 @@
     },
 
     "kavita-plus-subscription-status-pipe": {
-        "active-label": "Active",
-        "paused-label": "Paused",
-        "cancelled-label": "Cancelled"
+        "active": "Active",
+        "paused": "Paused",
+        "cancelling": "Cancelling",
+        "expired": "Cancelled"
     },
 
     "kavita-plus-provider-health-status-pipe": {
@@ -1549,7 +1597,8 @@
         "person-alias-added": "Alias '{{aliasAdded}}' added for {{personName}}",
         "sync-started-collection": "Starting sync of {{collectionName}} ({{itemCount}} items)",
         "sync-failed-collection": "Sync failed for {{collectionName}}",
-        "sync-completed-want-to-read": "{{seriesMatched}} series matched for {{userName}}"
+        "sync-completed-want-to-read": "{{seriesMatched}} series matched for {{userName}}",
+        "read-status-update": "Status {{status}}"
     },
 
     "kavita-plus-event-type-pipe": {
@@ -2445,7 +2494,93 @@
         "remap-rules": "Remap Rules",
         "mal-stack-import": "MAL Stack",
         "admin-public-metadata": "Manage Metadata",
-        "admin-manage-kavitaplus-activity": "Manage Kavita+ Activity"
+        "admin-manage-kavitaplus-activity": "Manage Kavita+ Activity",
+        "scrobble-settings": "Connections"
+    },
+
+    "scrobble-provider-settings-manager": {
+        "description": "Manage what, when, and where things are scrobbled to. Scrobbling runs hourly.",
+        "none-setup": "You do not have any scrobble providers setup yet! Click the add button above to start",
+        "select-provider-title": "New Scrobble Provider",
+        "info": "User Info",
+        "connect": "Connect",
+        "connected": "Connected",
+        "regenerate": "Regenerate",
+        "disconnect": "Disconnect",
+        "expires":  "Expires {{time}}",
+        "last-synced": "Last synced {{time}}",
+        "not-setup": "Provider not set-up, connect to get started",
+        "sync-options": "Sync options",
+        "reviews-sync-label": "Sync reviews",
+        "reviews-sync-tooltip": "Kavita will scrobble reviews for matched series & chapters",
+        "progress-sync-label": "Sync Progress",
+        "progress-sync-tooltip": "Kavita scrobbles series progress when chapters complete, or chapter progress on page changes",
+        "rating-sync-label": "Sync Ratings",
+        "rating-sync-tooltip": "Kavita scrobbles ratings for matched series & chapters",
+        "want-to-read-sync-label": "Sync Want To Read list",
+        "want-to-read-sync-tooltip": "Keep your want to read list in sync. Does not change read statuses",
+        "reviews-target-label": "Review target",
+        "reviews-target-tooltip": "Who gets to see synced reviews, depends on provider support",
+        "filter-rules": "Filters",
+        "highest-age-rating-label": "Highest age ratings",
+        "highest-age-rating-tooltip": "Highest (inclusive) age rating a series can have to be scrobbled",
+        "automations": "Automations",
+        "inactive-series-rule-label": "Inactive series rule",
+        "inactive-series-rule-condition": "If a series/chapter hasn't been read for",
+        "rule-days-mark": "days, mark it is",
+        "rule-publication-exception": "unless publication status is",
+        "dropped-series-rule-label": "Dropped series rule",
+        "dropped-series-rule-condition": "If a series/chapter hasn't been read for",
+        "all-libraries-label": "All libraries",
+        "all-libraries-tooltip": "When enabled, scrobbling runs on all applicable libraries. Disable to restrict it to specific libraries using the selection below.",
+        "confirm-delete": "Are you sure want to disconnect {{provider}}",
+        "inactive-series-rule-days-aria": "Inactive series threshold in days",
+        "inactive-series-rule-status-aria": "Inactive series transition status",
+        "inactive-series-rule-excluded-publication-aria": "Excluded publication statuses for inactive series rule",
+        "dropped-series-rule-days-aria": "Dropped series threshold in days",
+        "dropped-series-rule-status-aria": "Dropped series transition status",
+        "dropped-series-rule-excluded-publication-aria": "Excluded publication statuses for dropped series rule",
+        "backfill-events": "{{manage-user-scrobble-provider-modal.generate-scrobble-events}}",
+        "anilist-warning": "AniList sync may be slower during busy periods. MangaBaka offers a larger library and consistently faster syncing."
+    },
+
+    "manage-user-scrobble-provider-modal": {
+        "close": "{{common.close}}",
+        "save": "{{common.save}}",
+        "title": "Manage your authentication details for {{provider}}",
+        "username-label": "Username",
+        "authentication-token-label": "Authentication Token",
+        "valid-until-label": "Valid Until",
+        "last-synced-label": "Last synced",
+        "not-synced": "Not yet synced",
+        "event-generation-label": "Last scrobble backfill",
+        "event-generation-not-run": "Backfill not yet ran",
+        "generate": "Generate",
+        "generate-scrobble-events": "Backfill Events"
+    },
+
+    "scrobble-provider-description-pipe": {
+        "kavita": "",
+        "ani-list": "Everything Manga & Light Novels",
+        "my-anime-list": "Want To Read & Stacks sync for Manga & Light Novels",
+        "comic-book-roundup": "",
+        "hardcover": "Everything Books, Manga, and Light Novels!",
+        "manga-baka": "Everything Manga & Light Novels"
+    },
+
+    "review-scrobble-target-name-pipe": {
+        "private": "Only you",
+        "friends": "Friends",
+        "public": "Everyone"
+    },
+
+    "scrobble-read-status-pipe": {
+        "ignore": "Ignore",
+        "want-to-read": "Want to Read",
+        "read": "Read",
+        "unread": "Unread",
+        "dropped": "Dropped",
+        "on-hold": "On Hold"
     },
 
     "manage-custom-key-binds": {
@@ -2470,8 +2605,8 @@
         "key-bind-tooltip-navigate-to-settings": "Open settings while not in a reader",
         "key-bind-title-open-search": "Open search",
         "key-bind-tooltip-open-search": "Open the top search bar",
-        "key-bind-title-navigate-to-scrobbling": "Open Scrobbling",
-        "key-bind-tooltip-navigate-to-scrobbling": "Open settings page on the Scrobbling tab",
+        "key-bind-title-navigate-to-scrobbling": "Open My Activity",
+        "key-bind-tooltip-navigate-to-scrobbling": "Open settings page on the My Activity tab",
         "key-bind-title-escape": "Escape",
         "key-bind-tooltip-escape": "Close the currently open context",
 
@@ -2927,7 +3062,8 @@
         "description": "Import your MAL Interest Stacks and create Collections within Kavita",
         "series-count": "{{common.series-count}}",
         "restack-count": "{{num}} Restacks",
-        "nothing-found": "Nothing found",
+        "no-data": "{{common.no-data}}",
+        "no-data-description": "Make sure you have a valid MAL token and have followed some Stacks",
         "track": "Track",
         "by-author": "by {{author}}"
     },
@@ -4051,7 +4187,7 @@
         "smart-filter-deleted": "Smart Filter Deleted",
         "smart-filter-updated": "Created/Updated smart filter",
         "external-source-already-exists": "An External Source already exists with the same Name/Host/API Key",
-        "anilist-token-expired": "Your AniList token is expired. Scrobbling will no longer process until you re-generate it in User Settings > Account",
+        "tokens-expired": "One or more tokens have expired. Scrobbling will no longer process for these providers until you re-generate it in KavitaPlus > Connections",
         "collection-tag-deleted": "Collection Tag deleted",
         "force-kavita+-refresh-success": "Kavita+ external metadata has been invalidated",
         "collection-not-owned": "You do not own this collection",
@@ -4096,7 +4232,8 @@
         "cbl-remap-rule-promoted": "Rule promoted to global",
         "cbl-remap-rule-demoted": "Rule demoted to user scope",
         "confirm-delete-read-from-readinglist": "Are you sure you want to remove all read issues from this reading list? This cannot be undone.",
-        "reading-list-sync-enqueued": "The Reading List has been enqueued for sync."
+        "reading-list-sync-enqueued": "The Reading List has been enqueued for sync.",
+        "confirm-rerun-backfill": "You've already generated scrobble events for {{provider}} at least once. Backfilling may delay scrobbling of recent read events. Are you sure you want to continue?"
     },
 
     "read-time-pipe": {

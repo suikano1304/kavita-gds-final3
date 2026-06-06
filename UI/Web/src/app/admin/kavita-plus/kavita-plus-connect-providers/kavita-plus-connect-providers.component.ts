@@ -4,9 +4,11 @@ import {WikiLink} from "../../../_models/wiki";
 import {
   ScrobbleAccountCardComponent
 } from "../../../user-settings/scrobble-account-card/scrobble-account-card.component";
-import {ScrobblingService, UserScrobbleProvider} from "../../../_services/scrobbling.service";
+import {ScrobblingService} from "../../../_services/scrobbling.service";
 import {BannerComponent} from "../../../shared/_components/banner/banner.component";
 import {ToastrService} from "ngx-toastr";
+import {UserScrobbleProvider} from "../../../_models/kavitaplus/scrobble-providers/user-scrobble-provider";
+import {tap} from "rxjs";
 
 @Component({
   selector: 'app-kavita-plus-connect-providers',
@@ -33,19 +35,15 @@ export class KavitaPlusConnectProvidersComponent {
   }
 
   backfillAndRedirect() {
-    this.scrobblingService.getScrobbleProviders().subscribe(providers => {
-      const enabledProviders = providers.filter(p => p.authenticationToken);
-      if (enabledProviders.length > 0) {
-        this.scrobblingService.triggerScrobbleEventGeneration().subscribe(res => {
-          if (res) {
-            this.toastr.info(translate('toasts.scrobble-gen-init'));
-          }
-          this.done.emit();
-        });
-      } else {
-        this.done.emit();
-      }
-    });
+    this.scrobblingService.triggerScrobbleEventGenerationForAllValid().pipe(
+      tap(hasRan => {
+        if (hasRan) {
+          this.toastr.info(translate('toasts.scrobble-gen-init'));
+        }
+
+        this.done.emit()
+      }),
+    ).subscribe();
   }
 
   skip() {

@@ -9,8 +9,9 @@
   display: block;
 }
 
-:host([data-status='cancelled']) { --panel-color: var(--panel-danger-color); }
-:host([data-status='paused'])    { --panel-color: var(--panel-warning-color); }
+:host([data-status='expired'])    { --panel-color: var(--panel-danger-color); }
+:host([data-status='cancelling']) { --panel-color: var(--panel-warning-color); }
+:host([data-status='paused'])     { --panel-color: var(--panel-warning-color); }
 
 .info-card {
   background:

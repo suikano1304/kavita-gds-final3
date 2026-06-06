@@ -153,7 +153,7 @@ export class SideNavComponent {
 
     this.keyBindService.registerListener(
       this.destroyRef,
-      (e) => this.router.navigate(['/settings'], { fragment: SettingsTabId.Scrobbling}),
+      (e) => this.router.navigate(['/settings'], { fragment: SettingsTabId.MyActivity}),
       [KeyBindTarget.NavigateToScrobbling],
       {condition$: this.hasValidLicense$},
     );

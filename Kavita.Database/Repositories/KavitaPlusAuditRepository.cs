@@ -212,8 +212,11 @@ public class KavitaPlusAuditRepository(DataContext context) : IKavitaPlusAuditRe
                         ScrobbleEventType = p.ScrobbleEventType,
                         ChapterNumber = p.ChapterNumber,
                         VolumeNumber = p.VolumeNumber,
+                        PercentRead = p.PercentRead,
                         Rating = p.Rating,
-                        Provider = ScrobbleProvider.AniList, // TODO: This needs to allow provider to be passed from ScrobbleService (Amelia)
+                        ReviewBody = p.ReviewBody,
+                        ReadStatus = p.ReadStatus,
+                        Provider = p.Provider,
                         LibraryType = p.LibraryType,
                     };
                 }

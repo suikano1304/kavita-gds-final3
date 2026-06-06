@@ -4,6 +4,7 @@ import {KavitaPlusAuditEntry} from '../_models/kavitaplus/kavita-plus-audit-entr
 import {KavitaPlusEventType} from '../_models/kavitaplus/kavita-plus-event-type.enum';
 import {ScrobbleEventType} from '../_models/scrobbling/scrobble-event';
 import {EntityTitleService} from '../_services/entity-title.service';
+import {ScrobbleReadStatusPipe} from "./scrobble-read-status.pipe";
 
 const PREFIX = 'kavita-plus-event-description-pipe';
 
@@ -12,6 +13,8 @@ const PREFIX = 'kavita-plus-event-description-pipe';
   standalone: true,
 })
 export class KavitaPlusEventDescriptionPipe implements PipeTransform {
+
+  private readonly readStatusPipe = new ScrobbleReadStatusPipe();
   private readonly translocoService = inject(TranslocoService);
   private readonly entityTitleService = inject(EntityTitleService);
 
@@ -31,6 +34,8 @@ export class KavitaPlusEventDescriptionPipe implements PipeTransform {
           return this.translocoService.translate(`${PREFIX}.remove-want-to-read`);
         case ScrobbleEventType.Review:
           return this.translocoService.translate(`${PREFIX}.review-submitted`);
+        case ScrobbleEventType.ReadStatusUpdate:
+          return this.translocoService.translate(`${PREFIX}.read-status-update`, {status: this.readStatusPipe.transform(sd.readStatus!)});
         default:
           return '';
       }
@@ -77,6 +82,10 @@ export class KavitaPlusEventDescriptionPipe implements PipeTransform {
         seriesMatched: entry.syncDetails.seriesMatched,
         userName: entry.syncDetails.userName,
       });
+    }
+
+    if (entry.eventType === KavitaPlusEventType.PersonAliasAdded) {
+      return this.translocoService.translate(`${PREFIX}.person-alias-added`, {personName: entry.metadataExtras?.personName, alias: entry.metadataExtras?.aliasAdded});
     }
 
     return '';

@@ -3,7 +3,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {NgbNav, NgbNavItem, NgbNavLink} from '@ng-bootstrap/ng-bootstrap';
 import {KavitaPlusAuditService} from '../../_services/kavitaplus-audit.service';
-import {ScrobbleProvider, ScrobblingService, UserScrobbleProvider} from '../../_services/scrobbling.service';
+import {ScrobbleProvider, ScrobblingService} from '../../_services/scrobbling.service';
 import {KavitaPlusAuditEntry} from '../../_models/kavitaplus/kavita-plus-audit-entry';
 import {KavitaPlusAuditCategory} from '../../_models/kavitaplus/kavita-plus-audit-category.enum';
 import {AuditStatus} from '../../_models/kavitaplus/audit-status.enum';
@@ -16,6 +16,7 @@ import {KavitaPlusEventType} from "../../_models/kavitaplus/kavita-plus-event-ty
 import {Tabs} from "../../_models/tabs";
 import {TabTitlePipe} from "../../_pipes/tab-title.pipe";
 import {Pagination} from '../../_models/pagination';
+import {UserScrobbleProvider} from "../../_models/kavitaplus/scrobble-providers/user-scrobble-provider";
 
 @Component({
   selector: 'app-kavitaplus-activity',
