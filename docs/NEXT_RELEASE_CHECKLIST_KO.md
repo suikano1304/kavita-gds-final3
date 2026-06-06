@@ -2,7 +2,7 @@
 
 작성일: 2026-06-02
 
-현재 공개 릴리즈는 `9.0.6-2`입니다. 다음 릴리즈는 official Kavita 기준 버전, source patch, GHCR image, Release asset, 운영 compose tag가 서로 어긋나지 않는지 먼저 확인합니다.
+현재 공개 릴리즈는 `9.0.7`입니다. 다음 릴리즈는 official Kavita 기준 버전, source patch, GHCR image, Release asset, 운영 compose tag가 서로 어긋나지 않는지 먼저 확인합니다.
 
 ## 기본 원칙
 
@@ -26,6 +26,7 @@
 - GHCR multi-arch digest
 - `linux/amd64` digest
 - `linux/arm64` digest
+- `linux/arm/v7` digest
 
 ## 빌드 전 확인
 
@@ -49,7 +50,7 @@ git -C /root/Kavita-GDS status --short
 8. 운영 반영 후 대표 문제 series API 확인
 9. rclone log/RC에서 write/delete/rename activity가 없는지 확인
 10. `linux/arm64` build와 qemu smoke test 통과
-11. GHCR amd64/arm64 image push
+11. GHCR amd64/arm64/armv7 image push
 12. multi-arch manifest와 `latest` manifest 확인
 13. GitHub Release asset과 `SHA256SUMS` 확인
 

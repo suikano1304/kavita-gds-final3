@@ -1,8 +1,8 @@
 # Kavita GDS
 
-This release provides the Kavita official `0.9.0.6` based GDS build as a Docker image archive and GHCR Docker image.
+This release provides the Kavita official `0.9.0.7` nightly based GDS build as a GHCR multi-arch Docker image.
 
-Version: `9.0.6-2`
+Version: `9.0.7`
 
 ## Included Platforms
 
@@ -12,23 +12,16 @@ Version: `9.0.6-2`
 
 ## Asset
 
-`kavita-gds.tar.gz`
-
-The release asset contains `docker-image/kavita-gds.docker.tar`, an amd64 Docker archive. For ARM servers, use the GHCR multi-arch image.
-
-`kavita-gds-oci.tar.gz`
-
-This optional release asset contains `docker-image/kavita-gds.oci.tar`, a multi-platform OCI archive for `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-
-Use the repository `SHA256SUMS` file or the release checksum note to verify the downloaded asset.
+GHCR is the primary distribution channel for this release. Use the unified version tag; Docker will select the matching platform automatically.
 
 ## Verification
 
-- Built from the official Kavita `0.9.0.6` source with the GDS patch set ported forward.
-- `linux/amd64` image startup was smoke-tested in `kavita-test` and then applied to production.
-- `linux/arm64` was built from the same source and prebuilt production UI bundle, then added to the GHCR `9.0.6-2` and `latest` multi-arch manifests.
-- `linux/arm/v7` was built with .NET RID `linux-arm`, qemu-smoke-tested with `/api/health` 200 and Docker health `healthy`, then added to the GHCR `9.0.6-2` and `latest` multi-arch manifests.
-- The optional OCI release asset was generated from the pushed GHCR `9.0.6-2` multi-arch manifest and contains `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
+- Built one production UI bundle and RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
+- Pushed GHCR `9.0.7` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- `linux/amd64` startup and extended reader regression validation passed in `kavita-test` using the pushed GHCR image.
+- `linux/arm64` was started under qemu from the pushed GHCR image and returned `/api/health` 200 with Docker health `healthy`.
+- `linux/arm/v7` was started under qemu from the pushed GHCR image and returned `/api/health` 200 with Docker health `healthy`.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
@@ -37,7 +30,19 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - rclone RC remained read-only: `deletes=0`, `renames=0`, server-side copy/move counters `0`. Later production scan attempts accumulated Google Drive rate-limit errors, not write/delete activity.
 - The package does not include intermediate test images.
 
-## Changes Since `0.9.0.2-8`
+## Changes Since `9.0.6-2`
+
+### 2026-06-06 `9.0.7` official `0.9.0.7` nightly port
+
+- Merged official Kavita `0.9.0.7` nightly changes into the GDS port.
+- Kept the GDS reader metadata refresh stabilization patch.
+- Confirmed the upstream book access guard and GDS no-store cache policy remain compatible.
+- Confirmed non-Kavita+ operation remains viable for ordinary Book libraries; only GDS is excluded from Kavita+ metadata handling.
+- Revalidated GDS reader/API behavior across TXT, ZIP/CBZ archive, EPUB, PDF, cover, repeated cache, DB integrity, and post-test logs.
+- Verified the synthetic single-spine EPUB fixture only as a TOC page mapping regression target; it intentionally has no cover.
+- Built and pushed `linux/amd64`, `linux/arm64`, and `linux/arm/v7` from the same source patch set using the official RID/platform mapping.
+
+## Historical Changes Since `0.9.0.2-8`
 
 ### 2026-06-02 `9.0.6-2` scan/page-count stabilization
 
@@ -65,7 +70,7 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 - Fixed Korean TXT title-cover rendering by bundling Nanum Gothic Regular/Bold/ExtraBold in the runtime image.
 - Added a low-memory GDS scan path that keeps per-series DB update, cover generation, and word-count work sequential instead of running all post-scan work in parallel.
 - Added a GDS-only low-memory file discovery path that streams bottom-up directory traversal and avoids one parse task per file in large folders.
-- Split GDS word-count analysis out of the library scan path after production `production-library-c` showed 13,675 series and per-series EPUB word-count work taking up to 130 seconds. Cover generation remains part of the forced scan path.
+- Split GDS word-count analysis out of the library scan path after a large production GDS library showed 13,675 series and per-series EPUB word-count work taking up to 130 seconds. Cover generation remains part of the forced scan path.
 - Included `sqlite3` in the runtime image for operational DB/API verification inside the container.
 - Made cache cleanup tolerate concurrent directory deletion.
 - Validated redacted production EPUB regression samples after deployment.
@@ -74,13 +79,13 @@ Use the repository `SHA256SUMS` file or the release checksum note to verify the 
 ## GHCR
 
 ```text
-ghcr.io/suikano1304/kavita-gds:9.0.6-2
+ghcr.io/suikano1304/kavita-gds:9.0.7
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:fae093d93e2b56cd1debf23256f45f87f59d3b37934a317cabc1a418c45f3fb0
+multiarch digest=sha256:da791441659ed602a6fbb86f9bb196c4c71754378004556c04399094ad3437e7
 
-linux/amd64=sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97
-linux/arm64=sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3
-linux/arm/v7=sha256:d6d8a01e684a47c2091219906de6accc0976bf07ce3898c4f76da6a4834b9ca0
+linux/amd64=sha256:59ed9200cc906c8737cf086af98656028e9b1f1f87a986db1fa100ae18c30f32
+linux/arm64=sha256:8e41c7b01f0167e3d89f46024dbfea6799ccb4ab0dedcdad71b3e9890f426f5a
+linux/arm/v7=sha256:48d4d285e41ba9ffe1c2819aa12f4d91b2e69f69d1312c4e60605e5ca0b78869
 ```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`
@@ -179,7 +184,7 @@ linux/arm/v7=sha256:d6d8a01e684a47c2091219906de6accc0976bf07ce3898c4f76da6a4834b
 - Kept normal GDS/rclone rescans fast by avoiding unnecessary file stat/hash work on unchanged files.
 - Excluded bracketed cover files such as `[Cover].jpg` from GDS media parsing.
 - Skipped repeated folder-cover copy/color analysis when the local cover and colors are already present.
-- Operational verification: `production-library-a` forced scan completed `11 files / 187 series` in about 2.8 seconds, and `production-library-e` completed `2 files / 2061 series` in about 4.5 seconds.
+- Operational verification: two representative production GDS libraries completed forced scans of `11 files / 187 series` in about 2.8 seconds and `2 files / 2061 series` in about 4.5 seconds.
 
 ### 2026-05-31 operational verification
 

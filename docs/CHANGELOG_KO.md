@@ -2,13 +2,13 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-9.0.6-2`
+현재 공개 릴리즈: `kavita-gds-9.0.7`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
 
-## 2026-06-06: official `0.9.0.7` nightly 병합 후보 검증
+## 2026-06-06: `9.0.7` official `0.9.0.7` nightly 포팅 릴리스
 
-아래 변경은 아직 공개 릴리스 태그로 승격하지 않은 `0.9.0.7` 병합 후보 검증 기록입니다.
+아래 변경은 공개 릴리스 태그 `9.0.7`에 포함했습니다.
 
 - official Kavita `0.9.0.7` nightly 변경을 GDS 포팅 브랜치에 병합했습니다.
 - GDS reader metadata refresh 안정화 패치를 유지했습니다.
@@ -17,7 +17,10 @@
 - 테스트 컨테이너에서 health, version API, DB integrity, GDS read-only mount를 확인했습니다.
 - TXT, ZIP/CBZ archive, EPUB, PDF reader/API 경로를 확장 검증했고 새 MediaError, 404/500/Fatal/SQLite/database-lock/disk I/O error 로그가 없음을 확인했습니다.
 - synthetic single-spine EPUB fixture는 cover 검증 대상이 아니라 TOC page mapping 회귀 검증 대상으로만 분리했습니다.
-- 릴리스 승격 시 `linux/amd64`, `linux/arm64`, 필요 시 `linux/arm/v7` 모두 같은 source patch set에서 RID별 publish output으로 빌드하고, ARM 계열 smoke test를 통과한 뒤 multi-arch manifest에 포함해야 합니다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` 모두 같은 source patch set에서 RID별 publish output으로 빌드했습니다.
+- GHCR `9.0.7`와 `latest`를 같은 multi-arch manifest로 push했습니다.
+- `linux/amd64`는 pushed GHCR image로 `kavita-test` extended validation을 통과했습니다.
+- `linux/arm64`와 `linux/arm/v7`는 qemu smoke test에서 `/api/health` 200 및 Docker health `healthy`를 확인했습니다.
 - 상세 검증 기록은 `docs/GDS_0.9.0.7_VALIDATION.md`에 남겼습니다.
 
 ## 2026-06-02: `9.0.6-2` 스캔/page-count 안정화
@@ -161,14 +164,14 @@
 - 테스트 컨테이너 검증 기준, 문제 라이브러리의 반복 일반 재스캔이 `5 Series / 108 files / 약 7-10초`에서 `0 Series / 0 files / 약 0.8초`로 안정화됐습니다.
 - EPUB 단어 수 계산 단계에서 손상되었거나 EPUB 구조가 아닌 파일은 기존처럼 오류로 기록되지만, 스캔 자체는 정상 완료됩니다.
 
-## 2026-05-31: production-library-d 혼합 폴더/읽기 불가 보정
+## 2026-05-31: 혼합 폴더/읽기 불가 보정
 
 - GDS 라이브러리의 `chapter-info` 처리에서 `LibraryType.GDS`가 누락되어 일부 PDF/EPUB 라우팅이 예외로 이어질 수 있던 문제를 보정했습니다.
 - GDS 빠른 스캔에서 EPUB/PDF/TXT의 페이지 수 계산을 생략하더라도 최소 `Pages=1`을 유지해 “읽을 수 없음”처럼 보이지 않도록 했습니다.
 - 같은 작품이 `작품명/`과 `작품명 -/`처럼 두 폴더로 나뉜 경우, 증분 스캔 입력에 한쪽 폴더만 들어와도 실제 파일이 존재하는 기존 GDS 볼륨은 제거하지 않도록 했습니다.
 - `force=true` GDS 스캔은 누락 파일 복구를 위해 실제 파일시스템을 다시 읽도록 했습니다. 이 모드는 느리지만, 증분 스캔에서 누락된 EPUB/PDF/TXT 복구에 필요합니다.
-- 운영 검증 기준 분리 폴더 production-library-d 샘플은 ZIP 3개와 EPUB 5개, 총 8개 파일이 유지되고 EPUB 1권이 정상 열리는 것을 확인했습니다.
-- 이후 일반 production-library-d 재스캔은 `171 files / 297 series`를 약 12초에 완료했고, EPUB 5개가 다시 제거되지 않는 것을 확인했습니다.
+- 운영 검증 기준 분리 폴더 샘플은 ZIP 3개와 EPUB 5개, 총 8개 파일이 유지되고 EPUB 1권이 정상 열리는 것을 확인했습니다.
+- 이후 일반 재스캔은 `171 files / 297 series`를 약 12초에 완료했고, EPUB 5개가 다시 제거되지 않는 것을 확인했습니다.
 
 ## 2026-05-31: GDS 재스캔 속도 개선
 
@@ -176,9 +179,9 @@
 - 일반 GDS/rclone 재스캔에서 변경 없는 파일의 불필요한 재계산을 줄였습니다.
 - `[Cover].jpg`처럼 대괄호가 붙은 커버 파일이 GDS 이미지 미디어로 오인식되어 스캔 오류와 지연을 만드는 문제를 막았습니다.
 - 폴더 커버가 이미 Kavita config cover 디렉터리에 있고 색상 정보도 있는 경우, 반복 스캔에서 커버 복사/색상 분석을 건너뜁니다.
-- 실제 운영 검증 기준 `production-library-a` 강제 스캔은 3분 이상 진행되던 상태에서 `11 files / 187 series`를 약 2.8초에 완료했습니다.
-- `production-library-e` 강제 스캔도 `2 files / 2061 series`를 약 4.5초에 완료했습니다.
-- loose image 폴더를 쓰지 않는 기존 GDS 라이브러리는 `Images` 파일 그룹을 꺼서 불필요한 커버 이미지 열거를 줄였습니다. `production-library-d`처럼 실제 이미지 파일이 등록된 라이브러리는 유지했습니다.
+- 실제 운영 검증 기준 한 GDS 라이브러리의 강제 스캔은 3분 이상 진행되던 상태에서 `11 files / 187 series`를 약 2.8초에 완료했습니다.
+- 다른 대형 GDS 라이브러리의 강제 스캔도 `2 files / 2061 series`를 약 4.5초에 완료했습니다.
+- loose image 폴더를 쓰지 않는 기존 GDS 라이브러리는 `Images` 파일 그룹을 꺼서 불필요한 커버 이미지 열거를 줄였습니다. 실제 이미지 파일이 등록된 라이브러리는 유지했습니다.
 
 ## 2026-05-31: 운영 검증 및 YAML metadata fix
 
