@@ -2,6 +2,16 @@ name: Publish GHCR multi-arch OCI image
 
 on:
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: GHCR image tag to publish
+        required: true
+      release_asset_url:
+        description: GitHub Release OCI archive URL
+        required: true
+      release_asset_sha256:
+        description: SHA256 of the OCI archive
+        required: true
 
 permissions:
   contents: read
@@ -9,9 +19,9 @@ permissions:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/kavita-gds
-  IMAGE_TAG: 9.0.6-2
-  RELEASE_ASSET_URL: https://github.com/suikano1304/Kavita-GDS/releases/download/v9.0.6-2/kavita-gds-oci.tar.gz
-  RELEASE_ASSET_SHA256: d1d8ae88fc10d40e45d978fa40a482c8ef7a2311fb9b9234ada84a3c155d7cc5
+  IMAGE_TAG: ${{ inputs.image_tag }}
+  RELEASE_ASSET_URL: ${{ inputs.release_asset_url }}
+  RELEASE_ASSET_SHA256: ${{ inputs.release_asset_sha256 }}
   OCI_ARCHIVE_PATH: docker-image/kavita-gds.oci.tar
 
 jobs:

@@ -2,9 +2,17 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-9.0.7`
+현재 공개 릴리즈: `kavita-gds-9.0.7-1`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-06-09: `9.0.7-1` GDS cover/SQLite hotfix
+
+아래 변경은 공개 릴리스 태그 `9.0.7-1`에 포함했습니다.
+
+- GDS cover metadata가 비었거나 잘못된 경우에도 cover 생성 흐름이 중단되지 않도록 보강했습니다.
+- 생성된 GDS chapter cover가 volume/series cover 참조까지 저장되도록 보정했습니다.
+- 특정 운영 환경에서 WebUI 초기 접근 중 SQLite disk I/O 오류로 보일 수 있던 upstream write-path 회귀를 되돌렸습니다.
 
 ## 2026-06-06: `9.0.7` official `0.9.0.7` nightly 포팅 릴리스
 

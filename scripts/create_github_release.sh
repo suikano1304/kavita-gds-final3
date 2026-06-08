@@ -3,9 +3,9 @@ set -euo pipefail
 
 REPO_NAME="${REPO_NAME:-Kavita-GDS}"
 VISIBILITY="${VISIBILITY:-public}"
-TAG="${TAG:-v9.0.6-2}"
-TITLE="${TITLE:-Kavita GDS}"
-ASSET="${ASSET:-/root/Kavita-GDS/kavita-gds.tar.gz}"
+TAG="${TAG:-v9.0.7-1}"
+TITLE="${TITLE:-Kavita GDS ${TAG}}"
+ASSET="${ASSET:-}"
 NOTES_FILE="${NOTES_FILE:-RELEASE_NOTES.md}"
 
 if [[ -z "${GITHUB_TOKEN:-}" ]]; then
@@ -13,7 +13,7 @@ if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$ASSET" ]]; then
+if [[ -n "$ASSET" && ! -f "$ASSET" ]]; then
   echo "Asset not found: $ASSET" >&2
   exit 1
 fi
@@ -68,22 +68,24 @@ notes_json="$(sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/' "$NOTES_FILE" | tr -d '\n')
 release_json="$(api -X POST "https://api.github.com/repos/$FULL_NAME/releases" \
   -d "{\"tag_name\":\"$TAG\",\"target_commitish\":\"main\",\"name\":\"$TITLE\",\"body\":\"$notes_json\",\"draft\":false,\"prerelease\":false}")"
 
-upload_url="$(printf '%s' "$release_json" | sed -n 's/.*"upload_url"[[:space:]]*:[[:space:]]*"\([^"]*\){?name,label}".*/\1/p')"
-if [[ -z "$upload_url" ]]; then
-  echo "Could not resolve release upload URL. Release may already exist." >&2
-  exit 1
-fi
+if [[ -n "$ASSET" ]]; then
+  upload_url="$(printf '%s' "$release_json" | sed -n 's/.*"upload_url"[[:space:]]*:[[:space:]]*"\([^"]*\){?name,label}".*/\1/p')"
+  if [[ -z "$upload_url" ]]; then
+    echo "Could not resolve release upload URL. Release may already exist." >&2
+    exit 1
+  fi
 
-asset_name="$(basename "$ASSET")"
-curl -fsS \
-  -X POST \
-  -H "Authorization: Bearer $GITHUB_TOKEN" \
-  -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  -H "Content-Type: application/gzip" \
-  --data-binary @"$ASSET" \
-  "$upload_url?name=$asset_name" \
-  >/dev/null
+  asset_name="$(basename "$ASSET")"
+  curl -fsS \
+    -X POST \
+    -H "Authorization: Bearer $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    -H "Content-Type: application/gzip" \
+    --data-binary @"$ASSET" \
+    "$upload_url?name=$asset_name" \
+    >/dev/null
+fi
 
 echo "Created release:"
 echo "https://github.com/$FULL_NAME/releases/tag/$TAG"

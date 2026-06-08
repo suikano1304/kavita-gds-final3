@@ -2,7 +2,7 @@
 
 This release provides the Kavita official `0.9.0.7` nightly based GDS build as a GHCR multi-arch Docker image.
 
-Version: `9.0.7`
+Version: `9.0.7-1`
 
 ## Included Platforms
 
@@ -18,10 +18,11 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
 - Built one production UI bundle and RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- Pushed GHCR `9.0.7` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- `linux/amd64` startup and extended reader regression validation passed in `kavita-test` using the pushed GHCR image.
+- Pushed GHCR `9.0.7-1` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Cover regression validation passed before release using local fixtures and targeted production item refresh.
+- `linux/amd64` startup health passed using the pushed GHCR image.
 - `linux/arm64` was started under qemu from the pushed GHCR image and returned `/api/health` 200 with Docker health `healthy`.
-- `linux/arm/v7` was started under qemu from the pushed GHCR image and returned `/api/health` 200 with Docker health `healthy`.
+- `linux/arm/v7` was rebuilt with the qemu ARM32 startup environment restored, then started under qemu and returned `/api/health` 200 with Docker health `healthy`.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
@@ -42,7 +43,15 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 /root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md
 ```
 
-## Changes Since `9.0.6-2`
+## Changes Since `9.0.7`
+
+### 2026-06-09 `9.0.7-1` GDS cover and SQLite hotfix
+
+- Hardened GDS cover extraction when sidecar cover metadata is empty, malformed, or unusable.
+- Ensured generated GDS chapter covers are persisted through volume and series cover references.
+- Reverted an upstream SQLite startup/write-path regression that could surface as transient WebUI disk I/O errors in this environment.
+
+## Historical Changes Since `9.0.6-2`
 
 ### 2026-06-06 `9.0.7` official `0.9.0.7` nightly port
 
@@ -91,13 +100,13 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 ## GHCR
 
 ```text
-ghcr.io/suikano1304/kavita-gds:9.0.7
+ghcr.io/suikano1304/kavita-gds:9.0.7-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:da791441659ed602a6fbb86f9bb196c4c71754378004556c04399094ad3437e7
+multiarch digest=sha256:5ee0d660765c3469466031699d1ee62a51faaea0fe215ffa8c3115cb40f20274
 
-linux/amd64=sha256:59ed9200cc906c8737cf086af98656028e9b1f1f87a986db1fa100ae18c30f32
-linux/arm64=sha256:8e41c7b01f0167e3d89f46024dbfea6799ccb4ab0dedcdad71b3e9890f426f5a
-linux/arm/v7=sha256:48d4d285e41ba9ffe1c2819aa12f4d91b2e69f69d1312c4e60605e5ca0b78869
+linux/amd64=sha256:de99981c7b7cf8ecd69409329e128d70665a14e53f42e1de4da98969246c53a0
+linux/arm64=sha256:aa925e2bad3f0adbd255ae8f7adf5a16fabdb10d21d2b59afe1bd3836458c0dd
+linux/arm/v7=sha256:67dedab38552da3894e244affdbcc0aab8d89d22b521ac296f483225db2cd0aa
 ```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`
