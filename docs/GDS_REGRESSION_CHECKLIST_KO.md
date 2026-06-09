@@ -17,13 +17,14 @@
 - ZIP/CBZ reader: `chapter-info`, file dimensions, image, thumbnail, negative page clamp가 정상인지 확인.
 - PDF reader: raw PDF serving과 extracted image rendering이 모두 정상인지 확인.
 - cover fallback: folder/YAML/TXT/ZIP-CBZ first-page cover fallback이 source media mount에 쓰지 않고 config cover storage만 사용하는지 확인.
+- TXT YAML cover precedence/refresh: TXT-only 신규 import에서 `kavita.yaml`의 file-level base64 cover가 title fallback cover보다 우선되는지, 기존 TXT title cover가 있는 상태에서도 강제 refresh로 실제 교체되는지 확인.
 - mixed-format series: 같은 작품 폴더의 ZIP/EPUB/TXT/PDF가 format별 별도 series로 갈라지지 않는지 확인.
 - word-count mixed files: EPUB-format series 안의 PDF/TXT 파일이 EPUB word-count 경로로 열리지 않는지 확인.
 - loose web-novel images: cover/capture loose `.jpg`가 bogus series로 ingest되지 않는지 확인.
 - malformed sidecar YAML: broken `kavita.yaml`이 media import 전체를 막지 않는지 확인.
 - GDS scan memory: file discovery와 post-scan DB/cover/word-count 단계에서 OOM/restart가 없는지 확인.
 - Web UI production bundle: runtime `.js/.html/.css`에 `localhost:5000`, `:5000/api`, Angular development-mode 문자열이 없는지 확인.
-- ARM runtime: `linux/arm64`와 `linux/arm/v7`가 pushed GHCR image에서 `/api/health` 200과 Docker health `healthy`에 도달하는지 확인.
+- ARM runtime: `linux/arm64`와 `linux/arm/v7`가 pushed GHCR image에서 `/api/health` 200에 도달하는지 확인. qemu startup은 Docker healthcheck보다 느릴 수 있으므로 `/api/health` 200을 우선 판정하고 Docker health는 참고값으로 기록한다.
 
 ## 표준 실행 절차
 
@@ -64,6 +65,25 @@ PASS 기준:
 - recent MediaError count 0
 - 새 404/500/Fatal/SQLite/database-lock/disk I/O 로그 없음
 
+## Cover Regression Fixture
+
+GDS cover refactor 또는 cover fallback을 건드린 릴리스에서는 local fixture 기반 cover regression을 별도로 반복 실행한다.
+
+```bash
+pct push 101 /root/kavita-gds-lab/prepare-cover-regression-test-config.sh /tmp/prepare-cover-regression-test-config.sh
+pct push 101 /root/kavita-gds-lab/validate-cover-regression-fixture.py /tmp/validate-cover-regression-fixture.py
+pct push 101 /root/kavita-gds-lab/run-cover-regression-validation-gated.sh /tmp/run-cover-regression-validation-gated.sh
+pct exec 101 -- bash -lc 'IMAGE=ghcr.io/suikano1304/kavita-gds:<version> SQLITE_IMAGE=ghcr.io/suikano1304/kavita-gds:<version> MAX_IO_FULL_AVG10=8 PASSES=2 bash /tmp/run-cover-regression-validation-gated.sh'
+```
+
+PASS 기준:
+
+- local cover regression library가 2회 force scan을 통과한다.
+- YAML base64 cover가 적용되어야 하는 샘플은 cover reference와 cover API bytes가 존재한다.
+- `cover: TEXT` 또는 invalid base64 샘플은 TXT title fallback으로 분류된다.
+- 0-byte EPUB, malformed EPUB, 본문/cover source가 없는 샘플은 expected source-data issue로만 남고 server exception으로 실패하지 않는다.
+- SQLite `quick_check`가 `ok`다.
+
 ## ARM Smoke
 
 필요 시 binfmt를 등록한다.
@@ -72,7 +92,7 @@ PASS 기준:
 pct exec 101 -- docker run --rm --privileged tonistiigi/binfmt --install arm64,arm
 ```
 
-`linux/arm64`와 `linux/arm/v7`를 각각 `--platform`으로 기동하고 `/api/health` 200 및 Docker health `healthy`를 확인한다. qemu startup은 수 분 걸릴 수 있다.
+`linux/arm64`와 `linux/arm/v7`를 각각 `--platform`으로 기동하고 `/api/health` 200을 확인한다. qemu startup은 수 분 걸릴 수 있고 Docker healthcheck가 먼저 `starting` 또는 `unhealthy`를 찍을 수 있으므로 최종 `/api/health` 200과 container exit 여부를 함께 기록한다.
 
 ## Manifest Check
 
@@ -85,7 +105,7 @@ PASS 기준:
 
 - version tag와 `latest`가 같은 multi-arch digest를 가리킨다.
 - `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest가 모두 있다.
-- ARM manifest는 ARM smoke test 통과 후에만 publish manifest에 포함한다.
+- ARM manifest는 ARM smoke test에서 `/api/health` 200을 확인한 뒤에만 publish manifest에 포함한다.
 
 ## 로컬 상세 매트릭스
 

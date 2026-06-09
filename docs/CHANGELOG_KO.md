@@ -2,9 +2,24 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-9.0.7-1`
+현재 공개 릴리즈: `kavita-gds-9.0.7-2`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-06-09: `9.0.7-2` GDS cover refactor 및 TXT YAML cover precedence fix
+
+아래 변경은 공개 릴리스 태그 `9.0.7-2`에 포함했습니다.
+
+- GDS 전용 cover 생성 경로를 `MetadataService`에서 별도 서비스로 분리했습니다.
+- upstream 재포팅 시 예상 충돌 지점을 `MetadataService` DI와 GDS hook 호출부로 축소했습니다.
+- GDS cover 우선순위를 한 곳에 고정했습니다: folder cover는 series cover로 보존, file-level YAML base64 cover는 exact chapter file 기준 우선, media internal cover fallback, TXT title fallback 순서입니다.
+- TXT-only GDS import/refresh에서 `kavita.yaml` file-level base64 cover가 TXT title fallback cover보다 먼저 적용되도록 수정했습니다.
+- `cover: TEXT`, URL, invalid base64, empty YAML, NUL-filled YAML은 이미지 cover가 아닌 hint로 처리하고 media import는 계속 진행되도록 했습니다.
+- `Kavita.Services.Tests` 전체를 GDS TXT 지원 기준으로 보정하고 통과했습니다: 2246 passed, 0 failed, 6 skipped.
+- local cover regression fixture를 2회 반복 통과했고 SQLite `quick_check=ok`를 확인했습니다.
+- GHCR `9.0.7-2`와 `latest`를 같은 multi-arch manifest로 push했습니다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` pushed GHCR 이미지가 `/api/health` 200에 도달하는 것을 확인했습니다.
+- 원본 EPUB이 0바이트 또는 ZIP/EPUB이 아닌 샘플은 code fix 대상이 아니라 source-data repair 대상으로 분류해 회귀 매트릭스에 남겼습니다.
 
 ## 2026-06-09: `9.0.7-1` GDS cover/SQLite hotfix
 

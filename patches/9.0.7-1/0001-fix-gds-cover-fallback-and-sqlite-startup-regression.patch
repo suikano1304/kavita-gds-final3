@@ -369,7 +369,7 @@ index 71ade4dce..99f47096b 100644
              foreach (var chapter in volume.Chapters)
              {
 -                var chapterUpdated = UpdateGdsChapterCoverFromYaml(chapter, forceUpdate, encodeFormat, coverImageSize, forceColorScape);
-+                var forceChapterCoverUpdate = forceUpdate && string.IsNullOrEmpty(chapter.CoverImage);
++                var forceChapterCoverUpdate = forceUpdate;
 +                var chapterUpdated = UpdateGdsChapterCoverFromYaml(chapter, forceChapterCoverUpdate, encodeFormat, coverImageSize, forceColorScape);
                  if (!chapterUpdated)
                  {
