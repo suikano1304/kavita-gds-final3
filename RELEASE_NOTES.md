@@ -2,7 +2,7 @@
 
 This release provides the Kavita official `0.9.0.7` nightly based GDS build as a GHCR multi-arch Docker image.
 
-Version: `9.0.7-3`
+Version: `9.0.7-4`
 
 ## Included Platforms
 
@@ -18,14 +18,16 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
 - Rebuilt the production UI bundle for cover image cache-busting.
+- Added a GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- Pushed GHCR `9.0.7-3` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- Manifest digest: `sha256:57fce1d2c1a18e0ca34435056318c8b6bb50282a86370effbe468509cc88e28c`.
+- Pushed GHCR `9.0.7-4` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Manifest digest: `sha256:789bafd898cd5cc3c01768cf6df57e2513f63a4552ce7b14c35294b3ab263526`.
 - Per-platform manifests:
-  - `linux/amd64`: `sha256:018fedaa35623bfcf3a874bb40cf27b42615aa07288cdc03af09e8241d2bd453`
-  - `linux/arm64`: `sha256:e2ef246f97cb5c251d6f15d1ee2861c7d0ab3f0a5e7f93602d3298355ed971a7`
-  - `linux/arm/v7`: `sha256:fc7b3601f278a62133c99c0cba187585296dc616fcfe8b1ef97aa40ecd6ef034`
-- GDS cover service focused tests passed: 8 passed.
+  - `linux/amd64`: `sha256:53dca54bd2f4ff9ea0f2fa433127f71bab2dddbac7b6d5adbd30d010fbbecd9c`
+  - `linux/arm64`: `sha256:b4b377b69b4d771129148a34ce12285a4206506ac81cfeaed4b95aaa5634b48e`
+  - `linux/arm/v7`: `sha256:8cf0ae274c5c741cec69b7740b97adaa789220eb92a5d5a280758fa109710838`
+- GDS targeted scan focused tests passed: 2 passed.
+- GDS cover service focused tests passed: 8 passed before the follow-up hotfix.
 - Cover regression validation passed twice using local fixtures; SQLite `quick_check` returned `ok`.
 - `linux/amd64` startup health passed using the pushed GHCR image.
 - `linux/arm64` was started under qemu from the pushed GHCR image and returned `/api/health` 200.
@@ -51,6 +53,14 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 ```
 
 ## Changes Since `9.0.7-1`
+
+### 2026-06-10 `9.0.7-4` GDS targeted scan follow-up hotfix
+
+- Skipped word-count analysis after GDS targeted series scans so cover or metadata refreshes do not re-read large remote EPUB sets through the word-count path.
+- Skipped global metadata cleanup and whole-cache cleanup after GDS targeted series scans; series-local chapter cache cleanup remains in place.
+- Added regression tests for the GDS targeted scan follow-up gates.
+- Revalidated a production-clone test container with the original GDS directory layout mounted read-only.
+- Revalidated production targeted GDS scans and batched representative-cover normalization without post-scan CPU spin.
 
 ### 2026-06-10 `9.0.7-3` GDS cover scan hardening and WebUI cover cache fix
 

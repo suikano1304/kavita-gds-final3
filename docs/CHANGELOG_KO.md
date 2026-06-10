@@ -2,9 +2,33 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-9.0.7-2`
+현재 공개 릴리즈: `kavita-gds-9.0.7-4`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-06-10: `9.0.7-4` GDS targeted scan 후속 작업 hotfix
+
+아래 변경은 공개 릴리스 태그 `9.0.7-4`에 포함했습니다.
+
+- GDS 시리즈 단위 스캔 후 word-count 분석을 건너뛰도록 했습니다.
+- GDS 시리즈 단위 스캔 후 전역 metadata cleanup과 전체 cache cleanup을 건너뛰도록 했습니다.
+- 시리즈 로컬 chapter cache cleanup은 유지했습니다.
+- GDS targeted scan 완료 뒤 불필요한 후속 작업으로 CPU가 오래 남는 상황을 막기 위한 회귀 테스트를 추가했습니다.
+- production DB clone과 원본 GDS 상대 폴더 구조 read-only mount에서 targeted scan 후 CPU/health를 확인했습니다.
+- GHCR `9.0.7-4`와 `latest`를 같은 multi-arch manifest로 push했습니다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` pushed GHCR 이미지가 `/api/health` 200에 도달하는 것을 확인했습니다.
+- 운영 컨테이너도 GHCR `9.0.7-4` amd64 이미지로 맞췄습니다.
+
+## 2026-06-10: `9.0.7-3` GDS cover scan hardening 및 WebUI cover cache fix
+
+아래 변경은 공개 릴리스 태그 `9.0.7-3`에 포함했습니다.
+
+- GDS targeted series scan이 저장된 broad category/library root를 재귀 스캔하지 않고 기존 파일의 실제 parent directory만 스캔하도록 했습니다.
+- GDS mixed-format series에서 TXT/EPUB/PDF/archive 파일이 format 차이 때문에 누락되지 않도록 batch 병합을 보강했습니다.
+- mixed-root series에서 concrete `LowestFolderPath`가 broad root로 되돌아가지 않도록 보존했습니다.
+- scan work completion과 post-scan cleanup enqueue 로그를 분리해 targeted scan 완료 지점을 확인하기 쉽게 했습니다.
+- cover refresh 또는 series scan 후 WebUI가 stale browser cache의 이전 cover bytes로 되돌아가지 않도록 cover URL cache-buster와 no-cache header를 추가했습니다.
+- 대표 cover 정규화는 운영에서 작은 batch와 health latency gate를 걸어 실행해야 하는 절차로 문서화했습니다.
 
 ## 2026-06-09: `9.0.7-2` GDS cover refactor 및 TXT YAML cover precedence fix
 
