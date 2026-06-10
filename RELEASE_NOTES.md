@@ -2,7 +2,7 @@
 
 This release provides the Kavita official `0.9.0.7` nightly based GDS build as a GHCR multi-arch Docker image.
 
-Version: `9.0.7-5`
+Version: `9.0.7-6`
 
 ## Included Platforms
 
@@ -17,24 +17,26 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 ## Verification
 
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
-- Kept the validated `9.0.7-4` production UI bundle and rebuilt backend runtime packages only.
+- Kept the validated `9.0.7-5` production UI bundle and rebuilt backend runtime packages only.
+- Added an OPDS hotfix for multi-file ZIP/CBZ archive acquisition feeds so each entry uses the actual file id, filename, size, summary, page count, and file-specific download route.
+- Added an OPDS image stream progress hotfix so `saveProgress=false` suppresses progress saves for non-Panels clients.
 - Added a reader/cache hotfix that prefers a readable non-empty book file when a chapter has both broken/empty and valid EPUB rows.
 - Kept the GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- Pushed GHCR `9.0.7-5` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- Manifest digest: `sha256:65c7eaed1dc6a21a39c1819f71276c26f748556303e1af904818817be5dfd780`.
+- Pushed GHCR `9.0.7-6` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Manifest digest: `sha256:0279cbc356d7e644f79aed7e7f7903b6ed921eb4d61b7dd6d424eaa88d38ca22`.
 - Per-platform manifests:
-  - `linux/amd64`: `sha256:7bc92d3c3aaf63c4e7b9acd23c54215ef8ca4641de5b612fa0f327fec5a2e227`
-  - `linux/arm64`: `sha256:f9fcf0d95d81325547b380a6ecb1e24b4b369f01d75f7070421dadef2c4f73e4`
-  - `linux/arm/v7`: `sha256:6f2bfe3c5ab6069bcd6af7dc1260ebb927d091989031d963825cea8bb63756ba`
-- Duplicate broken/valid EPUB row regression passed against a production DB clone and after production rollout: cold-cache `book-info`, `chapters`, `book-page`, and EPUB resource API returned 200.
-- Focused `CacheServiceTests` regression suite passed: 24 passed, 0 failed.
-- GDS targeted scan focused tests passed: 2 passed.
-- GDS cover service focused tests passed: 8 passed before the follow-up hotfix.
-- Cover regression validation passed twice using local fixtures; SQLite `quick_check` returned `ok`.
-- `linux/amd64` startup health passed using the pushed GHCR image.
-- `linux/arm64` was started under qemu from the pushed GHCR image and returned `/api/health` 200.
-- `linux/arm/v7` was started under qemu from the pushed GHCR image and returned `/api/health` 200.
+  - `linux/amd64`: `sha256:91957bde8486f2d6dd30e8c31bc9959e7beb732878287407efb0cdb449719cb8`
+  - `linux/arm64`: `sha256:6dfaac18f2262617e71682eec2cc5ad2fa80d4af17f83e64a8e1fff62d116c2d`
+  - `linux/arm/v7`: `sha256:308d158036ef62eb7f518f7809c09c810355ab1377c92efa4bbf848492f02ddd`
+- Focused OPDS service tests passed: 33 passed, 0 failed.
+- Focused OPDS controller tests passed: 6 passed, 0 failed.
+- Duplicate broken/valid EPUB row baseline was preserved; `CacheServiceTests` rerun returned `DOTNET_EXIT:0`.
+- Local `linux/amd64` release image startup returned `/api/health` 200.
+- Local `linux/arm64` release image startup under qemu returned `/api/health` 200.
+- Local `linux/arm/v7` release image startup under qemu returned `/api/health` 200.
+- Pushed GHCR `linux/amd64` image was pulled with digest `sha256:0279cbc356d7e644f79aed7e7f7903b6ed921eb4d61b7dd6d424eaa88d38ca22` and returned `/api/health` 200.
+- Production `kavita` was not restarted during this hotfix publish and remains on `9.0.7-5` until a separate rollout decision.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
@@ -56,6 +58,15 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 ```
 
 ## Changes Since `9.0.7-1`
+
+### 2026-06-11 `9.0.7-6` OPDS multi-file archive acquisition hotfix
+
+- Fixed OPDS series, volume, and chapter feeds for multi-file archive chapters so each entry is generated from the iterated `MangaFile`.
+- Added file-specific OPDS acquisition URLs in the form `.../chapter/{chapterId}/file/{mangaFileId}/download/{filename}`.
+- Added a compatible file-id download route that verifies the requested file belongs to the requested chapter before returning that file.
+- Preserved the legacy chapter-level OPDS download route for existing clients.
+- Fixed OPDS image stream progress saving so `saveProgress=false` is respected.
+- Added focused regression tests for multi-file OPDS feeds and OPDS progress-save gating.
 
 ### 2026-06-10 `9.0.7-5` readable book-file selection hotfix
 

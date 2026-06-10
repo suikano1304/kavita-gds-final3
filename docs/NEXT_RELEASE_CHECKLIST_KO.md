@@ -2,7 +2,7 @@
 
 작성일: 2026-06-02
 
-현재 공개 릴리즈는 `9.0.7-5`입니다. 다음 릴리즈는 official Kavita 기준 버전, source patch, GHCR image, Release asset, 운영 compose tag가 서로 어긋나지 않는지 먼저 확인합니다.
+현재 공개 릴리즈는 `9.0.7-6`입니다. 다음 릴리즈는 official Kavita 기준 버전, source patch, GHCR image, Release asset, 운영 compose tag가 서로 어긋나지 않는지 먼저 확인합니다.
 
 ## 기본 원칙
 

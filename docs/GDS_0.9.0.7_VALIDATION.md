@@ -4,6 +4,38 @@
 
 이 문서는 official Kavita `0.9.0.7` nightly 기반 Kavita-GDS `9.0.7` 릴리스 검증 결과를 기록한다. 검증은 별도 테스트 컨테이너와 테스트 DB 사본으로 진행했으며, 운영 컨테이너는 업그레이드하거나 재시작하지 않았다.
 
+## 2026-06-11 `9.0.7-6` OPDS multi-file archive acquisition release
+
+- GHCR `9.0.7-6`와 `latest`는 같은 multi-arch manifest를 가리킨다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest가 모두 포함되어 있다.
+- OPDS multi-file archive acquisition regression은 feed entry와 acquisition route를 실제 `MangaFile` 기준으로 생성하도록 수정했다.
+- OPDS image stream `saveProgress=false` regression은 진행률 저장 조건을 수정했다.
+- 공개 문서에는 샘플명, chapter id, media path를 기록하지 않고 issue class만 기록한다.
+
+```text
+multiarch digest=sha256:0279cbc356d7e644f79aed7e7f7903b6ed921eb4d61b7dd6d424eaa88d38ca22
+
+linux/amd64=sha256:91957bde8486f2d6dd30e8c31bc9959e7beb732878287407efb0cdb449719cb8
+linux/arm64=sha256:6dfaac18f2262617e71682eec2cc5ad2fa80d4af17f83e64a8e1fff62d116c2d
+linux/arm/v7=sha256:308d158036ef62eb7f518f7809c09c810355ab1377c92efa4bbf848492f02ddd
+```
+
+검증:
+
+- OPDS service focused tests: 33 passed, 0 failed.
+- OPDS controller focused tests: 6 passed, 0 failed.
+- `CacheServiceTests` baseline rerun: `DOTNET_EXIT:0`.
+- local release image startup smoke:
+  - `linux/amd64`: `/api/health` 200
+  - `linux/arm64`: qemu `/api/health` 200
+  - `linux/arm/v7`: qemu `/api/health` 200
+- GHCR manifest inspection:
+  - `9.0.7-6`와 `latest` digest가 동일함을 확인했다.
+  - amd64, arm64, arm/v7 manifest가 포함되어 있음을 확인했다.
+- production rollout:
+  - production `kavita`는 이 hotfix publish 중 재기동하지 않았다.
+  - production은 계속 `ghcr.io/suikano1304/kavita-gds:9.0.7-5` 상태로 유지했다.
+
 ## 2026-06-10 `9.0.7-5` readable book-file selection release
 
 - GHCR `9.0.7-5`와 `latest`는 같은 multi-arch manifest를 가리킨다.
