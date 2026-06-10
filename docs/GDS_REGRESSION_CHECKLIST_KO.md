@@ -32,6 +32,7 @@
 - loose web-novel images: cover/capture loose `.jpg`가 bogus series로 ingest되지 않는지 확인.
 - malformed sidecar YAML: broken `kavita.yaml`이 media import 전체를 막지 않는지 확인.
 - GDS scan memory: file discovery와 post-scan DB/cover/word-count 단계에서 OOM/restart가 없는지 확인.
+- GDS targeted ScanSeries follow-up work: GDS 시리즈 단위 스캔 후 word-count 분석과 전역 metadata/cache cleanup이 실행되지 않고, series-local cleanup만 남는지 확인.
 - Web UI production bundle: runtime `.js/.html/.css`에 `localhost:5000`, `:5000/api`, Angular development-mode 문자열이 없는지 확인.
 - ARM runtime: `linux/arm64`와 `linux/arm/v7`가 pushed GHCR image에서 `/api/health` 200에 도달하는지 확인. qemu startup은 Docker healthcheck보다 느릴 수 있으므로 `/api/health` 200을 우선 판정하고 Docker health는 참고값으로 기록한다.
 
@@ -95,6 +96,8 @@ PASS 기준:
 - mixed EPUB+TXT 샘플은 media/YAML cover가 TXT title fallback보다 representative cover에서 우선된다.
 - cover update 후 같은 entity의 image API URL 또는 응답 헤더가 stale browser cache를 막고, home/list view가 refresh 전 cover bytes로 되돌아가지 않는다.
 - mixed-root copied fixture 또는 production-clone test는 실제 file directory roots만 스캔하고 broad category/library root로 확장되지 않는다.
+- GDS targeted series scan 로그에 word-count skip과 global post-scan cleanup skip이 남고, `WordCountAnalyzerService` 후속 로그가 없어야 한다.
+- GDS targeted series scan 완료 후 30초 이상 container CPU와 `/api/health`를 확인해 ThreadPool CPU spin이 없어야 한다.
 - 0-byte EPUB, malformed EPUB, 본문/cover source가 없는 샘플은 expected source-data issue로만 남고 server exception으로 실패하지 않는다.
 - SQLite `quick_check`가 `ok`다.
 
