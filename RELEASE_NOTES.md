@@ -2,7 +2,7 @@
 
 This release provides the Kavita official `0.9.0.7` nightly based GDS build as a GHCR multi-arch Docker image.
 
-Version: `9.0.7-2`
+Version: `9.0.7-3`
 
 ## Included Platforms
 
@@ -17,11 +17,15 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 ## Verification
 
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
-- Reused the existing production UI bundle because this is a backend-only GDS cover refactor.
+- Rebuilt the production UI bundle for cover image cache-busting.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- Pushed GHCR `9.0.7-2` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- GDS metadata parser focused tests passed: 8 passed.
-- `Kavita.Services.Tests` passed: 2246 passed, 0 failed, 6 skipped.
+- Pushed GHCR `9.0.7-3` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Manifest digest: `sha256:57fce1d2c1a18e0ca34435056318c8b6bb50282a86370effbe468509cc88e28c`.
+- Per-platform manifests:
+  - `linux/amd64`: `sha256:018fedaa35623bfcf3a874bb40cf27b42615aa07288cdc03af09e8241d2bd453`
+  - `linux/arm64`: `sha256:e2ef246f97cb5c251d6f15d1ee2861c7d0ab3f0a5e7f93602d3298355ed971a7`
+  - `linux/arm/v7`: `sha256:fc7b3601f278a62133c99c0cba187585296dc616fcfe8b1ef97aa40ecd6ef034`
+- GDS cover service focused tests passed: 8 passed.
 - Cover regression validation passed twice using local fixtures; SQLite `quick_check` returned `ok`.
 - `linux/amd64` startup health passed using the pushed GHCR image.
 - `linux/arm64` was started under qemu from the pushed GHCR image and returned `/api/health` 200.
@@ -47,6 +51,16 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 ```
 
 ## Changes Since `9.0.7-1`
+
+### 2026-06-10 `9.0.7-3` GDS cover scan hardening and WebUI cover cache fix
+
+- Fixed targeted GDS series scans so mixed-root series scan only the actual attached file directories instead of a broad category or library root.
+- Fixed mixed-format GDS scan grouping so TXT/EPUB/PDF/archive files attached to the same normalized series are not dropped because their formats differ.
+- Preserved concrete GDS `LowestFolderPath` when a series spans multiple real file directories.
+- Added explicit post-scan completion logging after cleanup enqueue so targeted scan jobs have an observable finish point.
+- Fixed stale cover display after scan/refresh by adding cover image URL cache-busting on cover update events and no-cache headers on cover endpoints.
+- Added regression coverage for mixed TXT and EPUB volumes so TXT title fallback does not displace EPUB media cover as representative series cover.
+- Documented that bulk representative-cover normalization must be latency-gated and batched to avoid WebUI slowdown during production cleanup.
 
 ### 2026-06-09 `9.0.7-2` GDS cover refactor and TXT YAML cover precedence fix
 
