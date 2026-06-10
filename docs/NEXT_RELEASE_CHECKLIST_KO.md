@@ -57,6 +57,8 @@ git -C /root/Kavita-GDS status --short
 13. 운영 반영 후 대표 문제 series API 확인
 14. rclone log/RC에서 write/delete/rename activity가 없는지 확인
 15. GitHub Release asset과 `SHA256SUMS` 확인
+16. README/사용 문서/compose 예시의 현재 릴리스 태그와 digest가 GHCR manifest와 일치하는지 확인
+17. GitHub Release tag가 최종 문서 갱신 커밋을 가리키는지 확인
 
 ## 운영 적용 전 baseline
 
@@ -99,6 +101,8 @@ scripts/collect_gds_preflight.sh \
 - Web UI가 production bundle로 동작하고 `localhost:5000/api` 요청이 없어야 한다.
 - 운영 compose image tag와 GHCR digest가 문서에 기록된 값과 일치해야 한다.
 - release asset checksum이 `SHA256SUMS`와 일치해야 한다.
+- `README.md`, `docs/USAGE_KO.md`, `docs/BUILD_NOTES_KO.md`, `docs/NEXT_RELEASE_CHECKLIST_KO.md`, `compose/docker-compose.production.yml`에 이전 버전 태그나 이전 digest가 남아 있지 않아야 한다.
+- GitHub Release tag와 `targetCommitish`가 최종 릴리스 문서 커밋을 가리켜야 한다.
 
 ## 문서 갱신
 
