@@ -19,12 +19,14 @@
 - cover fallback: folder/YAML/TXT/ZIP-CBZ first-page cover fallback이 source media mount에 쓰지 않고 config cover storage만 사용하는지 확인.
 - TXT YAML cover precedence/refresh: TXT-only 신규 import에서 `kavita.yaml`의 file-level base64 cover가 title fallback cover보다 우선되는지, 기존 TXT title cover가 있는 상태에서도 강제 refresh로 실제 교체되는지 확인.
 - mixed EPUB+TXT representative cover: 같은 normalized series 안에 TXT와 EPUB이 함께 있을 때 TXT title fallback이 EPUB/YAML/media cover를 대표 series/volume cover에서 밀어내지 않는지 확인. chapter cover는 각 source file 기준으로 유지되고, series cover와 volume cover는 folder/YAML/media cover를 TXT title fallback보다 우선해야 한다.
+- cover update WebUI cache: cover refresh 또는 series scan 후 backend 대표 cover가 바뀌었을 때 home/list/detail view가 고정 이미지 URL의 stale browser cache를 재사용하지 않는지 확인한다. cover image URL은 갱신 event 이후 cache-buster를 포함해야 하며, cover endpoints는 no-cache headers를 반환해야 한다.
 - valid EPUB cover extraction: OPF/spine과 cover asset이 정상인 EPUB chapter에서 chapter cover가 비어 있지 않고 representative cover 후보로 사용되는지 확인.
 - malformed-but-readable EPUB tolerance: 0-byte가 아닌 EPUB의 OPF manifest/spine/cover resource 이상이 scan 전체 실패나 server exception으로 번지지 않고 source issue 또는 tolerant fallback으로 분류되는지 확인.
 - large book-category scan warnings: 대형 책 카테고리 scan 후 `Unable to determine page count`, EPUB manifest, PDF parse warning을 샘플링해 source defect와 reader/parser regression을 구분하는지 확인.
 - mixed-root series scan safety: 여러 library/root/category의 파일이 한 series에 붙은 경우 `/api/series/scan`이 상위 category root를 광범위하게 재귀 스캔하지 않는지 확인한다. 실제 기존 file parent directories만 scan root로 사용하고, library root는 targeted scan root로 쓰지 않아야 한다.
 - GDS mixed-format scan batching: 기존 GDS series에 TXT/EPUB/PDF/archive 파일이 함께 붙어 있는 경우 format이 다르다는 이유로 parsed groups 일부가 누락되지 않는지 확인한다.
 - series scan completion logging: targeted series scan이 file scan/update 후 `scan work completed`와 post-scan cleanup enqueue 로그를 즉시 남기고, abandoned metadata cleanup이 다음 scan을 막지 않는지 확인한다.
+- bulk cover normalization safety: 운영 또는 production-clone에서 stale representative cover를 대량 정규화할 때는 WebUI health latency gate, 작은 batch size, scan completion log 대기를 적용한다. 연속 series scan 후 .NET ThreadPool CPU가 해소되지 않거나 home/list API가 초 단위로 느려지면 즉시 중단하고 원인을 기록한다.
 - mixed-format series: 같은 작품 폴더의 ZIP/EPUB/TXT/PDF가 format별 별도 series로 갈라지지 않는지 확인.
 - word-count mixed files: EPUB-format series 안의 PDF/TXT 파일이 EPUB word-count 경로로 열리지 않는지 확인.
 - loose web-novel images: cover/capture loose `.jpg`가 bogus series로 ingest되지 않는지 확인.
@@ -91,6 +93,7 @@ PASS 기준:
 - YAML base64 cover가 적용되어야 하는 샘플은 cover reference와 cover API bytes가 존재한다.
 - `cover: TEXT` 또는 invalid base64 샘플은 TXT title fallback으로 분류된다.
 - mixed EPUB+TXT 샘플은 media/YAML cover가 TXT title fallback보다 representative cover에서 우선된다.
+- cover update 후 같은 entity의 image API URL 또는 응답 헤더가 stale browser cache를 막고, home/list view가 refresh 전 cover bytes로 되돌아가지 않는다.
 - mixed-root copied fixture 또는 production-clone test는 실제 file directory roots만 스캔하고 broad category/library root로 확장되지 않는다.
 - 0-byte EPUB, malformed EPUB, 본문/cover source가 없는 샘플은 expected source-data issue로만 남고 server exception으로 실패하지 않는다.
 - SQLite `quick_check`가 `ok`다.
