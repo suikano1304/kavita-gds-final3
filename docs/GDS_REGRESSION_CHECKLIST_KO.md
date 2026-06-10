@@ -18,6 +18,13 @@
 - PDF reader: raw PDF serving과 extracted image rendering이 모두 정상인지 확인.
 - cover fallback: folder/YAML/TXT/ZIP-CBZ first-page cover fallback이 source media mount에 쓰지 않고 config cover storage만 사용하는지 확인.
 - TXT YAML cover precedence/refresh: TXT-only 신규 import에서 `kavita.yaml`의 file-level base64 cover가 title fallback cover보다 우선되는지, 기존 TXT title cover가 있는 상태에서도 강제 refresh로 실제 교체되는지 확인.
+- mixed EPUB+TXT representative cover: 같은 normalized series 안에 TXT와 EPUB이 함께 있을 때 TXT title fallback이 EPUB/YAML/media cover를 대표 series/volume cover에서 밀어내지 않는지 확인. chapter cover는 각 source file 기준으로 유지되고, series cover와 volume cover는 folder/YAML/media cover를 TXT title fallback보다 우선해야 한다.
+- valid EPUB cover extraction: OPF/spine과 cover asset이 정상인 EPUB chapter에서 chapter cover가 비어 있지 않고 representative cover 후보로 사용되는지 확인.
+- malformed-but-readable EPUB tolerance: 0-byte가 아닌 EPUB의 OPF manifest/spine/cover resource 이상이 scan 전체 실패나 server exception으로 번지지 않고 source issue 또는 tolerant fallback으로 분류되는지 확인.
+- large book-category scan warnings: 대형 책 카테고리 scan 후 `Unable to determine page count`, EPUB manifest, PDF parse warning을 샘플링해 source defect와 reader/parser regression을 구분하는지 확인.
+- mixed-root series scan safety: 여러 library/root/category의 파일이 한 series에 붙은 경우 `/api/series/scan`이 상위 category root를 광범위하게 재귀 스캔하지 않는지 확인한다. 실제 기존 file parent directories만 scan root로 사용하고, library root는 targeted scan root로 쓰지 않아야 한다.
+- GDS mixed-format scan batching: 기존 GDS series에 TXT/EPUB/PDF/archive 파일이 함께 붙어 있는 경우 format이 다르다는 이유로 parsed groups 일부가 누락되지 않는지 확인한다.
+- series scan completion logging: targeted series scan이 file scan/update 후 `scan work completed`와 post-scan cleanup enqueue 로그를 즉시 남기고, abandoned metadata cleanup이 다음 scan을 막지 않는지 확인한다.
 - mixed-format series: 같은 작품 폴더의 ZIP/EPUB/TXT/PDF가 format별 별도 series로 갈라지지 않는지 확인.
 - word-count mixed files: EPUB-format series 안의 PDF/TXT 파일이 EPUB word-count 경로로 열리지 않는지 확인.
 - loose web-novel images: cover/capture loose `.jpg`가 bogus series로 ingest되지 않는지 확인.
@@ -30,12 +37,13 @@
 
 1. 운영 `kavita`는 건드리지 않는다.
 2. `kavita-test`만 새 이미지로 재생성한다.
-3. GDS source mount는 read-only bind로 유지한다.
-4. extended verifier를 실행한다.
-5. `linux/arm64`와 `linux/arm/v7` smoke test를 실행한다.
-6. GHCR version tag와 `latest` manifest를 확인한다.
-7. `kavita-test`, ARM smoke containers, BuildKit을 정지한다.
-8. 결과를 release notes와 검증 기록에 남긴다.
+3. GDS fixture는 원본 GDS 상대 폴더 구조와 sidecar 배치를 보존해서 복사하고, test container에는 read-only로 마운트한다.
+4. GDS source mount는 read-only bind로 유지한다.
+5. extended verifier를 실행한다.
+6. `linux/arm64`와 `linux/arm/v7` smoke test를 실행한다.
+7. GHCR version tag와 `latest` manifest를 확인한다.
+8. `kavita-test`, ARM smoke containers, BuildKit을 정지한다.
+9. 결과를 release notes와 검증 기록에 남긴다.
 
 ## Extended Verifier
 
@@ -78,9 +86,12 @@ pct exec 101 -- bash -lc 'IMAGE=ghcr.io/suikano1304/kavita-gds:<version> SQLITE_
 
 PASS 기준:
 
+- fixture library가 원본 GDS 상대 폴더 구조와 sidecar 배치를 보존한다.
 - local cover regression library가 2회 force scan을 통과한다.
 - YAML base64 cover가 적용되어야 하는 샘플은 cover reference와 cover API bytes가 존재한다.
 - `cover: TEXT` 또는 invalid base64 샘플은 TXT title fallback으로 분류된다.
+- mixed EPUB+TXT 샘플은 media/YAML cover가 TXT title fallback보다 representative cover에서 우선된다.
+- mixed-root copied fixture 또는 production-clone test는 실제 file directory roots만 스캔하고 broad category/library root로 확장되지 않는다.
 - 0-byte EPUB, malformed EPUB, 본문/cover source가 없는 샘플은 expected source-data issue로만 남고 server exception으로 실패하지 않는다.
 - SQLite `quick_check`가 `ok`다.
 
