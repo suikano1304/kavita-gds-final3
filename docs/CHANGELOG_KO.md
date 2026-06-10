@@ -2,9 +2,23 @@
 
 기준 버전: `kavita-gds-0.9.0.2-scan-20260528`
 
-현재 공개 릴리즈: `kavita-gds-9.0.7-4`
+현재 공개 릴리즈: `kavita-gds-9.0.7-5`
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
+
+## 2026-06-10: `9.0.7-5` readable book-file selection hotfix
+
+아래 변경은 공개 릴리스 태그 `9.0.7-5`에 포함했습니다.
+
+- 같은 chapter에 broken/empty EPUB row와 valid EPUB row가 함께 있을 때 reader/cache/TOC 경로가 readable EPUB row를 우선 선택하도록 수정했습니다.
+- cache copy, cached file lookup, `book-info`, `book-page`, EPUB resource, TOC generation 경로에 같은 file-selection 정책을 적용했습니다.
+- 모든 attached file row에 분석 정보가 없을 때는 기존 first-file 동작을 유지합니다.
+- readable EPUB 우선순위와 cache copy 회귀 테스트를 추가했습니다.
+- `CacheServiceTests` focused regression suite 24개를 통과했습니다.
+- production DB clone + read-only GDS mount에서 affected regression sample의 cold-cache `book-info`, `chapters`, `book-page`, EPUB resource API 200을 확인했습니다.
+- GHCR `9.0.7-5`와 `latest`를 같은 multi-arch manifest로 push했습니다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` pushed GHCR 이미지가 `/api/health` 200에 도달하는 것을 확인했습니다.
+- 운영 컨테이너도 GHCR `9.0.7-5` amd64 이미지로 맞췄고, rollout 후 같은 reader API targeted validation을 통과했습니다.
 
 ## 2026-06-10: `9.0.7-4` GDS targeted scan 후속 작업 hotfix
 

@@ -1,8 +1,26 @@
 # Kavita-GDS 배포 전 회귀 검증 체크리스트
 
 작성일: 2026-06-06
+정책 갱신: 2026-06-10
 
 이 문서는 새 upstream Kavita 버전으로 포팅하거나 새 GHCR 이미지를 배포하기 전에 반복해야 하는 공개용 회귀 검증 체크리스트다. 실제 작품명, series/chapter id, media path가 필요한 로컬 상세 매트릭스는 PVE host의 `/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md`를 참조한다.
+
+## 기본 배포 gate
+
+배포 전 기본값은 로컬 회귀 매트릭스의 모든 issue class를 판정하는 것이다. "몇 개 샘플만 확인"은 빠른 smoke에만 허용하고, release 또는 production 반영 전에는 로컬 매트릭스의 각 issue class를 `PASS`, `SOURCE/DB DEBT`, `FUTURE POLICY`, `NOT RETESTED WITH REASON`, `FAIL` 중 하나로 분류한다.
+
+- `FAIL`은 release/production 반영을 막는다.
+- `NOT RETESTED WITH REASON`은 이유와 재검증 조건을 기록해야 하며, 무기한 PASS처럼 취급하지 않는다.
+- source-only 문제도 server가 Fatal/SQLite/database-lock 없이 reader/API/scan 경로를 견디는지 확인한다.
+- 이번 release 검증 중 새롭게 발견된 code-fixable 회귀나 current-version failure는 기본적으로 차후 릴리즈로 미루지 않는다. 로컬 매트릭스에 기록하고, 필요한 경우 공개 체크리스트에는 익명화된 issue class만 추가한 뒤, 현재 release candidate에 패치하고 재검증한다.
+- `FUTURE POLICY`는 명시적인 제품/정책 결정 항목에만 사용한다. correctness, crash, reader/API, scan, cache, SQLite, startup, health, operational stability failure는 현재 candidate에서 수정/검증하거나 `FAIL` release blocker로 남긴다.
+- 새 버전마다 로컬 감사 문서 `/root/lxc1-codex-docs/KAVITA_GDS_FULL_MATRIX_AUDIT_<date>.md`에 상태표를 남긴다.
+
+상태표 최소 컬럼:
+
+```text
+issue class | previous status | current version result | validation method | blocker | follow-up action
+```
 
 ## 필수 회귀 영역
 
@@ -39,15 +57,19 @@
 
 ## 표준 실행 절차
 
-1. 운영 `kavita`는 건드리지 않는다.
-2. `kavita-test`만 새 이미지로 재생성한다.
-3. GDS fixture는 원본 GDS 상대 폴더 구조와 sidecar 배치를 보존해서 복사하고, test container에는 read-only로 마운트한다.
-4. GDS source mount는 read-only bind로 유지한다.
-5. extended verifier를 실행한다.
-6. `linux/arm64`와 `linux/arm/v7` smoke test를 실행한다.
-7. GHCR version tag와 `latest` manifest를 확인한다.
-8. `kavita-test`, ARM smoke containers, BuildKit을 정지한다.
-9. 결과를 release notes와 검증 기록에 남긴다.
+1. 로컬 회귀 매트릭스, 최신 로컬 full-matrix audit, 이 공개 체크리스트를 읽고 시작 로그에 문서 목록을 남긴다.
+2. unit/service tests를 먼저 실행한다.
+3. 운영 `kavita`는 건드리지 않는다.
+4. `kavita-test`만 새 이미지로 재생성한다.
+5. production DB clone과 원본 GDS 상대 폴더 구조를 보존한 copied fixture를 사용한다.
+6. GDS fixture와 source mount는 read-only bind로 유지한다.
+7. extended verifier와 로컬 매트릭스 issue class별 상태표를 실행/작성한다.
+8. 운영 targeted validation은 필요한 항목만 수행한다.
+9. 운영 broad scan/full verifier는 CPU, health, WebUI, Plex/Jellyfin, host I/O gate를 통과하고 필요성이 있을 때만 수행한다.
+10. `linux/arm64`와 `linux/arm/v7` smoke test를 실행한다.
+11. GHCR version tag와 `latest` manifest를 확인한다.
+12. `kavita-test`, ARM smoke containers, BuildKit을 정지한다.
+13. 결과를 release notes와 검증 기록에 남긴다.
 
 ## Extended Verifier
 
@@ -95,6 +117,7 @@ PASS 기준:
 - YAML base64 cover가 적용되어야 하는 샘플은 cover reference와 cover API bytes가 존재한다.
 - `cover: TEXT` 또는 invalid base64 샘플은 TXT title fallback으로 분류된다.
 - mixed EPUB+TXT 샘플은 media/YAML cover가 TXT title fallback보다 representative cover에서 우선된다.
+- duplicate broken/valid EPUB row 샘플은 첫 DB row가 0-byte 또는 `Pages=0`이어도 reader/cache가 non-zero, non-empty EPUB row를 선택한다.
 - cover update 후 같은 entity의 image API URL 또는 응답 헤더가 stale browser cache를 막고, home/list view가 refresh 전 cover bytes로 되돌아가지 않는다.
 - mixed-root copied fixture 또는 production-clone test는 실제 file directory roots만 스캔하고 broad category/library root로 확장되지 않는다.
 - GDS targeted series scan 로그에 word-count skip과 global post-scan cleanup skip이 남고, `WordCountAnalyzerService` 후속 로그가 없어야 한다.

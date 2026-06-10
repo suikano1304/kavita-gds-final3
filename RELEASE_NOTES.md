@@ -2,7 +2,7 @@
 
 This release provides the Kavita official `0.9.0.7` nightly based GDS build as a GHCR multi-arch Docker image.
 
-Version: `9.0.7-4`
+Version: `9.0.7-5`
 
 ## Included Platforms
 
@@ -17,15 +17,18 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 ## Verification
 
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
-- Rebuilt the production UI bundle for cover image cache-busting.
-- Added a GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
+- Kept the validated `9.0.7-4` production UI bundle and rebuilt backend runtime packages only.
+- Added a reader/cache hotfix that prefers a readable non-empty book file when a chapter has both broken/empty and valid EPUB rows.
+- Kept the GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- Pushed GHCR `9.0.7-4` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- Manifest digest: `sha256:789bafd898cd5cc3c01768cf6df57e2513f63a4552ce7b14c35294b3ab263526`.
+- Pushed GHCR `9.0.7-5` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Manifest digest: `sha256:65c7eaed1dc6a21a39c1819f71276c26f748556303e1af904818817be5dfd780`.
 - Per-platform manifests:
-  - `linux/amd64`: `sha256:53dca54bd2f4ff9ea0f2fa433127f71bab2dddbac7b6d5adbd30d010fbbecd9c`
-  - `linux/arm64`: `sha256:b4b377b69b4d771129148a34ce12285a4206506ac81cfeaed4b95aaa5634b48e`
-  - `linux/arm/v7`: `sha256:8cf0ae274c5c741cec69b7740b97adaa789220eb92a5d5a280758fa109710838`
+  - `linux/amd64`: `sha256:7bc92d3c3aaf63c4e7b9acd23c54215ef8ca4641de5b612fa0f327fec5a2e227`
+  - `linux/arm64`: `sha256:f9fcf0d95d81325547b380a6ecb1e24b4b369f01d75f7070421dadef2c4f73e4`
+  - `linux/arm/v7`: `sha256:6f2bfe3c5ab6069bcd6af7dc1260ebb927d091989031d963825cea8bb63756ba`
+- Duplicate broken/valid EPUB row regression passed against a production DB clone and after production rollout: cold-cache `book-info`, `chapters`, `book-page`, and EPUB resource API returned 200.
+- Focused `CacheServiceTests` regression suite passed: 24 passed, 0 failed.
 - GDS targeted scan focused tests passed: 2 passed.
 - GDS cover service focused tests passed: 8 passed before the follow-up hotfix.
 - Cover regression validation passed twice using local fixtures; SQLite `quick_check` returned `ok`.
@@ -53,6 +56,15 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 ```
 
 ## Changes Since `9.0.7-1`
+
+### 2026-06-10 `9.0.7-5` readable book-file selection hotfix
+
+- Fixed reader/cache selection when a chapter has both broken/empty and valid EPUB rows.
+- Added `ChapterFileSelector.GetBestReadingFile()` and applied it to cache copy, cached file lookup, book-info, book-page, EPUB resource, and TOC generation paths.
+- Preserved legacy first-file behavior when no file analysis exists for any attached row.
+- Added regression tests for readable EPUB preference and cache copy behavior.
+- Revalidated the affected production regression sample in `kavita-test` with a production DB clone and read-only GDS mount, then repeated cold-cache reader API validation after production rollout.
+- Updated the release gate rule: newly discovered code-fixable failures found during release validation must be recorded, patched into the current candidate, and retested before rollout.
 
 ### 2026-06-10 `9.0.7-4` GDS targeted scan follow-up hotfix
 

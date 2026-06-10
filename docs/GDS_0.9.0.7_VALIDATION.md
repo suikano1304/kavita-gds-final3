@@ -4,6 +4,41 @@
 
 이 문서는 official Kavita `0.9.0.7` nightly 기반 Kavita-GDS `9.0.7` 릴리스 검증 결과를 기록한다. 검증은 별도 테스트 컨테이너와 테스트 DB 사본으로 진행했으며, 운영 컨테이너는 업그레이드하거나 재시작하지 않았다.
 
+## 2026-06-10 `9.0.7-5` readable book-file selection release
+
+- GHCR `9.0.7-5`와 `latest`는 같은 multi-arch manifest를 가리킨다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest가 모두 포함되어 있다.
+- 같은 chapter에 broken/empty EPUB row와 valid EPUB row가 함께 있는 회귀 issue class는 readable EPUB row를 우선 선택하도록 수정했다.
+- 공개 문서에는 샘플명, chapter id, media path를 기록하지 않고 issue class만 기록한다.
+
+```text
+multiarch digest=sha256:65c7eaed1dc6a21a39c1819f71276c26f748556303e1af904818817be5dfd780
+
+linux/amd64=sha256:7bc92d3c3aaf63c4e7b9acd23c54215ef8ca4641de5b612fa0f327fec5a2e227
+linux/arm64=sha256:f9fcf0d95d81325547b380a6ecb1e24b4b369f01d75f7070421dadef2c4f73e4
+linux/arm/v7=sha256:6f2bfe3c5ab6069bcd6af7dc1260ebb927d091989031d963825cea8bb63756ba
+```
+
+검증:
+
+- `CacheServiceTests` focused regression suite: 24 passed, 0 failed.
+- production DB clone + read-only GDS mount에서 affected regression issue class cold-cache 검증:
+  - `book-info`: 200
+  - `chapters`: 200
+  - `book-page` page 0/1: 200
+  - EPUB resource: 200
+  - cache file size: non-zero valid EPUB size
+  - retest window에서 `Central Directory corrupt`, `InvalidDataException`, SQLite/database-lock/Fatal 로그 없음
+- pushed GHCR image startup smoke:
+  - `linux/amd64`: `/api/health` 200
+  - `linux/arm64`: qemu `/api/health` 200
+  - `linux/arm/v7`: qemu `/api/health` 200
+- production rollout:
+  - SQLite online backup created before replacement.
+  - production `kavita` moved from `ghcr.io/suikano1304/kavita-gds:9.0.7-4` to `ghcr.io/suikano1304/kavita-gds:9.0.7-5`.
+  - post-rollout `/api/health` 200 and Docker health `healthy`.
+  - same affected regression issue class passed cold-cache targeted API validation after rollout.
+
 ## 범위
 
 - official Kavita `0.9.0.7` nightly 기반 릴리스 확인.
