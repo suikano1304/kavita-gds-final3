@@ -1,22 +1,22 @@
 # Kavita GDS
 
-Kavita official `0.9.0.7` nightly source에 GDS/rclone 환경용 scanfix를 포팅한 비공식 Docker 빌드입니다.
+Kavita GDS는 official Kavita `0.9.0.7` nightly를 기반으로, Google Drive/rclone 같은 원격 저장소를 쓰는 대형 라이브러리 환경에서 더 안정적으로 스캔하고 읽을 수 있도록 보정한 비공식 Docker 빌드입니다.
 
-현재 공개 릴리즈는 `9.0.7-6`입니다. GHCR의 `9.0.7-6`와 `latest` 태그는 `linux/amd64`, `linux/arm64`, `linux/arm/v7`를 포함하는 multi-arch manifest입니다.
+현재 릴리즈는 `9.0.7-6`입니다.
 
-## 이 빌드가 필요한 경우
+## 누구에게 필요한가요?
 
-이 저장소는 일반 Kavita 배포판이 아니라, 다음 환경을 위해 만든 운영용 hotfix 패키지입니다.
+다음 환경이면 이 이미지를 쓰는 것이 도움이 됩니다.
 
-- Google Drive/rclone/FUSE 같은 원격 media mount를 Kavita에 읽기 전용으로 연결한다.
-- GDS 라이브러리에서 ZIP/CBZ/EPUB/PDF/TXT가 섞여 있다.
-- 대형 라이브러리 스캔 중 hang, OOM, 반복 재스캔, `Pages=0` 또는 `1/1` reader 문제가 있었다.
-- GDS sidecar metadata인 `kavita.yaml`/`kavita.yml`과 folder cover를 사용한다.
-- 원본 media 경로에는 쓰지 않고 Kavita config/cache 안에서만 cover와 scan state를 관리하고 싶다.
+- Google Drive, rclone, FUSE mount 같은 원격 media 경로를 Kavita에 연결해 사용합니다.
+- ZIP/CBZ, EPUB, PDF, TXT가 한 라이브러리 안에 섞여 있습니다.
+- 큰 라이브러리 스캔 중 메모리 부족, 긴 멈춤, 반복 재스캔, 잘못된 페이지 수 문제가 있었습니다.
+- `kavita.yaml`/`kavita.yml`, folder cover, TXT/EPUB cover fallback 같은 GDS용 metadata 흐름을 사용합니다.
+- 원본 media 폴더는 읽기 전용으로 두고, DB/cache/cover만 Kavita config 경로에 저장하고 싶습니다.
 
-일반 로컬 디스크 기반 Kavita만 쓰는 경우에는 official Kavita 이미지를 먼저 사용하는 편이 낫습니다.
+일반 로컬 디스크 기반 Kavita만 쓰는 경우에는 official Kavita 이미지를 먼저 권장합니다.
 
-## 빠른 설치
+## 빠른 시작
 
 ```bash
 docker pull ghcr.io/suikano1304/kavita-gds:9.0.7-6
@@ -45,101 +45,71 @@ services:
       WAIT_ANCHOR_DIRS: /mnt/gds/READING_ROOT
 ```
 
-`/your/kavita/config`와 `/your/gds/mount`는 본인 환경에 맞게 바꾸세요. GDS/rclone 원본 mount는 읽기 전용을 권장합니다.
+`/your/kavita/config`, `/your/gds/mount`, `WAIT_ANCHOR_DIRS`는 본인 환경에 맞게 바꾸세요. GDS/rclone 원본 mount는 읽기 전용으로 연결하는 것을 권장합니다.
 
 전체 예시는 [compose/docker-compose.production.yml](compose/docker-compose.production.yml)에 있습니다.
 
-## 태그
+## 태그와 플랫폼
 
-권장 태그:
+운영에서는 고정 버전 태그를 권장합니다.
 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ```
 
-`latest`도 같은 릴리즈를 가리키지만, 운영에서는 고정 버전 태그를 권장합니다.
+`latest`도 현재는 같은 릴리즈를 가리킵니다. 지원 플랫폼은 다음과 같습니다.
 
-현재 GHCR digest:
+- `linux/amd64`
+- `linux/arm64`
+- `linux/arm/v7`
 
-```text
-ghcr.io/suikano1304/kavita-gds:9.0.7-6
-ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c
+정확한 manifest digest와 검증 기록은 [RELEASE_NOTES.md](RELEASE_NOTES.md)와 [docs/GDS_0.9.0.7_VALIDATION.md](docs/GDS_0.9.0.7_VALIDATION.md)에 기록합니다.
 
-linux/amd64=sha256:e1e2ebb9059257bc24d8756e629d768f722646e253b0dca6805071f173b41e0b
-linux/arm64=sha256:57109c8ed67bab282d071d7d498fea3b56516d59b15fdb5fb3f3237ab24f98dd
-linux/arm/v7=sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f1f4e
+## 9.0.7-6에서 달라진 점
+
+이번 릴리즈는 WebUI와 기존 GDS 안정화 패치를 묶은 hotfix입니다.
+
+- smart filter 이름 없이 정렬/필터를 저장해도 현재 화면의 기본 필터로 저장되도록 수정했습니다.
+- 같은 chapter에 깨진 EPUB row와 정상 EPUB row가 함께 있을 때, reader/cache가 읽을 수 있는 파일을 우선 선택합니다.
+- GDS 스캔이 불필요하게 넓은 상위 폴더까지 확장되지 않도록 보정했습니다.
+- 대형 GDS 라이브러리 스캔에서 메모리 사용량을 줄이도록 DB update와 cover generation 경로를 조정했습니다.
+- EPUB/TXT/PDF/ZIP 계열에서 페이지 수, cover fallback, manifest 경로 복구 관련 기존 GDS 안정화 패치를 유지합니다.
+- WebUI production bundle, Nanum Gothic font, `sqlite3` 진단 도구를 runtime image에 포함합니다.
+
+OPDS 실험 패치는 이번 릴리즈에서 제외했습니다. 기존 OPDS 기능은 제거하지 않았고, 새 OPDS 호환성 변경만 원복했습니다.
+
+자세한 변경 내역은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 보세요.
+
+## 업그레이드 전 확인
+
+기존 Kavita DB를 연결하기 전에는 config 디렉터리와 DB를 백업하세요.
+
+```bash
+cp -a /your/kavita/config /your/kavita/config.backup
 ```
 
-## 수동 다운로드
+운영 적용 후에는 최소한 다음을 확인하세요.
 
-`9.0.7-6`의 기본 배포물은 GHCR multi-arch image입니다. Docker pull이 불가능한 폐쇄망 환경에서는 GHCR image를 별도 registry로 미러링하거나, 필요한 플랫폼의 OCI archive를 따로 생성해 반입하세요. 과거 릴리스의 GitHub tarball은 해당 릴리스 태그 기준 산출물입니다.
+```bash
+curl http://127.0.0.1:5657/api/health
+docker ps --filter name=kavita
+```
 
-## 주요 수정
-
-`9.0.7-6`에는 다음 안정화가 포함되어 있습니다.
-
-- official Kavita `0.9.0.7` nightly 변경 병합
-- WebUI unnamed metadata filter default regression 수정: smart filter 이름 없이 정렬/필터를 저장하면 현재 route의 기본 metadata filter로 저장하고 다음 진입 시 적용
-- 같은 chapter에 broken/empty EPUB row와 valid EPUB row가 함께 있을 때 reader/cache/TOC 경로가 readable EPUB row를 우선 선택
-- GDS targeted series scan 후 word-count 분석과 전역 metadata/cache cleanup을 건너뛰도록 보정
-- mixed-root GDS series scan이 broad category/library root로 확장되지 않도록 실제 file directory만 scan
-- WebUI cover cache-busting과 cover endpoint no-cache header 적용
-- GDS cover generation refactor: GDS 전용 cover 우선순위를 별도 서비스로 분리해 upstream 재적용 충돌면을 축소
-- TXT YAML cover precedence fix: TXT-only import/refresh에서 file-level YAML base64 cover를 title fallback보다 우선 적용
-- GDS EPUB cover fallback 안정화와 SQLite startup/WebUI 회귀 hotfix
-- GDS reader metadata refresh 안정화 유지
-- Kavita+를 쓰지 않는 운영에서 일반 Book 라이브러리 eligibility 유지 확인
-- GDS EPUB/PDF/TXT 신규 또는 재빌드 파일이 scanner shortcut 때문에 `Pages=1`로 저장되는 문제 수정
-- 단일 XHTML 안에 여러 TOC anchor가 있는 EPUB을 backend 가상 페이지로 분리
-- malformed `kavita.yaml`이 media import 전체를 막지 않도록 fallback metadata 적용
-- folder cover가 이후 series cover 재선정에 바로 덮어써지지 않도록 보정
-- `Finished library scan` 뒤 post-scan cleanup이 남아 있는 혼선을 줄이기 위한 최종 scan-job completion log 추가
-- GDS archive 시리즈에서 2권 이후 cover가 1권 cover로 고정되는 문제 수정
-- TXT fallback cover 한글 렌더링을 위해 Nanum Gothic 포함
-- GDS 대형 라이브러리 스캔의 OOM 위험을 줄이기 위해 DB update/cover generation 경로를 저메모리 직렬 처리
-- EPUB duplicate manifest id/href 복구, resource 상대경로 보정, `1/1` page-count 보정
-- Web UI production bundle 적용으로 외부 접속 시 `localhost:5000/api`로 요청이 빠지는 문제 수정
-- runtime image에 `sqlite3` 포함, 읽기 전용 진단 스크립트 제공
-
-전체 변경 내역은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)와 [RELEASE_NOTES.md](RELEASE_NOTES.md)를 보세요.
-
-## 검증 기록
-
-`9.0.7-6` 배포 전 다음 검증을 수행합니다.
-
-- WebUI production build 통과 및 unnamed metadata filter default storage bundle 포함 확인
-- `9.0.7-5` reader/cache baseline용 `CacheServiceTests` 재실행 `DOTNET_EXIT:0` 확인
-- backend runtime package `linux-x64`, `linux-arm64`, `linux-arm` 생성
-- local release image `linux/amd64` startup `/api/health` 200 확인
-- local release image `linux/arm64` qemu startup `/api/health` 200 확인
-- local release image `linux/arm/v7` qemu startup `/api/health` 200 확인
-- pushed GHCR `9.0.7-6` 이미지의 `linux/amd64`, `linux/arm64`, `linux/arm/v7` startup `/api/health` 200 확인
-- pushed GHCR `9.0.7-6` 이미지의 플랫폼별 runtime WebUI bundle에 unnamed metadata filter default marker 포함 확인
-- GHCR `9.0.7-6`와 `latest`가 같은 multi-arch digest를 가리키고 `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest를 포함하는지 확인
-- 운영 컨테이너는 `9.0.7-6` 이미지로 교체 후 `/api/health` 200, Docker health `healthy`, restart count `0`을 확인했습니다.
-
-세부 기록은 [docs/GDS_0.9.0.7_VALIDATION.md](docs/GDS_0.9.0.7_VALIDATION.md)에 있습니다.
-
-다음 릴리즈 배포 전에는 [docs/GDS_REGRESSION_CHECKLIST_KO.md](docs/GDS_REGRESSION_CHECKLIST_KO.md)를 따라 기존 문제 샘플 회귀 검증을 먼저 통과시킵니다. 실제 작품명과 경로가 필요한 로컬 상세 매트릭스는 PVE host의 `/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md`에만 기록합니다.
+정상 응답은 `/api/health`의 `Ok`와 Docker health `healthy`입니다.
 
 ## 문서
 
 - [docs/USAGE_KO.md](docs/USAGE_KO.md): 설치와 운영 사용법
 - [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md): 변경 내역
-- [docs/BUILD_NOTES_KO.md](docs/BUILD_NOTES_KO.md): 빌드/배포 노트
+- [RELEASE_NOTES.md](RELEASE_NOTES.md): 릴리즈 노트와 manifest digest
 - [docs/GDS_REGRESSION_CHECKLIST_KO.md](docs/GDS_REGRESSION_CHECKLIST_KO.md): 배포 전 회귀 검증 체크리스트
-- [docs/SCAN_DELAY_CODE_REVIEW_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_20260602_KO.md): scan delay 1차 코드리뷰
-- [docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md](docs/SCAN_DELAY_CODE_REVIEW_PASS2_20260602_KO.md): 9.0.6-2 2차 코드리뷰와 검증 기록
-- [docs/TEST_CONTAINER_VALIDATION_20260601_KO.md](docs/TEST_CONTAINER_VALIDATION_20260601_KO.md): 테스트 컨테이너 검증 기록
-- [docs/SCAN_COVER_AUDIT_20260601.md](docs/SCAN_COVER_AUDIT_20260601.md): cover/scan 운영 감사 기록
 - [scripts/diagnose_kavita_gds.py](scripts/diagnose_kavita_gds.py): 읽기 전용 DB/스캔/startup migration 진단
 - [scripts/collect_gds_preflight.sh](scripts/collect_gds_preflight.sh): 운영 적용 전후 preflight/postflight 수집
 
 ## 주의
 
-이 이미지는 공식 Kavita 이미지가 아닙니다. 기존 Kavita DB를 연결하기 전에는 config와 DB를 백업하세요.
+이 이미지는 official Kavita 이미지가 아닙니다.
 
-이 빌드는 GDS/rclone 원본 media mount를 읽기 전용으로 유지하는 구성을 전제로 합니다. cover 생성, 진단, cache, DB 변경은 Kavita config 경로에서만 일어나야 합니다.
+원본 media mount는 읽기 전용으로 연결하는 구성을 전제로 합니다. cover 생성, 진단, cache, DB 변경은 Kavita config 경로에서만 일어나야 합니다.
 
-`linux/arm64`와 `linux/arm/v7`는 같은 소스와 production UI bundle로 빌드했고 qemu smoke test를 통과했지만, native ARM 실서비스 검증은 별도 환경에서 다시 확인하는 것이 좋습니다.
+`linux/arm64`와 `linux/arm/v7` 이미지는 qemu smoke test를 통과했지만, ARM 실서비스 환경에서는 적용 후 별도 확인을 권장합니다.
