@@ -64,11 +64,11 @@ ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=TBD after final publish
+multiarch digest=sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c
 
-linux/amd64=TBD
-linux/arm64=TBD
-linux/arm/v7=TBD
+linux/amd64=sha256:e1e2ebb9059257bc24d8756e629d768f722646e253b0dca6805071f173b41e0b
+linux/arm64=sha256:57109c8ed67bab282d071d7d498fea3b56516d59b15fdb5fb3f3237ab24f98dd
+linux/arm/v7=sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f1f4e
 ```
 
 ## 수동 다운로드
@@ -114,9 +114,10 @@ linux/arm/v7=TBD
 - local release image `linux/amd64` startup `/api/health` 200 확인
 - local release image `linux/arm64` qemu startup `/api/health` 200 확인
 - local release image `linux/arm/v7` qemu startup `/api/health` 200 확인
-- pushed GHCR `9.0.7-6` 이미지의 `linux/amd64` startup `/api/health` 200 확인
+- pushed GHCR `9.0.7-6` 이미지의 `linux/amd64`, `linux/arm64`, `linux/arm/v7` startup `/api/health` 200 확인
+- pushed GHCR `9.0.7-6` 이미지의 플랫폼별 runtime WebUI bundle에 unnamed metadata filter default marker 포함 확인
 - GHCR `9.0.7-6`와 `latest`가 같은 multi-arch digest를 가리키고 `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest를 포함하는지 확인
-- 운영 컨테이너는 이 hotfix publish 중 재기동하지 않았고 기존 `9.0.7-5` 상태로 유지했습니다.
+- 운영 컨테이너는 `9.0.7-6` 이미지로 교체 후 `/api/health` 200, Docker health `healthy`, restart count `0`을 확인했습니다.
 
 세부 기록은 [docs/GDS_0.9.0.7_VALIDATION.md](docs/GDS_0.9.0.7_VALIDATION.md)에 있습니다.
 

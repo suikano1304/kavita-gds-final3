@@ -6,17 +6,17 @@
 
 ## 2026-06-11 `9.0.7-6` metadata-filter release candidate
 
-- GHCR `9.0.7-6`와 `latest`는 최종 publish 후 같은 multi-arch manifest를 가리켜야 한다.
-- `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest를 모두 포함해야 한다.
+- GHCR `9.0.7-6`와 `latest`는 같은 multi-arch manifest를 가리킨다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest를 모두 포함한다.
 - WebUI unnamed metadata filter default regression은 이름 없는 저장을 현재 route 기본 metadata filter 저장으로 처리하도록 수정했다.
 - 공개 문서에는 샘플명, chapter id, media path를 기록하지 않고 issue class만 기록한다.
 
 ```text
-multiarch digest=TBD after final publish
+multiarch digest=sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c
 
-linux/amd64=TBD
-linux/arm64=TBD
-linux/arm/v7=TBD
+linux/amd64=sha256:e1e2ebb9059257bc24d8756e629d768f722646e253b0dca6805071f173b41e0b
+linux/arm64=sha256:57109c8ed67bab282d071d7d498fea3b56516d59b15fdb5fb3f3237ab24f98dd
+linux/arm/v7=sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f1f4e
 ```
 
 검증:
@@ -28,8 +28,15 @@ linux/arm/v7=TBD
   - `linux/arm64`: qemu `/api/health` 200
   - `linux/arm/v7`: qemu `/api/health` 200
 - GHCR manifest inspection:
-  - 최종 publish 후 `9.0.7-6`와 `latest` digest가 동일한지 확인한다.
-  - amd64, arm64, arm/v7 manifest가 포함되어 있는지 확인한다.
+  - `9.0.7-6`와 `latest` digest가 동일한지 확인했다.
+  - amd64, arm64, arm/v7 manifest가 포함되어 있는지 확인했다.
+- GHCR pushed image startup smoke:
+  - `linux/amd64`: `/api/health` 200, Docker health `healthy`, restart count `0`
+  - `linux/arm64`: qemu `/api/health` 200, Docker health `healthy`, restart count `0`
+  - `linux/arm/v7`: qemu `/api/health` 200, Docker health `healthy`, restart count `0`
+- Production rollout:
+  - `kavita` container image `ghcr.io/suikano1304/kavita-gds:9.0.7-6`
+  - `/api/health` 200, Docker health `healthy`, restart count `0`
 - `kavita-test` smoke:
   - production DB online backup과 read-only fixture mount로 `/api/health` 200을 확인했다.
   - runtime WebUI bundle에 unnamed metadata filter default storage key가 포함되어 있음을 확인했다.

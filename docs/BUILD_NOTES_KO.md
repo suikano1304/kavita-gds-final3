@@ -40,10 +40,10 @@ ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=TBD after final publish
-linux/amd64=TBD
-linux/arm64=TBD
-linux/arm/v7=TBD
+multiarch digest=sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c
+linux/amd64=sha256:e1e2ebb9059257bc24d8756e629d768f722646e253b0dca6805071f173b41e0b
+linux/arm64=sha256:57109c8ed67bab282d071d7d498fea3b56516d59b15fdb5fb3f3237ab24f98dd
+linux/arm/v7=sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f1f4e
 ```
 
 GHCR는 Docker buildx `--push`로 직접 publish했습니다.
@@ -65,6 +65,7 @@ GHCR는 Docker buildx `--push`로 직접 publish했습니다.
 - `linux/arm/v7` 이미지는 .NET RID `linux-arm`으로 빌드했고, qemu smoke test에서 host `/api/health` 200을 확인했습니다.
 - `linux/arm/v7` qemu startup 안정화를 위해 runtime image에 `DOTNET_EnableWriteXorExecute=0`, `COMPlus_EnableWriteXorExecute=0`을 포함하고 healthcheck start period를 300초로 조정했습니다.
 - GHCR `9.0.7-6`와 `latest`는 같은 amd64/arm64/armv7 multi-arch manifest를 가리킵니다.
+- GHCR에서 pull한 `9.0.7-6` 이미지는 amd64/arm64/armv7 startup smoke에서 `/api/health` 200과 Docker health `healthy`를 확인했습니다.
 - UI runtime bundle에서 sourcemap을 제외하고 `localhost:5000`, `:5000/api`, Angular development mode 문자열이 없는 것을 확인했습니다.
 - 제목 기반 TXT fallback cover 생성을 위해 Docker image에 Nanum Gothic Regular/Bold 폰트를 포함했습니다.
 - 중간 테스트 이미지와 webtoon patch tree는 배포 패키지에 넣지 않았습니다.

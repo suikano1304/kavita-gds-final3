@@ -12,9 +12,9 @@
 
 - WebUI metadata filter에서 smart filter 이름 없이 정렬/필터를 저장하면 현재 route의 기본 metadata filter로 저장되도록 수정했습니다.
 - WebUI production build와 runtime bundle 포함 검증을 통과했습니다.
-- GHCR `9.0.7-6`와 `latest`는 최종 검증 후 같은 multi-arch manifest로 push합니다.
-- `linux/amd64`, `linux/arm64`, `linux/arm/v7` release image가 `/api/health` 200에 도달하는지 최종 publish 전 확인합니다.
-- 운영 컨테이너는 이 hotfix publish 중 재기동하지 않았고 기존 `9.0.7-5` 상태로 유지했습니다.
+- GHCR `9.0.7-6`와 `latest`는 같은 multi-arch manifest digest `sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c`로 push했습니다.
+- GHCR에서 pull한 `linux/amd64`, `linux/arm64`, `linux/arm/v7` release image가 `/api/health` 200과 Docker health `healthy`에 도달하는지 확인했습니다.
+- 운영 컨테이너는 `9.0.7-6` 이미지로 교체 후 `/api/health` 200, Docker health `healthy`, restart count `0`을 확인했습니다.
 
 ## 2026-06-10: `9.0.7-5` readable book-file selection hotfix
 

@@ -22,18 +22,18 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 - Added a reader/cache hotfix that prefers a readable non-empty book file when a chapter has both broken/empty and valid EPUB rows.
 - Kept the GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- GHCR `9.0.7-6` and `latest` will be published as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- Manifest digest: `TBD after final publish`.
+- GHCR `9.0.7-6` and `latest` are published as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Manifest digest: `sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c`.
 - Per-platform manifests:
-  - `linux/amd64`: `TBD`
-  - `linux/arm64`: `TBD`
-  - `linux/arm/v7`: `TBD`
+  - `linux/amd64`: `sha256:e1e2ebb9059257bc24d8756e629d768f722646e253b0dca6805071f173b41e0b`
+  - `linux/arm64`: `sha256:57109c8ed67bab282d071d7d498fea3b56516d59b15fdb5fb3f3237ab24f98dd`
+  - `linux/arm/v7`: `sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f1f4e`
 - Duplicate broken/valid EPUB row baseline was preserved; `CacheServiceTests` rerun returned `DOTNET_EXIT:0`.
 - Local `linux/amd64` release image startup returned `/api/health` 200.
 - Local `linux/arm64` release image startup under qemu returned `/api/health` 200.
 - Local `linux/arm/v7` release image startup under qemu returned `/api/health` 200.
-- Pushed GHCR `linux/amd64` image startup will be verified after final publish.
-- Production `kavita` was not restarted during this hotfix publish and remains on `9.0.7-5` until a separate rollout decision.
+- Pushed GHCR `linux/amd64`, `linux/arm64`, and `linux/arm/v7` image startup returned `/api/health` 200; Docker health reached `healthy` on all three smoke containers.
+- Production `kavita` was rolled to `9.0.7-6` and verified with `/api/health` 200, Docker health `healthy`, and restart count `0`.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
 - GDS library scans skip forced word-count analysis during the scan path; word-count can still be run separately through analyze actions. This keeps cover-focused forced scans from re-reading large remote EPUBs for minutes per series.
