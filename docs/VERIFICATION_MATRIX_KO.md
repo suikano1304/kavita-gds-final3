@@ -19,8 +19,8 @@
 
 운영 컨테이너는 변경하지 않고, 공개 이미지 `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`를 운영 DB 사본으로 별도 포트에서 검증했다.
 
-- Pull digest: `sha256:e2e0c7c591b52a7b7c07f789326855ac92e7d003b90b6e5028e0285a6b8ad1ca`
-- Runtime image id: `sha256:852e407d868b0283fde994996b41bc69cd0d7fefb74165c1e27c5490cc28c723`
+- Pull digest: `sha256:<redacted>`
+- Runtime image id: `sha256:<redacted>`
 - Test container: `kavita-gds-ghcr-0902-5-smoke`, port `5016:5000`
 - `/api/health`: `Ok`
 - `/api/admin/exists`: `true`
@@ -128,7 +128,7 @@ postflight gate 결과:
 - Image: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-5`
 - Port: `5017:5000`
 - Config: LXC `/tmp/kavita-scan-smoke-0902-5-config`
-- Media mount: `/mnt/gds2:/mnt/gds:ro`
+- Media mount: `/your/gds/mount:/mnt/gds:ro`
 - Startup: `/api/health` returned `Ok`
 - Startup DB state: migrations completed, no restart, no startup FK failure
 
@@ -194,10 +194,10 @@ Warning! production-library-e has metadata turned off
 
 ```bash
 scripts/collect_gds_preflight.sh \
-  --db /mnt/data/docker/kavita/config/kavita.db \
+  --db /your/kavita/config/kavita.db \
   --container-root /mnt/gds \
-  --host-root /mnt/data/rclone/gds \
-  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --host-root /your/gds/mount \
+  --scan-log /your/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
   --snapshot-db \
@@ -209,10 +209,10 @@ scripts/collect_gds_preflight.sh \
 
 ```bash
 scripts/collect_gds_preflight.sh \
-  --db /mnt/data/docker/kavita/config/kavita.db \
+  --db /your/kavita/config/kavita.db \
   --container-root /mnt/gds \
-  --host-root /mnt/data/rclone/gds \
-  --scan-log /mnt/data/docker/kavita/config/logs/kavita20260531.log \
+  --host-root /your/gds/mount \
+  --scan-log /your/kavita/config/logs/kavita20260531.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
   --snapshot-db \

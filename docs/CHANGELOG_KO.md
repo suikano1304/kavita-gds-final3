@@ -11,6 +11,8 @@
 아래 변경은 공개 릴리스 태그 `9.0.7-6`에 포함했습니다.
 
 - WebUI metadata filter에서 smart filter 이름 없이 정렬/필터를 저장하면 현재 route의 기본 metadata filter로 저장되도록 수정했습니다.
+- smart filter 이름이 비어 있는 기본 필터 저장에서도 저장 버튼이 비활성화되지 않도록 보정했습니다.
+- OPDS 호환성 실험 패치는 최종 `9.0.7-6` 배포 전에 원복했습니다. 기존 OPDS 기능은 유지하지만, 새 OPDS acquisition/progress 동작은 이번 릴리스 범위가 아닙니다.
 - WebUI production build와 runtime bundle 포함 검증을 통과했습니다.
 - GHCR `9.0.7-6`와 `latest`는 같은 multi-arch manifest digest `sha256:bbdfcff8d1e6b070af1cad78a82c5515ed0292e8e04cb057f839d70cde73206c`로 push했습니다.
 - GHCR에서 pull한 `linux/amd64`, `linux/arm64`, `linux/arm/v7` release image가 `/api/health` 200과 Docker health `healthy`에 도달하는지 확인했습니다.
@@ -256,7 +258,7 @@
 
 ## 2026-05-31: 운영 검증 및 YAML metadata fix
 
-- 운영 Kavita config를 일반 경로(`/mnt/data/docker/kavita/config`)로 정리하고 compose mount를 확인했습니다.
+- 운영 Kavita config를 일반 경로(`/your/kavita/config`)로 정리하고 compose mount를 확인했습니다.
 - 남아 있던 config/test config의 cover 파일을 운영 config로 회수하고, 스캔을 통해 cover cache가 다시 생성되는 것을 확인했습니다.
 - GDS 라이브러리에서 `kavita.yaml`/`kavita.yml` sidecar metadata를 읽도록 보강했습니다.
 - `Summary`, 장르, 태그, 언어, 웹 링크, 작가/번역자/출판사/작화가, 발매일, 연령등급 등 안전한 YAML 필드를 반영합니다.

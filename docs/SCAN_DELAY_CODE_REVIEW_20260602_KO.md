@@ -4,11 +4,11 @@
 
 - Production container: `kavita`
 - Production image: `local/kavita-gds:9.0.6-1`
-- Production image id: `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`
+- Production image id: `sha256:<redacted>`
 - Comparable official image available locally: `ghcr.io/kareadita/kavita:nightly-0.9.0.6`
-- Official image source revision label: `c7e9555061d970b50cedc695e60124bf8c47084a`
-- Local GDS source reviewed: `/root/kavita-gds-lab/port-0906-gds`
-- Local GDS HEAD: `17253b38908b56f3aaa1479fdd75c63c3ec07bb8`
+- Official image source revision label: `<redacted-hash>`
+- Local GDS source reviewed: `<local-kavita-source>`
+- Local GDS HEAD: `<redacted-hash>`
 
 ## Production observation
 
@@ -40,7 +40,7 @@ The observed issue is therefore not a custom change to the scheduler message its
 
 ### 1. `Finished library scan` is not the actual end of `ScanLibrary`
 
-File: `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/Scanner/ScannerService.cs`
+File: `<local-kavita-source>/Kavita.Services/Scanner/ScannerService.cs`
 
 After the `Finished library scan` log, the method still executes:
 
@@ -63,7 +63,7 @@ Candidate fix:
 
 ### 2. GDS sequential path holds the scan job during cover generation
 
-File: `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/Scanner/ScannerService.cs`
+File: `<local-kavita-source>/Kavita.Services/Scanner/ScannerService.cs`
 
 GDS libraries take a custom path:
 
@@ -84,7 +84,7 @@ Candidate fix:
 
 ### 3. GDS EPUB/PDF/TXT page count shortcut can create `1/1` chapters
 
-File: `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/Scanner/ProcessSeries.cs`
+File: `<local-kavita-source>/Kavita.Services/Scanner/ProcessSeries.cs`
 
 `GetGdsPageCount()` returns:
 
@@ -108,7 +108,7 @@ Candidate fix:
 
 ### 4. Invalid GDS YAML metadata can drop the whole file from scan
 
-File: `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/Helpers/GdsMetadataParser.cs`
+File: `<local-kavita-source>/Kavita.Services/Helpers/GdsMetadataParser.cs`
 
 `GetComicInfo()` reads and deserializes `kavita.yaml` without local exception handling.
 `ReadingItemService.ParseFile()` catches the exception at the outer level and returns `null`, so a metadata parse error can skip the media file entirely.
@@ -132,7 +132,7 @@ Candidate fix:
 
 ### 5. Folder cover application can be overwritten immediately
 
-File: `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/MetadataService.cs`
+File: `<local-kavita-source>/Kavita.Services/MetadataService.cs`
 
 `ProcessSeriesCoverGen()` calls `TryApplyGdsFolderCover(...)`, but ignores the return value and continues into `ProcessGdsSeriesCoverGen(...)`.
 
@@ -152,7 +152,7 @@ Candidate fix:
 
 ### 6. GDS bottom-up directory scan has O(n^2) descendant checks
 
-File: `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/Scanner/ParseScannedFiles.cs`
+File: `<local-kavita-source>/Kavita.Services/Scanner/ParseScannedFiles.cs`
 
 `ScanDirectoriesBottomUp()` calls `HasProcessedDescendant(processedDirs, directory)`, which scans all previously processed directories for every directory.
 

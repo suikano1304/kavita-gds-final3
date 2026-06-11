@@ -11,7 +11,7 @@
 - 이전 배포 기준: `0.9.0.2-8`
 - 현재 테스트 기준: official Kavita `0.9.0.6` nightly
 - 현재 테스트 이미지: `local/kavita-gds:9.0.6-1-test`
-- 최종 image id: `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`
+- 최종 image id: `sha256:<redacted>`
 - 테스트 컨테이너: `kavita-test`
 - 테스트 접근: `tkavita.suikano.net`, local port `5658`
 - fixture library: `LOCAL-FIXTURES`, path `/fixtures`
@@ -20,10 +20,10 @@
 
 출처:
 
-- `/root/kavita-gds-lab/0902-GDS-TEST-STATUS.md`
-- `/root/lxc1-codex-docs/KAVITA_GDS_0902_WORKLOG_20260528.md`
-- `/root/lxc1-codex-docs/KAVITA_GDS_SCANFIX_WORKLOG_20260530.md`
-- `/root/Kavita-GDS/RELEASE_NOTES.md`
+- `<local-kavita-worktree>/0902-GDS-TEST-STATUS.md`
+- `[local-private-docs]/KAVITA_GDS_0902_WORKLOG_20260528.md`
+- `[local-private-docs]/KAVITA_GDS_SCANFIX_WORKLOG_20260530.md`
+- `<public-docs-repo>/RELEASE_NOTES.md`
 - current branch history up to `0.9.0.2-8`
 
 유지 대상:
@@ -302,8 +302,8 @@ sample-chapter-d chapters HTTP 200, 977 bytes
 
 ```text
 local/kavita-gds:9.0.6-1
-intermediate sha256:4e37e0f29e5410e67480345a2d0f456bfab1900b7653eebb0859d73051a264fa
-final sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+intermediate sha256:<redacted>
+final sha256:<redacted>
 ```
 
 rclone:
@@ -355,5 +355,5 @@ production chapter <redacted> chapters HTTP 200
 
 ```text
 local/kavita-gds:9.0.6-1
-sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+sha256:<redacted>
 ```

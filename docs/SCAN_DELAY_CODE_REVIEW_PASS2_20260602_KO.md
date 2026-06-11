@@ -7,9 +7,9 @@ It re-checks the code paths identified in the first review and narrows them to t
 
 Reviewed source:
 
-- `/root/kavita-gds-lab/port-0906-gds`
-- HEAD before changes: `17253b38908b56f3aaa1479fdd75c63c3ec07bb8`
-- Official comparison base from image label: `c7e9555061d970b50cedc695e60124bf8c47084a`
+- `<local-kavita-source>`
+- HEAD before changes: `<redacted-hash>`
+- Official comparison base from image label: `<redacted-hash>`
 
 ## Review results
 
@@ -103,16 +103,16 @@ Additional finding during production verification:
 Verification results:
 
 - `linux/amd64` build completed with existing upstream warnings only.
-- `kavita-test` ran `local/kavita-gds:9.0.6-2-test` image id `sha256:6ed1d2933392333c9baf609a25802e5e8ff065cf41f92e49414f4bcc2a323ead`.
+- `kavita-test` ran `local/kavita-gds:9.0.6-2-test` image id `sha256:<redacted>`.
 - LOCAL-FIXTURES validation passed 3 times: `total=155`, `info_fail=0`, `nav_fail=0`, `page_fail=0`, `zero_bytes=0`, `zero_pages=0`, `missing_covers=0`.
 - Synthetic single-spine EPUB regression passed: DB pages `3/3`, `book-info` pages `3`, TOC `3`, `book-page` 0/1/2 returned distinct content.
-- Production ran `local/kavita-gds:9.0.6-2` image id `sha256:6ed1d2933392333c9baf609a25802e5e8ff065cf41f92e49414f4bcc2a323ead`.
+- Production ran `local/kavita-gds:9.0.6-2` image id `sha256:<redacted>`.
 - Production health returned `200` and Docker health became `healthy`.
 - Production redacted duplicate-manifest EPUB sample chapters `sample-chapter-range` repaired duplicate manifest EPUBs and updated DB pages to `12/12`, `12/12`, `12/12`, `13/13`.
 - `linux/arm64` image built as `local/kavita-gds:9.0.6-2-arm64`, architecture `arm64`, and qemu smoke test returned `/api/health` 200.
 - `linux/arm/v7` image built with .NET RID `linux-arm`, CoreCLR write-xor-execute disabled for qemu ARM32 startup, and qemu smoke test returned host `/api/health` 200 with Docker health `healthy`.
 - GHCR pushed:
-  - multi-arch `ghcr.io/suikano1304/kavita-gds:9.0.6-2`, digest `sha256:fae093d93e2b56cd1debf23256f45f87f59d3b37934a317cabc1a418c45f3fb0`
-  - `linux/amd64` digest `sha256:dc7f117d3f6701ffee182d1d80a91f7dc516056e44cbfeb420c42a0c982c9f97`
-  - `linux/arm64` digest `sha256:019ed329577d1fdad5ed11e1b006fd9c42b7663bf99b0807602d0a0224e882f3`
-  - `linux/arm/v7` digest `sha256:d6d8a01e684a47c2091219906de6accc0976bf07ce3898c4f76da6a4834b9ca0`
+  - multi-arch `ghcr.io/suikano1304/kavita-gds:9.0.6-2`, digest `sha256:<redacted>`
+  - `linux/amd64` digest `sha256:<redacted>`
+  - `linux/arm64` digest `sha256:<redacted>`
+  - `linux/arm/v7` digest `sha256:<redacted>`

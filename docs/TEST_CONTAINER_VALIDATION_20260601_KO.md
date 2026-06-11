@@ -11,10 +11,10 @@
 
 - 운영 compose: `/opt/compose/kavita/docker-compose.yml` (lxc1)
 - 테스트 compose: `/opt/compose/kavita-test/docker-compose.yml` (lxc1)
-- 테스트 config: `/mnt/data/docker/kavita-test/config` (lxc1)
-- 테스트 fixture: `/mnt/data/docker/kavita-test/fixtures` (lxc1)
-- 빌드 staging: `/mnt/data/docker/kavita-test/build` (lxc1)
-- 소스 작업 tree: `/root/kavita-gds-lab/port-0906-gds`
+- 테스트 config: `/your/kavita-test/config` (lxc1)
+- 테스트 fixture: `/your/kavita-test/fixtures` (lxc1)
+- 빌드 staging: `/your/kavita-test/build` (lxc1)
+- 소스 작업 tree: `<local-kavita-source>`
 
 ## 2026-06-02 운영 재스캔 후속
 
@@ -32,7 +32,7 @@
 
 - source commit: `17253b3 fix: skip GDS word count during library scans`
 - package patch: `patches/9.0.6-1/0002-fix-skip-GDS-word-count-during-library-scans.patch`
-- test/production image ID after rebuild: `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`
+- test/production image ID after rebuild: `sha256:<redacted>`
 
 의도:
 
@@ -55,9 +55,9 @@ pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 mi
 ## 테스트 이미지
 
 - official baseline: `ghcr.io/kareadita/kavita:nightly-0.9.0.6`
-- official revision: `c7e9555061d970b50cedc695e60124bf8c47084a`
+- official revision: `<redacted-hash>`
 - 최종 태그: `local/kavita-gds:9.0.6-1`, `local/kavita-gds:9.0.6-1-test`, `local/kavita-gds:latest`
-- 최종 Image ID: `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`
+- 최종 Image ID: `sha256:<redacted>`
 - 최종 build time: `2026-06-01T00:47:34Z`
 - 빌드 결과: 성공
 - 빌드 경고:
@@ -80,14 +80,14 @@ pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 mi
 - 컨테이너명: `kavita-test`
 - 포트: `5658:5000`
 - 이미지: `local/kavita-gds:9.0.6-1-test`
-- config mount: `/mnt/data/docker/kavita-test/config:/kavita/config`
-- GDS mount: `/mnt/gds2:/mnt/gds:ro`
-- fixture mount: `/mnt/data/docker/kavita-test/fixtures:/fixtures:rw`
+- config mount: `/your/kavita-test/config:/kavita/config`
+- GDS mount: `/your/gds/mount:/mnt/gds:ro`
+- fixture mount: `/your/kavita-test/fixtures:/fixtures:rw`
 - `WAIT_ANCHOR_DIRS`: `<redacted-media-path>`
 
 ## NPM
 
-- lxc3 NPM DB backup: `/mnt/data/docker/npm/data/database.sqlite.bak-kavita-test-20260601-0450`
+- lxc3 NPM DB backup: `/your/npm-data/data/database.sqlite.bak-kavita-test-20260601-0450`
 - Proxy host id: `26`
 - Domain: `tkavita.suikano.net`
 - Forward target: `192.168.10.6:5658`
@@ -96,12 +96,12 @@ pass=3 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 mi
 - WebSocket upgrade: enabled
 - HSTS: enabled
 - HTTP/2: disabled, matching current production Kavita proxy
-- Nginx config: `/mnt/data/docker/npm/data/nginx/proxy_host/26.conf`
+- Nginx config: `/your/npm-data/data/nginx/proxy_host/26.conf`
 - Verification: `nginx -t` successful, Nginx reloaded
 
 ## Fixture 목록
 
-Fixture root: `/mnt/data/docker/kavita-test/fixtures`
+Fixture root: `/your/kavita-test/fixtures`
 
 Initial fixture size/count:
 
@@ -252,13 +252,13 @@ Status: 진행 중. 운영 반영 대기.
 - CBZ/ZIP multi-volume cover sample hashes after forced cover refresh:
 
 ```text
-sample-a volume-1  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
-sample-a volume-2  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
-sample-a volume-3  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
-sample-b volume-1  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
-sample-b volume-2  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
-sample-c volume-1  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-sample-c volume-2  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+sample-a volume-1  <redacted-cover-file>  <redacted-hash>
+sample-a volume-2  <redacted-cover-file>  <redacted-hash>
+sample-a volume-3  <redacted-cover-file>  <redacted-hash>
+sample-b volume-1  <redacted-cover-file>  <redacted-hash>
+sample-b volume-2  <redacted-cover-file>  <redacted-hash>
+sample-c volume-1  <redacted-cover-file>  <redacted-hash>
+sample-c volume-2  <redacted-cover-file>  <redacted-hash>
 ```
 
 확인된 수정 내용:
@@ -313,7 +313,7 @@ series/analyze libraryId=<redacted> seriesId=<redacted> forceUpdate=true -> comp
 배포/재스캔:
 
 - 새 이미지: `local/kavita-gds:9.0.6-1-test`
-- Image ID: `c5368ead72cbdc7bc8caa71662aeb0782d2ed114d99349c5097d740923a0b2ba`
+- Image ID: `<redacted-hash>`
 - `kavita-test` container image hash matches the tag hash.
 - `LOCAL-FIXTURES` force scan: `61 files`, `20 series`, completed at `2026-06-01 06:53:02 KST`.
 
@@ -377,14 +377,14 @@ problem-chapter-c next=-1 prev=problem-chapter-a
 대표 hash:
 
 ```text
-epub-problem problem-chapter-a ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
-epub-problem problem-chapter-b da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
-epub-problem problem-chapter-c e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
-epub-sample-a 01 a498bd2e231dbd4307cd5a248f411ec949202d9796659c6523986194de34fb4e
-epub-sample-a 02 75dd57eef22cbb186bd4080400ba0fbf3e7c2cac1459e1054113c787a245bd9f
-epub-sample-a 03 119e17f803886334cf3b1ce5608541c3a11720fd4bab8bd800588a31b305e5b1
-zip-sample-a 01 4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-zip-sample-a 02 6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+epub-problem problem-chapter-a <redacted-hash>
+epub-problem problem-chapter-b <redacted-hash>
+epub-problem problem-chapter-c <redacted-hash>
+epub-sample-a 01 <redacted-hash>
+epub-sample-a 02 <redacted-hash>
+epub-sample-a 03 <redacted-hash>
+zip-sample-a 01 <redacted-hash>
+zip-sample-a 02 <redacted-hash>
 ```
 
 현재 테스트 이미지에서는 "2권 이후가 1권 커버와 동일"한 증상이 재현되지 않는다.
@@ -427,7 +427,7 @@ Note:
 최종 테스트 이미지:
 
 - image: `local/kavita-gds:9.0.6-1-test`
-- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- Image ID: `<redacted-hash>`
 - container: `kavita-test`, health `healthy`
 - `/api/health`: `Ok`
 
@@ -494,8 +494,8 @@ External/rclone final check:
 - 1권/2권 hash:
 
 ```text
-<redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-<redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+<redacted-cover-file>  <redacted-hash>
+<redacted-cover-file>  <redacted-hash>
 ```
 
 ## 남은 검증 항목
@@ -513,10 +513,10 @@ External/rclone final check:
 
 운영 반영 전 백업:
 
-- backup dir: `/root/kavita-prod-backups/20260601-075551`
-- compose backup: `/root/kavita-prod-backups/20260601-075551/docker-compose.yml.pre-0906-1`
-- DB backup: `/root/kavita-prod-backups/20260601-075551/kavita.db.pre-0906-1.backup`
-- appsettings backup: `/root/kavita-prod-backups/20260601-075551/appsettings.json.pre-0906-1`
+- backup dir: `<local-kavita-backup>`
+- compose backup: `<local-kavita-backup>`
+- DB backup: `<local-kavita-backup>`
+- appsettings backup: `<local-kavita-backup>`
 - DB backup verification: `PRAGMA integrity_check = ok`, `Library count = 9`
 
 운영 compose 변경:
@@ -529,7 +529,7 @@ External/rclone final check:
 운영 이미지:
 
 - image: `local/kavita-gds:9.0.6-1`
-- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- Image ID: `<redacted-hash>`
 - 같은 Image ID가 test image `local/kavita-gds:9.0.6-1-test`에도 붙어 있음을 확인했다.
 
 운영 재기동 및 마이그레이션:
@@ -546,8 +546,8 @@ External/rclone final check:
 마운트 확인:
 
 ```text
-/mnt/data/docker/kavita/config -> /kavita/config RW=true
-/mnt/gds2 -> /mnt/gds RW=false
+/your/kavita/config -> /kavita/config RW=true
+/your/gds/mount -> /mnt/gds RW=false
 ```
 
 운영 전체 강제 스캔:
@@ -565,7 +565,7 @@ External/rclone final check:
 운영 재시작 및 강제 스캔 재요청:
 
 - first scan request 후 UI/API 요청에서 SQLite `disk I/O error` 500이 반복 발생했다.
-- host storage check: `/mnt/data` and `/mnt/data/docker` space OK, `zpool status -x` = `all pools are healthy`.
+- host storage check: `<host-storage>` and `/your/docker-data` space OK, `zpool status -x` = `all pools are healthy`.
 - DB check via immutable SQLite URI: `PRAGMA integrity_check = ok`, `Library count = 9`.
 - container 내부 `/kavita/config` write test OK.
 - 조치: `docker restart kavita`
@@ -606,7 +606,7 @@ rclone read-only 확인:
 - scanner에서는 `/mnt/gds` EPUB/PDF/TXT에 대해 원격 파일 전체 읽기를 하지 않고 기존 shortcut을 유지했다.
 - 대신 EPUB `book-info` 요청 시 실제 reading order count가 `1`보다 크고 DB page count가 `1` 이하이면 `Chapter.Pages`, `MangaFile.Pages`, `Volume.Pages`, `Series.Pages`를 즉시 갱신하도록 했다.
 - duplicate manifest repair를 `BookService`의 EPUB open 경로 전체에 적용해 `book-info`, `book-page`, `chapters`, resource fetch, metadata/word-count 경로가 같은 보정 로직을 사용하게 했다.
-- 운영 image tag `local/kavita-gds:9.0.6-1`을 당시 hotfix image로 교체하고 `kavita` 컨테이너를 재생성했다. 최종 공개 image는 이후 추가 보정을 포함한 `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`이다.
+- 운영 image tag `local/kavita-gds:9.0.6-1`을 당시 hotfix image로 교체하고 `kavita` 컨테이너를 재생성했다. 최종 공개 image는 이후 추가 보정을 포함한 `sha256:<redacted>`이다.
 
 검증:
 
@@ -654,12 +654,12 @@ Recent production logs show duplicate manifest repair warnings for `reported dup
 
 GitHub release package 준비:
 
-- package: `/root/Kavita-GDS/kavita-gds.tar.gz`
+- package: `<public-docs-repo>/kavita-gds.tar.gz`
 - inner Docker archive: `docker-image/kavita-gds.docker.tar`
 - archive tags:
   - `local/kavita-gds:9.0.6-1`
   - `local/kavita-gds:latest`
-- archive image id: `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`
+- archive image id: `sha256:<redacted>`
 - package SHA256: repository root `SHA256SUMS` 기준
 - inner Docker archive SHA256: repository root `SHA256SUMS` 기준
 - GHCR workflow `RELEASE_ASSET_SHA256`: package rebuild 후 root `SHA256SUMS`와 일치하게 갱신
@@ -673,8 +673,8 @@ GitHub/GHCR 등록:
   - `SHA256SUMS`
 - GHCR publish workflow: completed successfully
 - published image digest:
-  - `ghcr.io/suikano1304/kavita-gds:9.0.6-1` -> `sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0`
-  - `ghcr.io/suikano1304/kavita-gds:latest` -> `sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0`
+  - `ghcr.io/suikano1304/kavita-gds:9.0.6-1` -> `sha256:<redacted>`
+  - `ghcr.io/suikano1304/kavita-gds:latest` -> `sha256:<redacted>`
 
 ## 2026-06-01 09:12 KST Missing EPUB3 NAV Hotfix
 
@@ -697,7 +697,7 @@ EPUB parsing error: NAV item not found in EPUB manifest.
 
 ```text
 local/kavita-gds:9.0.6-1-test
-intermediate image sha256:be556ae5a720674f967468d9ca521d50593251e3297372e5877c471a26f7969b
+intermediate image sha256:<redacted>
 ```
 
 `LOCAL-FIXTURES` 재스캔:
@@ -723,7 +723,7 @@ test fixture chapter sample-chapter-cover-only chapters HTTP 200
 
 ```text
 local/kavita-gds:9.0.6-1
-final image sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+final image sha256:<redacted>
 
 production chapter <redacted> book-info HTTP 200
 production chapter <redacted> book-page?page=0 HTTP 200
@@ -851,27 +851,27 @@ recent log: to upload 0, uploading 0
 
 빌드 메모:
 
-- source: `/root/kavita-gds-lab/port-0906-gds`
+- source: `<local-kavita-source>`
 - source 핵심 패치 파일 checksum은 host repo와 lxc1 build source가 일치함을 확인했다.
 - 기존 Dockerfile의 `npm ci`는 arm64 optional dependency lock mismatch로 실패했다.
 - 성공한 재시도는 이미 생성돼 있던 `UI/Web/dist/browser` production bundle을 사용하고, `linux-arm64` runtime publish만 수행했다.
-- 임시 Dockerfile: `/root/Dockerfile.0906-gds-arm64-prebuilt-ui`
+- 임시 Dockerfile: `<temporary-dockerfile>`
 
 GHCR 결과:
 
 ```text
 arm64 temporary tag:
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
-index digest=sha256:96dc7093d4ec133f2a6d921522958f7a3158d2c7b43c6d01b30e941e32e36d8a
-arm64 image manifest=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+index digest=sha256:<redacted>
+arm64 image manifest=sha256:<redacted>
 
 public tags:
 ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a83212aa8df8e
+multiarch digest=sha256:<redacted>
 
-linux/amd64=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
-linux/arm64=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+linux/amd64=sha256:<redacted>
+linux/arm64=sha256:<redacted>
 ```
 
 ## 2026-06-02 Low-Memory GDS Scan Rebuild
@@ -880,7 +880,7 @@ linux/arm64=sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154
 
 Source change:
 
-- source: `/root/kavita-gds-lab/port-0906-gds`
+- source: `<local-kavita-source>`
 - source commit: `22c119d fix: process GDS scan work sequentially`
 - file: `Kavita.Services/Scanner/ScannerService.cs`
 - GDS 라이브러리만 `ProcessParserInfoSequential` 경로로 분기한다.
@@ -890,7 +890,7 @@ Source change:
 Test image:
 
 - image: `local/kavita-gds:9.0.6-1-lowmem-test`
-- Image ID: `sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d`
+- Image ID: `sha256:<redacted>`
 - `kavita-test` compose image를 이 태그로 교체했다.
 
 Fixture forced scan:
@@ -909,7 +909,7 @@ EPUB repair evidence remained active in the low-memory path:
 
 Production rollout:
 
-- `local/kavita-gds:9.0.6-1` and `local/kavita-gds:latest` were retagged to Image ID `sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d`.
+- `local/kavita-gds:9.0.6-1` and `local/kavita-gds:latest` were retagged to Image ID `sha256:<redacted>`.
 - production `kavita` was recreated from `/opt/compose/kavita/docker-compose.yml`.
 - health endpoint returned `Ok` after restart.
 - production `성인 만화` forced scan was started through the API at `2026-06-02 08:00:56 KST`.
@@ -918,26 +918,26 @@ Production rollout:
 GHCR update:
 
 - pushed `ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64`
-- amd64 digest: `sha256:be8ba4848f3fb256ca960b53c081597a1211fc6562b1890c08d2503e844ad030`
+- amd64 digest: `sha256:<redacted>`
 - pushed `ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64`
-- arm64 index digest: `sha256:f827c007dcf5f232a5be30674bf910ca2b9a12d8808774532a3a6a7055e29bb8`
-- arm64 image manifest: `sha256:35b03994b1a25c5ad72e56783f3fed86801178eb913465acb2bd4ab2d899d742`
-- public tags `ghcr.io/suikano1304/kavita-gds:9.0.6-1` and `latest` updated to multi-arch digest `sha256:0aeaef5b75d1c81b24f0b7518400fb37aeb41728b1cad4ac32d90dae57debeb6`
+- arm64 index digest: `sha256:<redacted>`
+- arm64 image manifest: `sha256:<redacted>`
+- public tags `ghcr.io/suikano1304/kavita-gds:9.0.6-1` and `latest` updated to multi-arch digest `sha256:<redacted>`
 - final manifest platforms:
-  - `linux/amd64`: `sha256:be8ba4848f3fb256ca960b53c081597a1211fc6562b1890c08d2503e844ad030`
-  - `linux/arm64`: `sha256:35b03994b1a25c5ad72e56783f3fed86801178eb913465acb2bd4ab2d899d742`
+  - `linux/amd64`: `sha256:<redacted>`
+  - `linux/arm64`: `sha256:<redacted>`
 
 Release asset update:
 
 - rebuilt local amd64 Docker archive from `local/kavita-gds:9.0.6-1` and `local/kavita-gds:latest`
-- `kavita-gds.tar.gz`: `7ff66f8327853b6a2c3e5d10d2a969f86a18223c48302501996dbe333927ccc9`
-- `docker-image/kavita-gds.docker.tar`: `fa9773fff71c2ac889ff000a8d1ec341c932f90922fadfbb2f5c999970fa8585`
+- `kavita-gds.tar.gz`: `<redacted-hash>`
+- `docker-image/kavita-gds.docker.tar`: `<redacted-hash>`
 - GitHub Release `v9.0.6-1` assets `kavita-gds.tar.gz` and `SHA256SUMS` were replaced with `--clobber`.
 
 Latest fixture full-reader validation on the low-memory image:
 
 - validation script: `scripts/validate_kavita_fixtures.py`
-- container image ID: `sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d`
+- container image ID: `sha256:<redacted>`
 - target: `LOCAL-FIXTURES` (`LibraryId=10`)
 - DB summary before pass: `27` series, `118` files
 - format summary: archive `65`, EPUB `31`, TXT `22`
@@ -955,7 +955,7 @@ Each pass forced a scan and then validated every fixture chapter through the API
 Result:
 
 ```text
-image=sha256:53d1b2f2828e4512a8cea30876f80dff1d7ca2ad65b52ee99e892b857d326b1d
+image=sha256:<redacted>
 pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
 pass=1 last_scanned=2026-06-02 08:30:52.7179298
 pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
@@ -970,7 +970,7 @@ pass=3 last_scanned=2026-06-02 08:31:37.6696307
 
 Source change:
 
-- source: `/root/kavita-gds-lab/port-0906-gds`
+- source: `<local-kavita-source>`
 - branch: `codex/gds-0906`
 - source commit: `e922205 fix: reduce GDS scan discovery memory`
 - file: `Kavita.Services/Scanner/ParseScannedFiles.cs`
@@ -982,13 +982,13 @@ Source change:
 Test image:
 
 - image: `local/kavita-gds:9.0.6-1-streamscan-test`
-- Image ID: `sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19`
+- Image ID: `sha256:<redacted>`
 - `local/kavita-gds:9.0.6-1-lowmem-test`도 같은 이미지 ID로 retag 후 `kavita-test`에 반영했다.
 
 Fixture full-reader validation:
 
 ```text
-image=sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19
+image=sha256:<redacted>
 pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
 pass=1 last_scanned=2026-06-02 08:42:59.432797
 pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
@@ -999,7 +999,7 @@ pass=3 last_scanned=2026-06-02 08:43:43.8868232
 
 Production rollout status:
 
-- `local/kavita-gds:9.0.6-1` was retagged to Image ID `sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19`.
+- `local/kavita-gds:9.0.6-1` was retagged to Image ID `sha256:<redacted>`.
 - production `kavita` was recreated from `/opt/compose/kavita/docker-compose.yml`.
 - health became `healthy` after restart.
 - production `성인 만화` (`LibraryId=3`) forced scan was started through the API at `2026-06-02 08:45:08 KST`.
@@ -1021,7 +1021,7 @@ Source / package:
 Fixture validation on final image:
 
 ```text
-image=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+image=sha256:<redacted>
 LOCAL-FIXTURES forced scan: Finished library scan of 118 files and 27 series in 12013 ms
 pass=1 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
 pass=2 total=118 info_fail=0 nav_fail=0 page_fail=0 zero_bytes=0 zero_pages=0 missing_covers=0
@@ -1032,7 +1032,7 @@ WordCountAnalyzerService logs in fixture scan range=0
 Production rollout:
 
 ```text
-production image ID=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+production image ID=sha256:<redacted>
 container status=running
 health=healthy
 restart count=0
@@ -1079,24 +1079,24 @@ Final GHCR publish:
 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
-linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+linux/amd64=sha256:<redacted>
 
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
-arm64 index digest=sha256:645b23adfb7c1269420444d5bc797d506109cb3f2f2c91824ce2bacf6c74b181
-linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+arm64 index digest=sha256:<redacted>
+linux/arm64=sha256:<redacted>
 
 ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:aa0a9e6c2991fc3e85d097477245762e1068f4971db6bdd7a03d2d5e0dafc4d4
-linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
-linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+multiarch digest=sha256:<redacted>
+linux/amd64=sha256:<redacted>
+linux/arm64=sha256:<redacted>
 ```
 
 Final release assets:
 
 ```text
-kavita-gds.tar.gz sha256=ba9e57f61c8dfbb85be47359ded39ba18a3cd014a1da9a96e66947a35a6e3f7a
-docker-image/kavita-gds.docker.tar sha256=24d4d4438e20c75f6303052cc7115e8baf5b075ad3fbfb3250ea236ec1fcda3b
+kavita-gds.tar.gz sha256=<redacted-hash>
+docker-image/kavita-gds.docker.tar sha256=<redacted-hash>
 ```
 
 ## 2026-06-02 Local Fixture 10-Series Expansion
@@ -1148,7 +1148,7 @@ REPORTED <redacted-media-path>
 `kavita-test` 상태:
 
 ```text
-image=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+image=sha256:<redacted>
 status=running
 health=healthy
 restart count=0

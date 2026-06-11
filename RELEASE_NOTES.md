@@ -19,6 +19,8 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
 - Rebuilt the production WebUI bundle for the metadata filter default hotfix.
 - Added a WebUI hotfix so saving metadata filter/sort settings with a blank smart-filter name updates the route-local default filter instead of requiring a named smart filter.
+- Kept the metadata-filter save button enabled for blank-name default-filter saves while preserving named smart-filter saves.
+- OPDS compatibility experiment patches were reverted before the final `9.0.7-6` publish. Existing OPDS functionality remains, but the experimental OPDS acquisition/progress changes are not part of this release.
 - Added a reader/cache hotfix that prefers a readable non-empty book file when a chapter has both broken/empty and valid EPUB rows.
 - Kept the GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
@@ -48,17 +50,15 @@ Before publishing the next release, run the repeatable GDS regression checklist:
 
 - [docs/GDS_REGRESSION_CHECKLIST_KO.md](docs/GDS_REGRESSION_CHECKLIST_KO.md)
 
-The local-only matrix with actual sample titles, chapter ids, and media paths is kept on the PVE host:
-
-```text
-/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md
-```
+The local-only matrix with actual sample titles, raw ids, and media paths is kept outside this public repository.
 
 ## Changes Since `9.0.7-1`
 
 ### 2026-06-11 `9.0.7-6` metadata-filter hotfix
 
 - Fixed unnamed metadata filter saves in WebUI so blank-name save updates the current route default filter and keeps named smart-filter saves unchanged.
+- Fixed the WebUI save-button state so blank-name default-filter saves remain clickable.
+- Reverted the OPDS compatibility experiment patches before final publish; no new OPDS behavior is claimed in this release.
 
 ### 2026-06-10 `9.0.7-5` readable book-file selection hotfix
 
@@ -149,18 +149,6 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 - Made cache cleanup tolerate concurrent directory deletion.
 - Validated redacted production EPUB regression samples after deployment.
 - Built the public release package as a `linux/amd64` Docker archive and published GHCR tags as `linux/amd64` + `linux/arm64` multi-arch manifests.
-
-## GHCR
-
-```text
-ghcr.io/suikano1304/kavita-gds:9.0.7-2
-ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:2946f7448427f91c088c2776b35518d30e18f807d3cbc818c327c4f4616c325f
-
-linux/amd64=sha256:15a63e3b7846c351cbde972dcb4b6ee1ad3299eedd16f07cf4223d3a21bb8525
-linux/arm64=sha256:0885db7fc0b24ffd7d32520ac72a53381d16ff53a03ba414293d6361b2385a4d
-linux/arm/v7=sha256:e9aff1c54b1c1fc4b7182e80e2511bedd3e11f8143e6afd6a84f0e3979e2acf5
-```
 
 ## Historical Changes Since `kavita-gds-0.9.0.2-scan-20260528`
 

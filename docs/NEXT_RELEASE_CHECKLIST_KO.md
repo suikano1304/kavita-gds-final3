@@ -11,7 +11,7 @@
 - 운영 DB/config를 변경하기 전 backup 또는 snapshot을 만든다.
 - test 컨테이너에서 fixture 검증을 먼저 통과한 뒤 운영에 반영한다.
 - 배포 전 회귀 검증은 [GDS_REGRESSION_CHECKLIST_KO.md](GDS_REGRESSION_CHECKLIST_KO.md)를 따른다.
-- 실제 작품명/경로가 필요한 로컬 상세 매트릭스는 `/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md`를 확인한다.
+- 실제 작품명/경로가 필요한 상세 매트릭스는 공개 저장소 밖의 로컬 운영 문서에서만 확인한다.
 - 운영 반영 후 health, reader API, scan log, rclone read-only 상태를 확인한다.
 - 검증 전에는 GitHub commit, release, package publish를 하지 않는다.
 
@@ -33,9 +33,9 @@
 ## 빌드 전 확인
 
 ```bash
-git -C /root/kavita-gds-lab/port-0906-gds status --short
-git -C /root/kavita-gds-lab/port-0906-gds log --oneline -5
-git -C /root/Kavita-GDS status --short
+git -C /path/to/kavita-source status --short
+git -C /path/to/kavita-source log --oneline -5
+git -C /path/to/Kavita-GDS status --short
 ```
 
 패키징 repo에는 큰 binary를 commit하지 않습니다. Docker archive와 tarball은 GitHub Release asset으로만 배포합니다.
@@ -64,10 +64,10 @@ git -C /root/Kavita-GDS status --short
 
 ```bash
 scripts/collect_gds_preflight.sh \
-  --db /mnt/data/docker/kavita/config/kavita.db \
+  --db /your/kavita/config/kavita.db \
   --container-root /mnt/gds \
-  --host-root /mnt/data/rclone/gds \
-  --scan-log /mnt/data/docker/kavita/config/logs/kavitaYYYYMMDD.log \
+  --host-root /your/gds/mount \
+  --scan-log /your/kavita/config/logs/kavitaYYYYMMDD.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label before \
   --snapshot-db \
@@ -79,10 +79,10 @@ scripts/collect_gds_preflight.sh \
 
 ```bash
 scripts/collect_gds_preflight.sh \
-  --db /mnt/data/docker/kavita/config/kavita.db \
+  --db /your/kavita/config/kavita.db \
   --container-root /mnt/gds \
-  --host-root /mnt/data/rclone/gds \
-  --scan-log /mnt/data/docker/kavita/config/logs/kavitaYYYYMMDD.log \
+  --host-root /your/gds/mount \
+  --scan-log /your/kavita/config/logs/kavitaYYYYMMDD.log \
   --output-dir /tmp/kavita-gds-preflight \
   --label after \
   --snapshot-db \

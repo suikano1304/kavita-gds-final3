@@ -3,7 +3,7 @@
 작성일: 2026-06-06
 정책 갱신: 2026-06-10
 
-이 문서는 새 upstream Kavita 버전으로 포팅하거나 새 GHCR 이미지를 배포하기 전에 반복해야 하는 공개용 회귀 검증 체크리스트다. 실제 작품명, series/chapter id, media path가 필요한 로컬 상세 매트릭스는 PVE host의 `/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md`를 참조한다.
+이 문서는 새 upstream Kavita 버전으로 포팅하거나 새 GHCR 이미지를 배포하기 전에 반복해야 하는 공개용 회귀 검증 체크리스트다. 실제 작품명, raw id, media path가 필요한 상세 매트릭스는 공개 저장소 밖의 로컬 운영 문서에만 보관한다.
 
 ## 기본 배포 gate
 
@@ -14,7 +14,7 @@
 - source-only 문제도 server가 Fatal/SQLite/database-lock 없이 reader/API/scan 경로를 견디는지 확인한다.
 - 이번 release 검증 중 새롭게 발견된 code-fixable 회귀나 current-version failure는 기본적으로 차후 릴리즈로 미루지 않는다. 로컬 매트릭스에 기록하고, 필요한 경우 공개 체크리스트에는 익명화된 issue class만 추가한 뒤, 현재 release candidate에 패치하고 재검증한다.
 - `FUTURE POLICY`는 명시적인 제품/정책 결정 항목에만 사용한다. correctness, crash, reader/API, scan, cache, SQLite, startup, health, operational stability failure는 현재 candidate에서 수정/검증하거나 `FAIL` release blocker로 남긴다.
-- 새 버전마다 로컬 감사 문서 `/root/lxc1-codex-docs/KAVITA_GDS_FULL_MATRIX_AUDIT_<date>.md`에 상태표를 남긴다.
+- 새 버전마다 공개 저장소 밖의 로컬 감사 문서에 상태표를 남긴다.
 
 상태표 최소 컬럼:
 
@@ -74,16 +74,10 @@ issue class | previous status | current version result | validation method | blo
 
 ## Extended Verifier
 
-현재 9.0.7 기준 verifier:
-
-```text
-/root/kavita-gds-lab/verify-0907-gds-extended.sh
-```
-
 release image 검증 예:
 
 ```bash
-pct push 101 /root/kavita-gds-lab/verify-0907-gds-extended.sh /tmp/verify-gds-extended.sh
+pct push 101 /path/to/verify-0907-gds-extended.sh /tmp/verify-gds-extended.sh
 pct exec 101 -- bash -lc 'chmod +x /tmp/verify-gds-extended.sh && EXPECTED_IMAGE=ghcr.io/suikano1304/kavita-gds:<version> EXPECTED_VERSION=<official-version> /tmp/verify-gds-extended.sh'
 ```
 
@@ -105,9 +99,9 @@ PASS 기준:
 GDS cover refactor 또는 cover fallback을 건드린 릴리스에서는 local fixture 기반 cover regression을 별도로 반복 실행한다.
 
 ```bash
-pct push 101 /root/kavita-gds-lab/prepare-cover-regression-test-config.sh /tmp/prepare-cover-regression-test-config.sh
-pct push 101 /root/kavita-gds-lab/validate-cover-regression-fixture.py /tmp/validate-cover-regression-fixture.py
-pct push 101 /root/kavita-gds-lab/run-cover-regression-validation-gated.sh /tmp/run-cover-regression-validation-gated.sh
+pct push 101 /path/to/prepare-cover-regression-test-config.sh /tmp/prepare-cover-regression-test-config.sh
+pct push 101 /path/to/validate-cover-regression-fixture.py /tmp/validate-cover-regression-fixture.py
+pct push 101 /path/to/run-cover-regression-validation-gated.sh /tmp/run-cover-regression-validation-gated.sh
 pct exec 101 -- bash -lc 'IMAGE=ghcr.io/suikano1304/kavita-gds:<version> SQLITE_IMAGE=ghcr.io/suikano1304/kavita-gds:<version> MAX_IO_FULL_AVG10=8 PASSES=2 bash /tmp/run-cover-regression-validation-gated.sh'
 ```
 
@@ -152,10 +146,4 @@ PASS 기준:
 
 ## 로컬 상세 매트릭스
 
-실제 작품명, chapter id, media path, fixture path가 필요한 경우 PVE host에서 다음 문서를 확인한다.
-
-```text
-/root/lxc1-codex-docs/KAVITA_GDS_REGRESSION_MATRIX.md
-```
-
-이 로컬 문서는 공개 GitHub 문서에 복사하지 않는다.
+실제 작품명, raw id, media path, fixture path가 필요한 경우 공개 저장소 밖의 로컬 상세 매트릭스를 확인한다. 이 로컬 문서는 공개 GitHub 문서에 복사하지 않는다.

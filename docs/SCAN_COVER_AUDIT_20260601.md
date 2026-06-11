@@ -114,17 +114,17 @@ Do not change production DB directly. For a fix branch or test container:
 
 Prepared in source tree:
 
-- `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/MetadataService.cs`
-- `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/ArchiveService.cs`
-- `/root/kavita-gds-lab/port-0906-gds/Kavita.Services/Helpers/GdsMetadataParser.cs`
-- `/root/kavita-gds-lab/Dockerfile.0906-gds-test`
+- `<local-kavita-source>/Kavita.Services/MetadataService.cs`
+- `<local-kavita-source>/Kavita.Services/ArchiveService.cs`
+- `<local-kavita-source>/Kavita.Services/Helpers/GdsMetadataParser.cs`
+- `<local-kavita-worktree>/Dockerfile.0906-gds-test`
 
 Build image:
 
 - official baseline: `ghcr.io/kareadita/kavita:nightly-0.9.0.6`
-- official revision: `c7e9555061d970b50cedc695e60124bf8c47084a`
+- official revision: `<redacted-hash>`
 - test image: `local/kavita-gds:9.0.6-1-test`
-- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- Image ID: `<redacted-hash>`
 
 Root cause found while preparing the test build:
 
@@ -152,13 +152,13 @@ Additional root cause:
 Validated fix in `kavita-test`:
 
 ```text
-sample-a volume-1  <redacted-cover-file>  5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
-sample-a volume-2  <redacted-cover-file>  6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
-sample-a volume-3  <redacted-cover-file>  505f6f8061bc4c258e1c79986b6d9456a5b01ac985d4e93bfeea47b4eb49a9c3
-sample-b volume-1  <redacted-cover-file>  3e621ebceeedc677b6ae071e427553262b42bb1bc11df4ff1e30f9b7a202fcde
-sample-b volume-2  <redacted-cover-file>  5f57cc1fb14a4e5f35394fd0e95b3dde3ecc9818b4bd8afe1df63d3299cf4462
-sample-c volume-1  <redacted-cover-file>  4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-sample-c volume-2  <redacted-cover-file>  6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
+sample-a volume-1  <redacted-cover-file>  <redacted-hash>
+sample-a volume-2  <redacted-cover-file>  <redacted-hash>
+sample-a volume-3  <redacted-cover-file>  <redacted-hash>
+sample-b volume-1  <redacted-cover-file>  <redacted-hash>
+sample-b volume-2  <redacted-cover-file>  <redacted-hash>
+sample-c volume-1  <redacted-cover-file>  <redacted-hash>
+sample-c volume-2  <redacted-cover-file>  <redacted-hash>
 ```
 
 TXT cover rendering issue:
@@ -190,7 +190,7 @@ User reported a second possible cover symptom: covers after volume/chapter 1 may
 The latest test image was rebuilt and redeployed:
 
 - test image: `local/kavita-gds:9.0.6-1-test`
-- Image ID: `c5368ead72cbdc7bc8caa71662aeb0782d2ed114d99349c5097d740923a0b2ba`
+- Image ID: `<redacted-hash>`
 - `kavita-test` container image hash matched the image tag hash.
 
 After a forced `LOCAL-FIXTURES` scan, the DB and cover image hashes were checked across EPUB, CBZ, and ZIP multi-file samples.
@@ -204,16 +204,16 @@ Result:
 Representative hash evidence:
 
 ```text
-epub-problem sample-1 <redacted-cover-file> ad08ac5aa8b35b4b09a960cd8420ff995f58bf1afd7f903138333120efedef1d
-epub-problem sample-2 <redacted-cover-file> da320b51520ee91f2af3c0e0690a2b4b6f2cf966fbb96442d6923d660bcc162b
-epub-problem sample-3 <redacted-cover-file> e81eb169298cc46e90ce9bc41a2caca84b12a626fe531e9ebdaf500ddbc15275
-epub sample-a <redacted-cover-file> a498bd2e231dbd4307cd5a248f411ec949202d9796659c6523986194de34fb4e
-epub sample-b <redacted-cover-file> 75dd57eef22cbb186bd4080400ba0fbf3e7c2cac1459e1054113c787a245bd9f
-epub sample-c <redacted-cover-file> 119e17f803886334cf3b1ce5608541c3a11720fd4bab8bd800588a31b305e5b1
-zip sample-a <redacted-cover-file> 4a695f7c157b455e032d1fc696797276cafabba35a5a544847fb85e91d136604
-zip sample-b <redacted-cover-file> 6a5ec72d8da594f846b8f1b8c14a5227526bcdf3eef6f76260dbc620182c5455
-cbz sample-a <redacted-cover-file> 5c6c7c6e7d67e0524cc08831091fbf40150d5c4380399501f3f9af3b0b443fad
-cbz sample-b <redacted-cover-file> 6313241d31770d4268e6368972039b06ca0c00b0603696aaab33e6d8b2ee29bf
+epub-problem sample-1 <redacted-cover-file> <redacted-hash>
+epub-problem sample-2 <redacted-cover-file> <redacted-hash>
+epub-problem sample-3 <redacted-cover-file> <redacted-hash>
+epub sample-a <redacted-cover-file> <redacted-hash>
+epub sample-b <redacted-cover-file> <redacted-hash>
+epub sample-c <redacted-cover-file> <redacted-hash>
+zip sample-a <redacted-cover-file> <redacted-hash>
+zip sample-b <redacted-cover-file> <redacted-hash>
+cbz sample-a <redacted-cover-file> <redacted-hash>
+cbz sample-b <redacted-cover-file> <redacted-hash>
 ```
 
 The "2nd-and-later cover equals 1st cover" symptom is not present in the current test image after forced refresh.
@@ -223,7 +223,7 @@ The "2nd-and-later cover equals 1st cover" symptom is not present in the current
 The final `9.0.6-1-test` image was rebuilt and redeployed:
 
 - test image: `local/kavita-gds:9.0.6-1-test`
-- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- Image ID: `<redacted-hash>`
 - `kavita-test`: healthy
 
 `LOCAL-FIXTURES` was expanded to `117` media files across `26` series:
@@ -299,20 +299,20 @@ The latest amd64 image with the GDS word-count split was pushed:
 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
-digest sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+digest sha256:<redacted>
 ```
 
 Final arm64 and multiarch publication were completed after the production scan path was rebuilt and revalidated. Final public GHCR digest values are recorded in the `2026-06-02 Final Skip-Word Production Scan and GHCR Publish` section below.
 
 ## 2026-06-01 Production Cover Regeneration
 
-After deploying final image `sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163`, production cover references for 2nd-and-later chapters/volumes were cleaned only where they were missing or had the same hash as the first item in the series.
+After deploying final image `sha256:<redacted>`, production cover references for 2nd-and-later chapters/volumes were cleaned only where they were missing or had the same hash as the first item in the series.
 
 Backups/manifests:
 
-- DB backup: `/mnt/data/docker/kavita/config/kavita.db.coverfix-20260601-093202.bak`
-- cleanup manifest: `/root/kavita-cover-repair-20260601-093312.tsv`
-- final cleanup summary: `/root/kavita-cover-repair-final-20260601-094926.json`
+- DB backup: `/your/kavita/config/kavita.db.coverfix-20260601-093202.bak`
+- cleanup manifest: `<local-cover-repair-output>`
+- final cleanup summary: `<local-cover-repair-output>`
 
 Final cleanup before regeneration:
 
@@ -364,21 +364,21 @@ Production was updated after test validation and explicit user approval to inter
 
 Backups:
 
-- `/root/kavita-prod-backups/20260601-075551/docker-compose.yml.pre-0906-1`
-- `/root/kavita-prod-backups/20260601-075551/kavita.db.pre-0906-1.backup`
-- `/root/kavita-prod-backups/20260601-075551/appsettings.json.pre-0906-1`
+- `<local-kavita-backup>`
+- `<local-kavita-backup>`
+- `<local-kavita-backup>`
 
 Image:
 
 - previous: `ghcr.io/suikano1304/kavita-gds:0.9.0.2-8`
 - current: `local/kavita-gds:9.0.6-1`
-- Image ID: `4aa4a776f1ce1e1f74edde66de9804bddf947cb335a610b87abc0d2e68ad7ce9`
+- Image ID: `<redacted-hash>`
 
 Verification:
 
 - production `kavita`: healthy
 - `/api/health`: `Ok`
-- `/mnt/gds2 -> /mnt/gds`: `RW=false`
+- `/your/gds/mount -> /mnt/gds`: `RW=false`
 - startup migration completed from `0.9.0.2` to `0.9.0.6`
 - full force scan requested with `POST /api/library/scan-all?force=true`, HTTP `200`
 - scan log shows `Starting Scan of All Libraries, Forced: true`
@@ -416,7 +416,7 @@ Production image:
 
 ```text
 local/kavita-gds:9.0.6-1
-sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+sha256:<redacted>
 ```
 
 Production verification:
@@ -453,8 +453,8 @@ The user requested GitHub push first while the production cover metadata refresh
 Release package prepared:
 
 ```text
-kavita-gds.tar.gz sha256=facbf3165d4a3b81ebe14d4d9958f8d63f85d26a2b66dbf8c0d988770a8db367
-docker-image/kavita-gds.docker.tar sha256=35ca299130c45ea16b391abb0d32e2a6422713d350130ffb86392e59c3aea16a
+kavita-gds.tar.gz sha256=<redacted-hash>
+docker-image/kavita-gds.docker.tar sha256=<redacted-hash>
 ```
 
 GitHub release and GHCR publish:
@@ -462,8 +462,8 @@ GitHub release and GHCR publish:
 ```text
 release=https://github.com/suikano1304/Kavita-GDS/releases/tag/v9.0.6-1
 workflow_result=success
-ghcr.io/suikano1304/kavita-gds:9.0.6-1 digest=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
-ghcr.io/suikano1304/kavita-gds:latest digest=sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+ghcr.io/suikano1304/kavita-gds:9.0.6-1 digest=sha256:<redacted>
+ghcr.io/suikano1304/kavita-gds:latest digest=sha256:<redacted>
 ```
 
 ## 2026-06-01 09:12 KST Missing EPUB3 NAV follow-up
@@ -492,10 +492,10 @@ Implemented follow-up:
 Verification:
 
 ```text
-test image local/kavita-gds:9.0.6-1-test intermediate sha256:be556ae5a720674f967468d9ca521d50593251e3297372e5877c471a26f7969b
+test image local/kavita-gds:9.0.6-1-test intermediate sha256:<redacted>
 LOCAL-FIXTURES scan: 118 files, 27 series, zero pages 0, missing covers 0
 test fixture chapter sample-chapter-cover-only: book-info 200, book-page?page=0 200, chapters 200
-production image local/kavita-gds:9.0.6-1 final sha256:b62e5cc99c342b5584b93c43385d5474cb6bf3b29bf7cfe4f6c17f25d5176163
+production image local/kavita-gds:9.0.6-1 final sha256:<redacted>
 production chapter <redacted>: book-info 200, book-page?page=0 200, chapters 200
 production Web UI internal/external: HTTP 200
 rclone: errors=0 deletes=0 renames=0 serverSideCopies=0 serverSideMoves=0
@@ -688,14 +688,14 @@ Operational behavior changed for GDS libraries only:
 Validation before production:
 
 ```text
-image=sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19
+image=sha256:<redacted>
 LOCAL-FIXTURES pass 1/2/3: total=118, info_fail=0, nav_fail=0, page_fail=0, zero_bytes=0, zero_pages=0, missing_covers=0
 ```
 
 Production status at `2026-06-02 08:51 KST`:
 
 ```text
-production image ID=sha256:d281b758663f1e6ed79a1e0ea8313750e2ec3c9faf241663526e59adb72e4f19
+production image ID=sha256:<redacted>
 kavita health=healthy
 kavita restart count=0
 LibraryId=3 성인 만화 forced scan started at 2026-06-02 08:45:08 KST
@@ -708,7 +708,7 @@ observed memory=below 1 GiB / 16 GiB
 The existing GHCR tag was originally a single `linux/amd64` manifest:
 
 ```text
-ghcr.io/suikano1304/kavita-gds:9.0.6-1 sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
+ghcr.io/suikano1304/kavita-gds:9.0.6-1 sha256:<redacted>
 ```
 
 An ARM64 image was built from the same `port-0906-gds` source. The first Dockerfile path failed at `npm ci` because the package lock did not include arm64 optional dependency entries. The successful build used the already-generated production UI bundle in `UI/Web/dist/browser` and published only the `linux-arm64` runtime.
@@ -716,10 +716,10 @@ An ARM64 image was built from the same `port-0906-gds` source. The first Dockerf
 Build artifact:
 
 ```text
-temporary Dockerfile: /root/Dockerfile.0906-gds-arm64-prebuilt-ui
+temporary Dockerfile: <temporary-dockerfile>
 pushed tag: ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
-arm64 index digest: sha256:96dc7093d4ec133f2a6d921522958f7a3158d2c7b43c6d01b30e941e32e36d8a
-arm64 image manifest: sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+arm64 index digest: sha256:<redacted>
+arm64 image manifest: sha256:<redacted>
 ```
 
 The public version and latest tags were then rewritten as a multi-arch manifest:
@@ -727,10 +727,10 @@ The public version and latest tags were then rewritten as a multi-arch manifest:
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:bb5fa8c024062240668a52c7c175794fff083574e631aa64d94a83212aa8df8e
+multiarch digest=sha256:<redacted>
 
-platform linux/amd64 -> sha256:8cbc948df4cc80a06692ded9232e9fa5e56bf50192d3b7c404808f673cd31ea0
-platform linux/arm64 -> sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece225987e858980154655
+platform linux/amd64 -> sha256:<redacted>
+platform linux/arm64 -> sha256:<redacted>
 ```
 
 ## 2026-06-02 Final Skip-Word Production Scan and GHCR Publish
@@ -738,7 +738,7 @@ platform linux/arm64 -> sha256:5fa92885f89ccc2e0029ada910a4ffe89f82a5d065ece2259
 The final skip-word scan image was deployed to production:
 
 ```text
-production image ID=sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034
+production image ID=sha256:<redacted>
 container status=running
 health=healthy
 restart count=0
@@ -784,24 +784,24 @@ The final GHCR publication was rebuilt from the same source snapshot:
 
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-amd64
-linux/amd64=sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
+linux/amd64=sha256:<redacted>
 
 ghcr.io/suikano1304/kavita-gds:9.0.6-1-arm64
-arm64 index digest=sha256:645b23adfb7c1269420444d5bc797d506109cb3f2f2c91824ce2bacf6c74b181
-linux/arm64=sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+arm64 index digest=sha256:<redacted>
+linux/arm64=sha256:<redacted>
 
 ghcr.io/suikano1304/kavita-gds:9.0.6-1
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:aa0a9e6c2991fc3e85d097477245762e1068f4971db6bdd7a03d2d5e0dafc4d4
-platform linux/amd64 -> sha256:b56821e4faa2c0a24f3ecabf75b57bfa2ed6f133f759681db723b22ca9e542ec
-platform linux/arm64 -> sha256:0e994cc2b327fddbe10c5d0a615a06b4c6ad643abb6dc546af8d29c59044ba20
+multiarch digest=sha256:<redacted>
+platform linux/amd64 -> sha256:<redacted>
+platform linux/arm64 -> sha256:<redacted>
 ```
 
 Final release archive checksums:
 
 ```text
-kavita-gds.tar.gz sha256=ba9e57f61c8dfbb85be47359ded39ba18a3cd014a1da9a96e66947a35a6e3f7a
-docker-image/kavita-gds.docker.tar sha256=24d4d4438e20c75f6303052cc7115e8baf5b075ad3fbfb3250ea236ec1fcda3b
+kavita-gds.tar.gz sha256=<redacted-hash>
+docker-image/kavita-gds.docker.tar sha256=<redacted-hash>
 ```
 
 ## 2026-06-02 Final Fixture Expansion to 10 Series per Format
@@ -850,7 +850,7 @@ REPORTED <redacted-media-path>
 REPORTED <redacted-media-path>
 ```
 
-Validation on final image `sha256:3217e530a5c5443260be8ce0bd28e7aa862d4e1f5ae4a61688d04ff0b72e8034`:
+Validation on final image `sha256:<redacted>`:
 
 ```text
 Finished library scan of 155 files and 44 series in 11196 milliseconds for LOCAL-FIXTURES

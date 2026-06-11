@@ -1,14 +1,17 @@
 # Kavita-GDS 0.9.0.7 검증 기록
 
-검증일: 2026-06-06
+최초 작성일: 2026-06-06
+최신 갱신일: 2026-06-11
 
-이 문서는 official Kavita `0.9.0.7` nightly 기반 Kavita-GDS `9.0.7` 릴리스 검증 결과를 기록한다. 검증은 별도 테스트 컨테이너와 테스트 DB 사본으로 진행했으며, 운영 컨테이너는 업그레이드하거나 재시작하지 않았다.
+이 문서는 official Kavita `0.9.0.7` nightly 기반 Kavita-GDS `9.0.7` 계열 릴리스 검증 결과를 기록한다. 검증은 별도 테스트 컨테이너와 테스트 DB 사본으로 먼저 수행하고, 운영 반영이 있는 릴리스는 적용 후 health와 Docker 상태를 별도로 확인한다.
 
 ## 2026-06-11 `9.0.7-6` metadata-filter release candidate
 
 - GHCR `9.0.7-6`와 `latest`는 같은 multi-arch manifest를 가리킨다.
 - `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest를 모두 포함한다.
 - WebUI unnamed metadata filter default regression은 이름 없는 저장을 현재 route 기본 metadata filter 저장으로 처리하도록 수정했다.
+- blank-name 기본 필터 저장에서도 저장 버튼이 비활성화되지 않도록 보정했다.
+- OPDS 호환성 실험 패치는 최종 배포 전에 원복했고, 기존 OPDS 기능 외 새 OPDS 동작은 이번 릴리스 검증 범위에서 제외했다.
 - 공개 문서에는 샘플명, chapter id, media path를 기록하지 않고 issue class만 기록한다.
 
 ```text
@@ -22,6 +25,7 @@ linux/arm/v7=sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f
 검증:
 
 - WebUI production build passed and the built bundle contains the unnamed metadata filter default storage path.
+- Runtime WebUI bundle contains the blank-name default-filter save-button path.
 - `CacheServiceTests` baseline rerun: `DOTNET_EXIT:0`.
 - local release image startup smoke:
   - `linux/amd64`: `/api/health` 200
@@ -40,9 +44,6 @@ linux/arm/v7=sha256:254c022caed57acb6bfb59788f2f8d9c5ae07060c0454c4d9027a9fbe91f
 - `kavita-test` smoke:
   - production DB online backup과 read-only fixture mount로 `/api/health` 200을 확인했다.
   - runtime WebUI bundle에 unnamed metadata filter default storage key가 포함되어 있음을 확인했다.
-- production rollout:
-  - production `kavita`는 이 hotfix publish 중 재기동하지 않았다.
-  - production은 계속 `ghcr.io/suikano1304/kavita-gds:9.0.7-5` 상태로 유지했다.
 
 ## 2026-06-10 `9.0.7-5` readable book-file selection release
 

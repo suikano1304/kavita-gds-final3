@@ -51,7 +51,8 @@ GHCR는 Docker buildx `--push`로 직접 publish했습니다.
 ## 검증 내용
 
 - official `0.9.0.7` nightly source에 `0.9.0.2-8`까지의 GDS hotfix와 2026-06-01 EPUB/TXT/커버 hotfix를 포팅했습니다.
-- `9.0.7-6`에는 WebUI unnamed metadata filter default hotfix를 포함했습니다.
+- `9.0.7-6`에는 WebUI unnamed metadata filter default hotfix와 blank-name 저장 버튼 활성화 보정을 포함했습니다.
+- OPDS 호환성 실험 패치는 최종 배포 전에 원복했으며, 이번 릴리스는 새 OPDS 동작을 claim하지 않습니다.
 - `9.0.7-5`에는 duplicate broken/valid EPUB row에서 readable EPUB row를 우선 선택하는 reader/cache hotfix를 포함했습니다.
 - `9.0.7-4`의 GDS targeted series scan 후 word-count 분석과 전역 metadata/cache cleanup을 건너뛰는 hotfix를 유지했습니다.
 - `9.0.7-3`에는 mixed-root GDS series scan root 축소, mixed-format scan batching, WebUI cover cache-busting을 포함했습니다.
