@@ -64,11 +64,11 @@ ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:0279cbc356d7e644f79aed7e7f7903b6ed921eb4d61b7dd6d424eaa88d38ca22
+multiarch digest=sha256:a8f887897ff78e33e8d8763d9a7f67971cf5e5af3d3402f2ea7041e80443132f
 
-linux/amd64=sha256:91957bde8486f2d6dd30e8c31bc9959e7beb732878287407efb0cdb449719cb8
-linux/arm64=sha256:6dfaac18f2262617e71682eec2cc5ad2fa80d4af17f83e64a8e1fff62d116c2d
-linux/arm/v7=sha256:308d158036ef62eb7f518f7809c09c810355ab1377c92efa4bbf848492f02ddd
+linux/amd64=sha256:faa6536b9fa1889c022b8b9948e0607d9f1346b69d5bab3ce515defc3c841f24
+linux/arm64=sha256:eabc568d9faebd5cd5ee1b7ca5e2b174f970b98a53bbb19f9675eb45ea284a29
+linux/arm/v7=sha256:517bd042d09ab6f6aa796a82267d4b8abf8473d2d8aaeed3036409235955d4d2
 ```
 
 ## 수동 다운로드
@@ -82,6 +82,7 @@ linux/arm/v7=sha256:308d158036ef62eb7f518f7809c09c810355ab1377c92efa4bbf848492f0
 - official Kavita `0.9.0.7` nightly 변경 병합
 - OPDS multi-file archive acquisition regression 수정: 다중 ZIP/CBZ chapter feed에서 각 entry가 실제 `MangaFile` id, filename, size, page count, file-specific download route를 사용
 - OPDS image stream의 `saveProgress=false` 조건이 진행률 저장을 막도록 수정
+- WebUI unnamed metadata filter default regression 수정: smart filter 이름 없이 정렬/필터를 저장하면 현재 route의 기본 metadata filter로 저장하고 다음 진입 시 적용
 - 같은 chapter에 broken/empty EPUB row와 valid EPUB row가 함께 있을 때 reader/cache/TOC 경로가 readable EPUB row를 우선 선택
 - GDS targeted series scan 후 word-count 분석과 전역 metadata/cache cleanup을 건너뛰도록 보정
 - mixed-root GDS series scan이 broad category/library root로 확장되지 않도록 실제 file directory만 scan
@@ -111,6 +112,7 @@ linux/arm/v7=sha256:308d158036ef62eb7f518f7809c09c810355ab1377c92efa4bbf848492f0
 
 - OPDS feed/service focused tests 33개 통과
 - OPDS controller focused tests 6개 통과
+- WebUI production build 통과 및 unnamed metadata filter default storage bundle 포함 확인
 - `9.0.7-5` reader/cache baseline용 `CacheServiceTests` 재실행 `DOTNET_EXIT:0` 확인
 - backend runtime package `linux-x64`, `linux-arm64`, `linux-arm` 생성
 - local release image `linux/amd64` startup `/api/health` 200 확인
