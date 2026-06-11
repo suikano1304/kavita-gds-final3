@@ -6,20 +6,14 @@
 
 참고: 운영 컨테이너가 이전 태그를 계속 쓰는 경우, source/release/운영 기준이 다시 달라질 수 있습니다. 운영 검증은 적용 전 baseline과 적용 후 postflight를 같은 진단 스크립트로 비교하세요.
 
-## 2026-06-11: `9.0.7-6` OPDS and metadata-filter hotfix
+## 2026-06-11: `9.0.7-6` metadata-filter hotfix
 
 아래 변경은 공개 릴리스 태그 `9.0.7-6`에 포함했습니다.
 
-- OPDS series, volume, chapter feed에서 multi-file archive chapter의 각 entry가 현재 순회 중인 `MangaFile` 기준으로 생성되도록 수정했습니다.
-- OPDS acquisition URL을 file-specific route인 `.../chapter/{chapterId}/file/{mangaFileId}/download/{filename}`로 변경했습니다.
-- 새 OPDS 다운로드 route는 요청한 file id가 요청한 chapter에 속하는지 확인한 뒤 해당 파일만 반환합니다.
-- 기존 chapter-level OPDS download route는 호환용으로 유지했습니다.
-- OPDS image stream에서 `saveProgress=false`가 진행률 저장을 막도록 조건을 수정했습니다.
 - WebUI metadata filter에서 smart filter 이름 없이 정렬/필터를 저장하면 현재 route의 기본 metadata filter로 저장되도록 수정했습니다.
-- OPDS service focused tests 33개와 OPDS controller focused tests 6개를 통과했습니다.
 - WebUI production build와 runtime bundle 포함 검증을 통과했습니다.
-- GHCR `9.0.7-6`와 `latest`를 같은 multi-arch manifest로 push했습니다.
-- `linux/amd64`, `linux/arm64`, `linux/arm/v7` release image가 `/api/health` 200에 도달하는 것을 확인했습니다.
+- GHCR `9.0.7-6`와 `latest`는 최종 검증 후 같은 multi-arch manifest로 push합니다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` release image가 `/api/health` 200에 도달하는지 최종 publish 전 확인합니다.
 - 운영 컨테이너는 이 hotfix publish 중 재기동하지 않았고 기존 `9.0.7-5` 상태로 유지했습니다.
 
 ## 2026-06-10: `9.0.7-5` readable book-file selection hotfix

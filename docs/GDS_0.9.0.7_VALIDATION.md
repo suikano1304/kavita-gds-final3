@@ -4,27 +4,23 @@
 
 이 문서는 official Kavita `0.9.0.7` nightly 기반 Kavita-GDS `9.0.7` 릴리스 검증 결과를 기록한다. 검증은 별도 테스트 컨테이너와 테스트 DB 사본으로 진행했으며, 운영 컨테이너는 업그레이드하거나 재시작하지 않았다.
 
-## 2026-06-11 `9.0.7-6` OPDS and metadata-filter release
+## 2026-06-11 `9.0.7-6` metadata-filter release candidate
 
-- GHCR `9.0.7-6`와 `latest`는 같은 multi-arch manifest를 가리킨다.
-- `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest가 모두 포함되어 있다.
-- OPDS multi-file archive acquisition regression은 feed entry와 acquisition route를 실제 `MangaFile` 기준으로 생성하도록 수정했다.
-- OPDS image stream `saveProgress=false` regression은 진행률 저장 조건을 수정했다.
+- GHCR `9.0.7-6`와 `latest`는 최종 publish 후 같은 multi-arch manifest를 가리켜야 한다.
+- `linux/amd64`, `linux/arm64`, `linux/arm/v7` manifest를 모두 포함해야 한다.
 - WebUI unnamed metadata filter default regression은 이름 없는 저장을 현재 route 기본 metadata filter 저장으로 처리하도록 수정했다.
 - 공개 문서에는 샘플명, chapter id, media path를 기록하지 않고 issue class만 기록한다.
 
 ```text
-multiarch digest=sha256:a8f887897ff78e33e8d8763d9a7f67971cf5e5af3d3402f2ea7041e80443132f
+multiarch digest=TBD after final publish
 
-linux/amd64=sha256:faa6536b9fa1889c022b8b9948e0607d9f1346b69d5bab3ce515defc3c841f24
-linux/arm64=sha256:eabc568d9faebd5cd5ee1b7ca5e2b174f970b98a53bbb19f9675eb45ea284a29
-linux/arm/v7=sha256:517bd042d09ab6f6aa796a82267d4b8abf8473d2d8aaeed3036409235955d4d2
+linux/amd64=TBD
+linux/arm64=TBD
+linux/arm/v7=TBD
 ```
 
 검증:
 
-- OPDS service focused tests: 33 passed, 0 failed.
-- OPDS controller focused tests: 6 passed, 0 failed.
 - WebUI production build passed and the built bundle contains the unnamed metadata filter default storage path.
 - `CacheServiceTests` baseline rerun: `DOTNET_EXIT:0`.
 - local release image startup smoke:
@@ -32,13 +28,10 @@ linux/arm/v7=sha256:517bd042d09ab6f6aa796a82267d4b8abf8473d2d8aaeed3036409235955
   - `linux/arm64`: qemu `/api/health` 200
   - `linux/arm/v7`: qemu `/api/health` 200
 - GHCR manifest inspection:
-  - `9.0.7-6`와 `latest` digest가 동일함을 확인했다.
-  - amd64, arm64, arm/v7 manifest가 포함되어 있음을 확인했다.
+  - 최종 publish 후 `9.0.7-6`와 `latest` digest가 동일한지 확인한다.
+  - amd64, arm64, arm/v7 manifest가 포함되어 있는지 확인한다.
 - `kavita-test` smoke:
   - production DB online backup과 read-only fixture mount로 `/api/health` 200을 확인했다.
-  - OPDS multi-file chapter feed가 2개 file entry와 2개 file-specific acquisition href를 내보내는지 확인했다.
-  - 각 file-specific acquisition URL은 `Range: bytes=0-0`에서 206과 서로 다른 `Content-Range`를 반환했다.
-  - legacy chapter-level OPDS route도 206을 유지했다.
   - runtime WebUI bundle에 unnamed metadata filter default storage key가 포함되어 있음을 확인했다.
 - production rollout:
   - production `kavita`는 이 hotfix publish 중 재기동하지 않았다.

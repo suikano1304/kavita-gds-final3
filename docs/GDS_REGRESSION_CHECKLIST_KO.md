@@ -33,9 +33,7 @@ issue class | previous status | current version result | validation method | blo
 - single-spine TOC EPUB: 하나의 XHTML spine 안에 여러 TOC anchor가 있을 때 backend virtual pages가 유지되는지 확인.
 - TXT pagination: 긴 TXT와 사용자 보고 TXT fixture가 첫 page와 마지막 page 모두 정상 응답하는지 확인.
 - ZIP/CBZ reader: `chapter-info`, file dimensions, image, thumbnail, negative page clamp가 정상인지 확인.
-- OPDS multi-file archive acquisition: 하나의 chapter에 ZIP/CBZ 파일이 여러 개 붙은 경우 series, volume, chapter OPDS feed가 파일마다 고유한 entry id와 `.../file/{mangaFileId}/download/...` acquisition link를 내보내는지 확인한다. 각 acquisition URL은 해당 파일만 내려줘야 하며 첫 파일 링크를 반복하면 실패다.
 - WebUI unnamed metadata filter default: metadata filter에서 smart filter 이름을 비운 상태로 정렬/필터를 저장하면 현재 route의 기본 filter로 저장되고, 같은 route 재진입 시 해당 기본값이 적용되는지 확인한다. 이름을 입력한 smart filter 저장 동작은 기존처럼 유지되어야 한다.
-- OPDS page-stream progress flag: OPDS image stream 요청에서 `saveProgress=false`를 보낸 경우 non-Panels client라도 progress가 저장되지 않는지 확인한다. Panels client는 기존처럼 직접 연결 progress 처리 대상에서 제외한다.
 - PDF reader: raw PDF serving과 extracted image rendering이 모두 정상인지 확인.
 - cover fallback: folder/YAML/TXT/ZIP-CBZ first-page cover fallback이 source media mount에 쓰지 않고 config cover storage만 사용하는지 확인.
 - TXT YAML cover precedence/refresh: TXT-only 신규 import에서 `kavita.yaml`의 file-level base64 cover가 title fallback cover보다 우선되는지, 기존 TXT title cover가 있는 상태에서도 강제 refresh로 실제 교체되는지 확인.

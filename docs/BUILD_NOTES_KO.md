@@ -40,10 +40,10 @@ ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ```text
 ghcr.io/suikano1304/kavita-gds:9.0.7-6
 ghcr.io/suikano1304/kavita-gds:latest
-multiarch digest=sha256:a8f887897ff78e33e8d8763d9a7f67971cf5e5af3d3402f2ea7041e80443132f
-linux/amd64=sha256:faa6536b9fa1889c022b8b9948e0607d9f1346b69d5bab3ce515defc3c841f24
-linux/arm64=sha256:eabc568d9faebd5cd5ee1b7ca5e2b174f970b98a53bbb19f9675eb45ea284a29
-linux/arm/v7=sha256:517bd042d09ab6f6aa796a82267d4b8abf8473d2d8aaeed3036409235955d4d2
+multiarch digest=TBD after final publish
+linux/amd64=TBD
+linux/arm64=TBD
+linux/arm/v7=TBD
 ```
 
 GHCR는 Docker buildx `--push`로 직접 publish했습니다.
@@ -51,7 +51,7 @@ GHCR는 Docker buildx `--push`로 직접 publish했습니다.
 ## 검증 내용
 
 - official `0.9.0.7` nightly source에 `0.9.0.2-8`까지의 GDS hotfix와 2026-06-01 EPUB/TXT/커버 hotfix를 포팅했습니다.
-- `9.0.7-6`에는 OPDS multi-file archive acquisition route/feed hotfix, OPDS `saveProgress=false` 진행률 저장 조건 hotfix, WebUI unnamed metadata filter default hotfix를 포함했습니다.
+- `9.0.7-6`에는 WebUI unnamed metadata filter default hotfix를 포함했습니다.
 - `9.0.7-5`에는 duplicate broken/valid EPUB row에서 readable EPUB row를 우선 선택하는 reader/cache hotfix를 포함했습니다.
 - `9.0.7-4`의 GDS targeted series scan 후 word-count 분석과 전역 metadata/cache cleanup을 건너뛰는 hotfix를 유지했습니다.
 - `9.0.7-3`에는 mixed-root GDS series scan root 축소, mixed-format scan batching, WebUI cover cache-busting을 포함했습니다.

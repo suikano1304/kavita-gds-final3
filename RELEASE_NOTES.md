@@ -18,25 +18,21 @@ GHCR is the primary distribution channel for this release. Use the unified versi
 
 - Built from the official Kavita `0.9.0.7` nightly source with the GDS patch set ported forward.
 - Rebuilt the production WebUI bundle for the metadata filter default hotfix.
-- Added an OPDS hotfix for multi-file ZIP/CBZ archive acquisition feeds so each entry uses the actual file id, filename, size, summary, page count, and file-specific download route.
-- Added an OPDS image stream progress hotfix so `saveProgress=false` suppresses progress saves for non-Panels clients.
 - Added a WebUI hotfix so saving metadata filter/sort settings with a blank smart-filter name updates the route-local default filter instead of requiring a named smart filter.
 - Added a reader/cache hotfix that prefers a readable non-empty book file when a chapter has both broken/empty and valid EPUB rows.
 - Kept the GDS targeted scan follow-up hotfix that skips word-count analysis and global metadata/cache cleanup after GDS series scans.
 - Built RID-specific backend packages for `linux-x64`, `linux-arm64`, and `linux-arm`.
-- Pushed GHCR `9.0.7-6` and `latest` as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
-- Manifest digest: `sha256:a8f887897ff78e33e8d8763d9a7f67971cf5e5af3d3402f2ea7041e80443132f`.
+- GHCR `9.0.7-6` and `latest` will be published as one multi-arch manifest covering `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+- Manifest digest: `TBD after final publish`.
 - Per-platform manifests:
-  - `linux/amd64`: `sha256:faa6536b9fa1889c022b8b9948e0607d9f1346b69d5bab3ce515defc3c841f24`
-  - `linux/arm64`: `sha256:eabc568d9faebd5cd5ee1b7ca5e2b174f970b98a53bbb19f9675eb45ea284a29`
-  - `linux/arm/v7`: `sha256:517bd042d09ab6f6aa796a82267d4b8abf8473d2d8aaeed3036409235955d4d2`
-- Focused OPDS service tests passed: 33 passed, 0 failed.
-- Focused OPDS controller tests passed: 6 passed, 0 failed.
+  - `linux/amd64`: `TBD`
+  - `linux/arm64`: `TBD`
+  - `linux/arm/v7`: `TBD`
 - Duplicate broken/valid EPUB row baseline was preserved; `CacheServiceTests` rerun returned `DOTNET_EXIT:0`.
 - Local `linux/amd64` release image startup returned `/api/health` 200.
 - Local `linux/arm64` release image startup under qemu returned `/api/health` 200.
 - Local `linux/arm/v7` release image startup under qemu returned `/api/health` 200.
-- Pushed GHCR `linux/amd64` image was pulled from manifest digest `sha256:a8f887897ff78e33e8d8763d9a7f67971cf5e5af3d3402f2ea7041e80443132f` and returned `/api/health` 200.
+- Pushed GHCR `linux/amd64` image startup will be verified after final publish.
 - Production `kavita` was not restarted during this hotfix publish and remains on `9.0.7-5` until a separate rollout decision.
 - GDS library scans now use a low-memory sequential processing path for DB updates and cover generation to reduce OOM risk on large rclone-backed libraries.
 - GDS file discovery now avoids the highest-memory scanner paths by streaming directory traversal, parsing large GDS folders sequentially, and releasing retained file lists after parse.
@@ -60,15 +56,9 @@ The local-only matrix with actual sample titles, chapter ids, and media paths is
 
 ## Changes Since `9.0.7-1`
 
-### 2026-06-11 `9.0.7-6` OPDS and metadata-filter hotfix
+### 2026-06-11 `9.0.7-6` metadata-filter hotfix
 
-- Fixed OPDS series, volume, and chapter feeds for multi-file archive chapters so each entry is generated from the iterated `MangaFile`.
-- Added file-specific OPDS acquisition URLs in the form `.../chapter/{chapterId}/file/{mangaFileId}/download/{filename}`.
-- Added a compatible file-id download route that verifies the requested file belongs to the requested chapter before returning that file.
-- Preserved the legacy chapter-level OPDS download route for existing clients.
-- Fixed OPDS image stream progress saving so `saveProgress=false` is respected.
 - Fixed unnamed metadata filter saves in WebUI so blank-name save updates the current route default filter and keeps named smart-filter saves unchanged.
-- Added focused regression tests for multi-file OPDS feeds and OPDS progress-save gating.
 
 ### 2026-06-10 `9.0.7-5` readable book-file selection hotfix
 
