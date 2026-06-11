@@ -65,20 +65,34 @@ ghcr.io/suikano1304/kavita-gds:9.0.7-6
 
 정확한 manifest digest와 검증 기록은 [RELEASE_NOTES.md](RELEASE_NOTES.md)와 [docs/GDS_0.9.0.7_VALIDATION.md](docs/GDS_0.9.0.7_VALIDATION.md)에 기록합니다.
 
-## 9.0.7-6에서 달라진 점
+## 주요 수정
 
-이번 릴리즈는 WebUI와 기존 GDS 안정화 패치를 묶은 hotfix입니다.
+이번 릴리즈는 원격 저장소에 있는 큰 만화/책 라이브러리를 더 안정적으로 다루기 위한 수정들을 모은 버전입니다.
 
-- smart filter 이름 없이 정렬/필터를 저장해도 현재 화면의 기본 필터로 저장되도록 수정했습니다.
-- 같은 chapter에 깨진 EPUB row와 정상 EPUB row가 함께 있을 때, reader/cache가 읽을 수 있는 파일을 우선 선택합니다.
-- GDS 스캔이 불필요하게 넓은 상위 폴더까지 확장되지 않도록 보정했습니다.
-- 대형 GDS 라이브러리 스캔에서 메모리 사용량을 줄이도록 DB update와 cover generation 경로를 조정했습니다.
-- EPUB/TXT/PDF/ZIP 계열에서 페이지 수, cover fallback, manifest 경로 복구 관련 기존 GDS 안정화 패치를 유지합니다.
-- WebUI production bundle, Nanum Gothic font, `sqlite3` 진단 도구를 runtime image에 포함합니다.
+- 필터 저장 개선: 스마트 필터 이름을 따로 입력하지 않아도, 현재 화면에서 선택한 정렬과 필터가 기본값으로 저장됩니다.
+- 읽기 오류 완화: 같은 항목 안에 깨진 EPUB 정보와 정상 EPUB 정보가 같이 있을 때, 가능한 정상 파일을 우선 사용합니다.
+- 스캔 범위 축소: 특정 시리즈만 스캔하려고 했는데 상위 폴더나 큰 라이브러리까지 같이 훑는 상황을 줄였습니다.
+- 대형 라이브러리 안정화: 큰 GDS/rclone 라이브러리를 스캔할 때 메모리를 덜 쓰도록 DB 업데이트와 표지 생성 흐름을 조정했습니다.
+- 페이지 수와 표지 처리 보정: EPUB, TXT, PDF, ZIP/CBZ 파일에서 페이지 수가 잘못 잡히거나 표지가 엉뚱하게 선택되는 문제를 줄였습니다.
+- 한글 표지 fallback 개선: TXT 파일 등에서 표지를 자동 생성할 때 한글이 깨지지 않도록 Nanum Gothic 폰트를 포함했습니다.
+- 운영 진단 편의: 컨테이너 안에 `sqlite3`와 읽기 전용 진단 스크립트를 포함해 DB와 스캔 상태를 확인하기 쉽게 했습니다.
 
 OPDS 실험 패치는 이번 릴리즈에서 제외했습니다. 기존 OPDS 기능은 제거하지 않았고, 새 OPDS 호환성 변경만 원복했습니다.
 
 자세한 변경 내역은 [docs/CHANGELOG_KO.md](docs/CHANGELOG_KO.md)를 보세요.
+
+## 검증 기록
+
+`9.0.7-6` 이미지는 배포 전에 다음 항목을 확인했습니다.
+
+- 웹 화면 빌드 확인: 실제 운영에 들어가는 WebUI bundle이 정상 생성되고, 필터 저장 수정이 포함되어 있는지 확인했습니다.
+- 기본 실행 확인: `linux/amd64`, `linux/arm64`, `linux/arm/v7` 이미지가 각각 시작되고 `/api/health`에서 `Ok`를 반환하는지 확인했습니다.
+- Docker 상태 확인: 테스트 컨테이너들이 Docker health `healthy` 상태까지 도달하는지 확인했습니다.
+- 기존 reader/cache 회귀 확인: 깨진 EPUB 정보와 정상 EPUB 정보가 함께 있는 경우에도 읽기 경로가 정상 파일을 선택하는지 테스트했습니다.
+- GHCR 배포 확인: `9.0.7-6`와 `latest`가 같은 multi-arch 이미지로 올라갔고, 세 플랫폼을 모두 포함하는지 확인했습니다.
+- 운영 적용 확인: 운영 컨테이너를 `9.0.7-6`로 교체한 뒤 `/api/health=Ok`, Docker health `healthy`, restart count `0`을 확인했습니다.
+
+더 자세한 검증 내역과 manifest digest는 [RELEASE_NOTES.md](RELEASE_NOTES.md)와 [docs/GDS_0.9.0.7_VALIDATION.md](docs/GDS_0.9.0.7_VALIDATION.md)에 있습니다.
 
 ## 업그레이드 전 확인
 
